@@ -33,6 +33,9 @@ class Grid
     private:
         std::vector<std::vector<PlayerMark> > _a2playerMarkCells;
         std::vector<int8_t> _ayNextCell;
+        PlayerMark _playerMarkWinner;
+
+        bool isWinnerPlay(const PlayerMark& CEplayerMark, int8_t yPlayColumn) noexcept;
 
 };
 
@@ -42,17 +45,14 @@ inline const std::vector<std::vector<Grid::PlayerMark> >& Grid::getCells() const
 inline int8_t Grid::getNextCell(uint8_t uyColumn) const noexcept { return _ayNextCell[uyColumn]; }
 
 
-inline Grid::Grid() noexcept : _a2playerMarkCells{std::vector<std::vector<PlayerMark> >(Grid::SCuyHeight, 
-    std::vector<PlayerMark>(Grid::SCuyWidth, GRID_TYPE_NONE))},
-    _ayNextCell{std::vector<int8_t>(Grid::SCuyWidth, Grid::SCuyHeight - 1)}
-{}
-
-
 inline const std::vector<Grid::PlayerMark>& Grid::operator [](uint8_t uyIndex) const noexcept 
 { return _a2playerMarkCells[uyIndex]; }
 
 inline bool operator ==(const Grid& Cgrid1, const Grid& Cgrid2) noexcept
 { return Cgrid1.getCells() == Cgrid2.getCells(); }
+
+inline Grid::PlayerMark Grid::checkWinner() const noexcept { return _playerMarkWinner; }
+
 
 std::ostream& operator <<(std::ostream& ostream, const Grid::PlayerMark& CEplayerMark) noexcept;
 std::ostream& operator <<(std::ostream& ostream, const Grid& Cgrid) noexcept;

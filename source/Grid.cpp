@@ -5,6 +5,13 @@
 #include "../include/Grid.hpp"
 
 
+Grid::Grid() noexcept : _a2playerMarkCells{std::vector<std::vector<PlayerMark> >(Grid::SCuyHeight, 
+    std::vector<PlayerMark>(Grid::SCuyWidth, GRID_TYPE_NONE))},
+    _ayNextCell{std::vector<int8_t>(Grid::SCuyWidth, Grid::SCuyHeight - 1)}, 
+    _playerMarkWinner{PlayerMark::GRID_TYPE_NONE}
+{}
+
+
 Grid::PlayerMark Grid::nextPlayer(const PlayerMark& CEplayerMark) noexcept
 {
     switch(CEplayerMark)
@@ -22,71 +29,58 @@ void Grid::makePlay(const PlayerMark& CEplayerMark, uint8_t uyPlayColumn)
 
     _a2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CEplayerMark;
     _ayNextCell[uyPlayColumn]--;
+
+    if (isWinnerPlay(CEplayerMark, uyPlayColumn)) _playerMarkWinner = CEplayerMark;
 }
 
 
 bool Grid::isValidPlay(uint8_t uyPlayColumn) const noexcept
 {
-    return (uyPlayColumn >= 0 && uyPlayColumn < Grid::SCuyWidth &&
-        _ayNextCell[uyPlayColumn] >= 0);
+    return (uyPlayColumn < Grid::SCuyWidth && _ayNextCell[uyPlayColumn] >= 0);
 }
 
 
-Grid::PlayerMark Grid::checkWinner() const noexcept
+bool Grid::isWinnerPlay(const PlayerMark& CEplayerMark, int8_t yPlayColumn) noexcept
 {
-    for (uint8_t i = 0; i < Grid::SCuyWidth; i++)
+    int8_t yPlayRow = _ayNextCell[yPlayColumn] + 1;
+
+    // Downwards check
+    uint8_t uyCounter = 1;
+    if (_ayNextCell[yPlayColumn] + 1 <= Grid::SCuyHeight - Grid::SCuyNumberToMatch)
     {
-        for (uint8_t j = Grid::SCuyHeight - 1; j > _ayNextCell[i]; j--)
-        {
-            // Vertical up check
-            if (j >= Grid::SCuyNumberToMatch - 1 && (j == Grid::SCuyHeight - 1 ||
-                _a2playerMarkCells[j + 1][i] != _a2playerMarkCells[j][i]))
-            {
-                uint8_t uyOffset = 1, yCounter = 1;
-                while (yCounter < Grid::SCuyNumberToMatch &&
-                    _a2playerMarkCells[j][i] == _a2playerMarkCells[j - uyOffset][i])
-                    yCounter++, uyOffset++;
+        for (uint8_t i = 1; i < Grid::SCuyNumberToMatch && yPlayRow + i < Grid::SCuyHeight && 
+            _a2playerMarkCells[yPlayRow + i][yPlayColumn] == CEplayerMark; i++) uyCounter++;
 
-                if (yCounter == Grid::SCuyNumberToMatch) return _a2playerMarkCells[j][i];
-            }
-            // Horizontal right check
-            if (i <= Grid::SCuyWidth - Grid::SCuyNumberToMatch &&
-                (i == 0 || _a2playerMarkCells[j][i - 1] != _a2playerMarkCells[j][i]))
-            {
-                uint8_t uyOffset = 1, yCounter = 1;
-                while (yCounter < Grid::SCuyNumberToMatch &&
-                    _a2playerMarkCells[j][i] == _a2playerMarkCells[j][i + uyOffset])
-                    yCounter++, uyOffset++;
-
-                if (yCounter == Grid::SCuyNumberToMatch) return _a2playerMarkCells[j][i];
-            }
-            // Diagonal up right check
-            if (j >= Grid::SCuyNumberToMatch - 1 && i <= Grid::SCuyWidth - Grid::SCuyNumberToMatch &&
-                (j == Grid::SCuyHeight - 1 || i == 0 ||
-                _a2playerMarkCells[j + 1][i - 1] != _a2playerMarkCells[j][i]))
-            {
-                uint8_t uyOffset = 1, yCounter = 1;
-                while (yCounter < Grid::SCuyNumberToMatch &&
-                    _a2playerMarkCells[j][i] == _a2playerMarkCells[j - uyOffset][i + uyOffset])
-                    yCounter++, uyOffset++;
-
-                if (yCounter == Grid::SCuyNumberToMatch) return _a2playerMarkCells[j][i];
-            }
-            // Diagonal down right check
-            if (j <= Grid::SCuyHeight - Grid::SCuyNumberToMatch &&
-                i <= Grid::SCuyWidth - Grid::SCuyNumberToMatch &&
-                (j == 0 || i == 0 || _a2playerMarkCells[j - 1][i - 1] != _a2playerMarkCells[j][i]))
-            {
-                uint8_t uyOffset = 1, yCounter = 1;
-                while (yCounter < Grid::SCuyNumberToMatch &&
-                    _a2playerMarkCells[j][i] == _a2playerMarkCells[j + uyOffset][i + uyOffset])
-                    yCounter++, uyOffset++;
-
-                if (yCounter == Grid::SCuyNumberToMatch) return _a2playerMarkCells[j][i];
-            }
-        }
+        if (uyCounter == Grid::SCuyNumberToMatch) return true;
     }
-    return PlayerMark::GRID_TYPE_NONE;
+
+    // Check the remaining directions except upwards
+    int8_t a2yDirections[][2] = {{0, -1}, {-1, -1}, {-1, 1}};
+
+    for (int8_t* ayDirection : a2yDirections)
+    {
+        int8_t yDirectionX = ayDirection[0];
+        int8_t yDirectionY = ayDirection[1];
+
+        uyCounter = 1;
+        for (int8_t i = 1; i < Grid::SCuyNumberToMatch && 
+            yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < Grid::SCuyHeight && 
+            yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < Grid::SCuyWidth &&
+            _a2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == CEplayerMark;
+            i++) uyCounter++;
+
+        if (uyCounter == Grid::SCuyNumberToMatch) return true;
+
+        for (int8_t i = 1; i < Grid::SCuyNumberToMatch && 
+            yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < Grid::SCuyHeight && 
+            yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < Grid::SCuyWidth &&
+            _a2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == CEplayerMark; 
+            i++) uyCounter++;
+
+        if (uyCounter == Grid::SCuyNumberToMatch) return true;
+    }
+
+    return false;
 }
 
 
