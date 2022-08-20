@@ -16,15 +16,18 @@
 #include "../../include/players/Human.hpp"
 
 
+/**
+ * @brief Handles the initial loading of data
+ */
 void CApp::OnInit()
 {
     uint32_t uiInitFlags = SDL_INIT_EVERYTHING;
 
     #ifdef HW_RVL
-		fatInitDefault();
+		fatInitDefault();   // SDL-wii needs to initialise libFAT first
 	#endif
     #ifdef SDL_CDROM_DISABLED
-        uiInitFlags &= ~SDL_INIT_CDROM;
+        uiInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
     #endif
 
     if(SDL_Init(uiInitFlags) < 0) throw std::runtime_error(SDL_GetError());
@@ -32,9 +35,10 @@ void CApp::OnInit()
     if ((_pSdlSurfaceDisplay = SDL_SetVideoMode(CApp::SCurWindowWidth, CApp::SCurWindowHeight, 16,
         SDL_HWSURFACE | SDL_DOUBLEBUF)) == nullptr) throw std::runtime_error(SDL_GetError());
 
-    _apPlayer.push_back(new Human());
+    _apPlayer.push_back(new Human());   // Create the main human player
     SDL_JoystickEventState(SDL_ENABLE);
 
+    // Retrieve resources from the filesystem
     try
     {
         _pSdlSurfaceStart = CSurface::OnLoad("/apps/test/resources/gfx/start.bmp");
@@ -46,6 +50,7 @@ void CApp::OnInit()
     }
     catch (const std::ios_base::failure& Ciof) { throw; }
 
+    // Take the background out of the marker pictures
     CSurface::Transparent(_pSdlSurfaceRed, 255, 0, 255);
     CSurface::Transparent(_pSdlSurfaceYellow, 255, 0, 255);
 

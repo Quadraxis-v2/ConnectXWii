@@ -4,26 +4,31 @@
 #include "../../include/CSurface.hpp"
 
 
+/**
+ * @brief Handles all the rendering for each frame
+ */
 void CApp::OnRender()
 {
     switch (_EcurrentState)
     {
-        case State_t::STATE_START:
+        case State_t::STATE_START:  // In the starting state we just draw the starting surface
         {
             CSurface::OnDraw(_pSdlSurfaceDisplay, _pSdlSurfaceStart, 0, 0);
 
             break;
         }
-        case State_t::STATE_INGAME:
+        case State_t::STATE_INGAME: // Inside the game we draw the grid and as many markers as necessary
         {
             CSurface::OnDraw(_pSdlSurfaceDisplay, _pSdlSurfaceGrid, 0, 0);
 
-            for(int32_t i = 0; i < Grid::SCuyHeight; i++) 
+            for(int32_t i = 0; i < Grid::SCuyHeight; i++)  // Search for markers and draw them
             {
+                // Surface coordinate of the i'th row of the grid
                 int32_t iY = i * (_pSdlSurfaceDisplay->h / Grid::SCuyHeight);
                 
                 for (int32_t j = 0; j < Grid::SCuyWidth; j++)
                 {
+                    // Surface coordinate of the j'th column of the grid
                     int32_t iX = j * (_pSdlSurfaceDisplay->w / Grid::SCuyWidth);
 
                     if(_grid[i][j] == Grid::PlayerMark::GRID_TYPE_RED) 
@@ -35,7 +40,7 @@ void CApp::OnRender()
 
             break;
         }
-        case State_t::STATE_WIN:
+        case State_t::STATE_WIN:    // In the win state we show a surface depending on who won
         {
             switch (_EplayerMarkCurrent)
             {

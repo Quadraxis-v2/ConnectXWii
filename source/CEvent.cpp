@@ -49,18 +49,6 @@ void CEvent::OnEvent(SDL_Event* pSdlEvent)
             break;
         }
 
-        case SDL_SYSWMEVENT:
-        {
-            //Ignore
-            break;
-        }
-
-        case SDL_VIDEOEXPOSE:
-        {
-            OnExpose();
-            break;
-        }
-
         default:
         {
             OnUser(pSdlEvent->user.type, pSdlEvent->user.code, pSdlEvent->user.data1,

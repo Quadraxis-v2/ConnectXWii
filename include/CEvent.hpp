@@ -20,7 +20,6 @@ class CEvent
         virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) = 0;
         virtual void OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) = 0;
         virtual void OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) = 0;
-        virtual void OnExpose() = 0;
         virtual void OnExit() = 0;
         virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) = 0;
 

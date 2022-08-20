@@ -46,7 +46,7 @@ bool Grid::isWinnerPlay(const PlayerMark& CEplayerMark, int8_t yPlayColumn) noex
 
     // Downwards check
     uint8_t uyCounter = 1;
-    if (_ayNextCell[yPlayColumn] + 1 <= Grid::SCuyHeight - Grid::SCuyNumberToMatch)
+    if (yPlayRow <= Grid::SCuyHeight - Grid::SCuyNumberToMatch)
     {
         for (uint8_t i = 1; i < Grid::SCuyNumberToMatch && yPlayRow + i < Grid::SCuyHeight && 
             _a2playerMarkCells[yPlayRow + i][yPlayColumn] == CEplayerMark; i++) uyCounter++;

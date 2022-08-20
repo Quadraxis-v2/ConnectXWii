@@ -4,9 +4,13 @@
 #include "../../include/CApp.hpp"
 
 
-CApp* CApp::_SpCAppInstance = nullptr;
+CApp* CApp::_SpCAppInstance = nullptr;  /**< The singleton instance of the application */
 
 
+/**
+ * @brief Creates a singleton instance if it does not exist and gets it
+ * @return CApp* A pointer to the Singleton instance of the application
+ */
 CApp* CApp::getInstance()
 {
     if (_SpCAppInstance == nullptr) _SpCAppInstance = new CApp();
@@ -14,6 +18,9 @@ CApp* CApp::getInstance()
 }
 
 
+/**
+ * @brief Default constructor
+ */
 CApp::CApp() noexcept : CEvent{}, _bRunning{true},  _EcurrentState{State_t::STATE_START},
     _pSdlSurfaceDisplay{nullptr}, _pSdlSurfaceStart{nullptr}, _pSdlSurfaceGrid{nullptr},
     _pSdlSurfaceRed{nullptr}, _pSdlSurfaceYellow{nullptr}, _pSdlSurfaceWinRed{nullptr},
@@ -21,6 +28,9 @@ CApp::CApp() noexcept : CEvent{}, _bRunning{true},  _EcurrentState{State_t::STAT
 {}
 
 
+/**
+ * @brief Starts the application and handles general processing
+ */
 void CApp::OnExecute()
 {
     OnInit();
@@ -39,6 +49,9 @@ void CApp::OnExecute()
 }
 
 
+/**
+ * @brief Resets the application to the initial values
+ */
 void CApp::Reset() noexcept
 {
     _EcurrentState = STATE_START;

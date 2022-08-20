@@ -38,7 +38,6 @@ class WiiController : public Joystick
         bool getButtonMinusClassic() const noexcept;
         bool getButtonPlusClassic() const noexcept;
         bool getButtonHOMEClassic() const noexcept;
-        void getIRPointer(int32_t* pMouseX, int32_t* pMouseY) const noexcept;
 
 };
 
@@ -91,8 +90,6 @@ inline bool WiiController::getButtonPlusClassic() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 18); }
 inline bool WiiController::getButtonHOMEClassic() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 19); }
-inline void WiiController::getIRPointer(int32_t* pMouseX, int32_t* pMouseY) const noexcept
-{ SDL_GetMouseState(pMouseX, pMouseY); }
 
 
 #endif
