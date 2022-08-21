@@ -51,16 +51,16 @@ void CApp::OnLButtonDown(int32_t iMouseX, int32_t iMouseY)
 /**
  * @brief Handles mouse/IR movement events
  * 
- * @param iMouseX the X coordinate of the mouse
- * @param iMouseY the Y coordinate of the mouse
- * @param iRelX the relative motion in the X direction
- * @param iRelY the relative motion in the Y direction
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ * @param rRelX the relative motion in the X direction
+ * @param rRelY the relative motion in the Y direction
  * @param bLeft the current state of the left mouse button
  * @param bRight the current state of the right mouse button
  * @param bMiddle the current state of the middle mouse button
  */
-void CApp::OnMouseMove(int32_t iMouseX, int32_t iMouseY, int32_t iRelX, int32_t iRelY, bool bLeft,
-    bool bRight, bool bMiddle) noexcept {}
+void CApp::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
+    bool bLeft, bool bRight, bool bMiddle) noexcept {}
 
 
 /**

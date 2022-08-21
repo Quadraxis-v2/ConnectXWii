@@ -8,6 +8,9 @@
 #include <SDL_joystick.h>
 
 #ifdef HW_RVL
+    #include <iostream>
+    #include <ogc/consol.h>
+    #include <ogc/video_types.h>
 	#include <fat.h>
 #endif
 
@@ -23,17 +26,25 @@ void CApp::OnInit()
 {
     uint32_t uiInitFlags = SDL_INIT_EVERYTHING;
 
-    #ifdef HW_RVL
-		fatInitDefault();   // SDL-wii needs to initialise libFAT first
-	#endif
     #ifdef SDL_CDROM_DISABLED
         uiInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
     #endif
 
-    if(SDL_Init(uiInitFlags) < 0) throw std::runtime_error(SDL_GetError());
+    if(SDL_Init(uiInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
     if ((_pSdlSurfaceDisplay = SDL_SetVideoMode(CApp::SCurWindowWidth, CApp::SCurWindowHeight, 16,
         SDL_HWSURFACE | SDL_DOUBLEBUF)) == nullptr) throw std::runtime_error(SDL_GetError());
+
+    #ifdef HW_RVL
+		fatInitDefault();   // SDL-wii needs to initialise libFAT first
+
+        // Initialise console
+        if (SDL_MUSTLOCK(_pSdlSurfaceDisplay)) SDL_LockSurface(_pSdlSurfaceDisplay);
+        CON_Init(_pSdlSurfaceDisplay->pixels, 20, 20, _pSdlSurfaceDisplay->w, _pSdlSurfaceDisplay->h, 
+        _pSdlSurfaceDisplay->w * VI_DISPLAY_PIX_SZ);
+        std::cout << "\x1b[2;0H";
+        if (SDL_MUSTLOCK(_pSdlSurfaceDisplay)) SDL_UnlockSurface(_pSdlSurfaceDisplay);
+	#endif
 
     _apPlayer.push_back(new Human());   // Create the main human player
     SDL_JoystickEventState(SDL_ENABLE);

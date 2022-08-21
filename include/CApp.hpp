@@ -66,8 +66,6 @@ class CApp : public CEvent
          */
         void Reset() noexcept;
 
-        virtual void OnLButtonDown(int32_t iMouseX, int32_t iMouseY);
-
         /**
          * @brief Handles all input events
          * @param pSdlEvent a pointer to an event that was triggered
@@ -77,15 +75,15 @@ class CApp : public CEvent
         /**
          * @brief Handles mouse/IR movement events
          * 
-         * @param iMouseX the X coordinate of the mouse
-         * @param iMouseY the Y coordinate of the mouse
-         * @param iRelX the relative motion in the X direction
-         * @param iRelY the relative motion in the Y direction
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         * @param rRelX the relative motion in the X direction
+         * @param rRelY the relative motion in the Y direction
          * @param bLeft the current state of the left mouse button
          * @param bRight the current state of the right mouse button
          * @param bMiddle the current state of the middle mouse button
          */
-        virtual void OnMouseMove(int32_t iMouseX, int32_t iMouseY, int32_t iRelX, int32_t iRelY,
+        virtual void OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
             bool bLeft, bool bRight, bool bMiddle) noexcept;
 
         /**
@@ -136,6 +134,8 @@ class CApp : public CEvent
          * @param pData2 a user-defined data pointer
          */
         virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept;
+
+        virtual void OnLButtonDown(int32_t iMouseX, int32_t iMouseY);
 
     private:
         static CApp* _SpCAppInstance;   /**< The singleton instance of the application */
