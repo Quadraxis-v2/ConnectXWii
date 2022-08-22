@@ -24,7 +24,8 @@ CApp* CApp::getInstance()
 CApp::CApp() noexcept : CEvent{}, _bRunning{true},  _EcurrentState{State_t::STATE_START},
     _pSdlSurfaceDisplay{nullptr}, _pSdlSurfaceStart{nullptr}, _pSdlSurfaceGrid{nullptr},
     _pSdlSurfaceRed{nullptr}, _pSdlSurfaceYellow{nullptr}, _pSdlSurfaceWinRed{nullptr},
-    _pSdlSurfaceWinYellow{nullptr}, _EplayerMarkCurrent{Grid::PlayerMark::GRID_TYPE_NONE}
+    _pSdlSurfaceWinYellow{nullptr}, _grid{}, _EplayerMarkCurrent{Grid::PlayerMark::GRID_TYPE_NONE},
+    _apPlayer{}, _yPlayColumn{0}
 {}
 
 

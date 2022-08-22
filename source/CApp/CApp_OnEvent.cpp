@@ -14,40 +14,6 @@
 void CApp::OnEvent(SDL_Event* pSdlEvent) noexcept { CEvent::OnEvent(pSdlEvent); }
 
 
-void CApp::OnLButtonDown(int32_t iMouseX, int32_t iMouseY)
-{
-    switch (_EcurrentState)
-    {
-        case State_t::STATE_START:
-        {
-            _EcurrentState = State_t::STATE_INGAME;
-
-            break;
-        }
-        case State_t::STATE_INGAME:
-        {
-            int32_t iColumn = iMouseX / (_pSdlSurfaceDisplay->w / Grid::SCuyWidth);
-
-            if (_grid.isValidPlay(iColumn))
-            {
-                _grid.makePlay(_EplayerMarkCurrent, iColumn);
-                if (_grid.checkWinner() == Grid::PlayerMark::GRID_TYPE_NONE)
-                    _EplayerMarkCurrent = Grid::nextPlayer(_EplayerMarkCurrent);
-                else _EcurrentState = State_t::STATE_WIN;
-            }
-
-            break;
-        }
-        case State_t::STATE_WIN:
-        {
-            Reset();
-
-            break;
-        }
-    }
-}
-
-
 /**
  * @brief Handles mouse/IR movement events
  * 
@@ -60,7 +26,16 @@ void CApp::OnLButtonDown(int32_t iMouseX, int32_t iMouseY)
  * @param bMiddle the current state of the middle mouse button
  */
 void CApp::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
-    bool bLeft, bool bRight, bool bMiddle) noexcept {}
+    bool bLeft, bool bRight, bool bMiddle) noexcept
+{
+    switch (_EcurrentState)
+    {
+        case State_t::STATE_INGAME:
+            _yPlayColumn = urMouseX / (_pSdlSurfaceDisplay->w / Grid::SCuyWidth);
+            break;
+        default: break;
+    }
+}
 
 
 /**
@@ -126,16 +101,9 @@ void CApp::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 {
                     case 0: // Button A
                     {
-                        // Get the position of the main Wiimote's IR
-                        int32_t iMouseX = 0, iMouseY = 0;
-                        SDL_GetMouseState(&iMouseX, &iMouseY);
-
-                        // Get the index of the column that was clicked
-                        int32_t iColumn = iMouseX / (_pSdlSurfaceDisplay->w / Grid::SCuyWidth);
-
-                        if (_grid.isValidPlay(iColumn)) // Make the play if it's valid and check if it won the game
+                        if (_grid.isValidPlay(_yPlayColumn)) // Make the play if it's valid and check if it won the game
                         {
-                            _grid.makePlay(_EplayerMarkCurrent, iColumn);
+                            _grid.makePlay(_EplayerMarkCurrent, _yPlayColumn);
 
                             // If the game is not won switch to the next player
                             if (_grid.checkWinner() == Grid::PlayerMark::GRID_TYPE_NONE)
@@ -197,7 +165,38 @@ void CApp::OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) noexcept {}
  * @param uyHat the joystick hat index
  * @param uyValue the hat value
  */
-void CApp::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept {}
+void CApp::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept 
+{
+    switch (_EcurrentState)
+    {
+        case State_t::STATE_INGAME:
+        {
+            //if (_apPlayer.at(uyWhich)->getPlayerMark() == _EplayerMarkCurrent)
+            {
+                switch (uyValue)
+                {
+                    case SDL_HAT_LEFT:
+                        _yPlayColumn--;
+                        if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
+                        SDL_WarpMouse(_yPlayColumn * (_pSdlSurfaceDisplay->w / Grid::SCuyWidth),
+                            _grid.getNextCell(_yPlayColumn) * 
+                            (_pSdlSurfaceDisplay->h / Grid::SCuyHeight));
+                        break;
+                    case SDL_HAT_RIGHT:
+                        _yPlayColumn++;
+                        if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
+                        SDL_WarpMouse(_yPlayColumn * (_pSdlSurfaceDisplay->w / Grid::SCuyWidth),
+                            _grid.getNextCell(_yPlayColumn) * 
+                            (_pSdlSurfaceDisplay->h / Grid::SCuyHeight));
+                        break;
+                    default: break;
+                }
+            }
+            break;
+        }
+        default: break;
+    }
+}
 
 
 /**
@@ -215,3 +214,73 @@ void CApp::OnExit() noexcept { _bRunning = false; }
  * @param pData2 a user-defined data pointer
  */
 void CApp::OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept {}
+
+
+/* PC testing functions */
+void CApp::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
+{
+    switch (_EcurrentState)
+    {
+        case State_t::STATE_START:
+        {
+            _EcurrentState = State_t::STATE_INGAME;
+            _EplayerMarkCurrent = Grid::PlayerMark::GRID_TYPE_RED;
+
+            break;
+        }
+        case State_t::STATE_INGAME:
+        {
+            uint8_t uyColumn = urMouseX / (_pSdlSurfaceDisplay->w / Grid::SCuyWidth);
+
+            if (_grid.isValidPlay(uyColumn))
+            {
+                _grid.makePlay(_EplayerMarkCurrent, uyColumn);
+                if (_grid.checkWinner() == Grid::PlayerMark::GRID_TYPE_NONE)
+                    _EplayerMarkCurrent = Grid::nextPlayer(_EplayerMarkCurrent);
+                else _EcurrentState = State_t::STATE_WIN;
+            }
+
+            break;
+        }
+        case State_t::STATE_WIN:
+        {
+            Reset();
+
+            break;
+        }
+    }
+}
+
+
+void CApp::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
+{
+    switch (_EcurrentState)
+    {
+        case State_t::STATE_INGAME:
+        {
+            //if (_apPlayer.at(uyWhich)->getPlayerMark() == _EplayerMarkCurrent)
+            {
+                switch (sdlKeySymbol)
+                {
+                    case SDLK_LEFT:
+                        _yPlayColumn--;
+                        if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
+                        SDL_WarpMouse(_yPlayColumn * (_pSdlSurfaceDisplay->w / Grid::SCuyWidth),
+                            _grid.getNextCell(_yPlayColumn) * 
+                            (_pSdlSurfaceDisplay->h / Grid::SCuyHeight));
+                        break;
+                    case SDLK_RIGHT:
+                        _yPlayColumn++;
+                        if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
+                        SDL_WarpMouse(_yPlayColumn * (_pSdlSurfaceDisplay->w / Grid::SCuyWidth),
+                            _grid.getNextCell(_yPlayColumn) * 
+                            (_pSdlSurfaceDisplay->h / Grid::SCuyHeight));
+                        break;
+                    default: break;
+                }
+            }
+            break;
+        }
+        default: break;
+    }
+}

@@ -35,7 +35,7 @@ class Grid
          */
         static PlayerMark nextPlayer(const PlayerMark& CEplayerMark) noexcept;
 
-        const std::vector<PlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracker operator */
+        const std::vector<PlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
 
         /**
          * @brief Makes a play in the grid

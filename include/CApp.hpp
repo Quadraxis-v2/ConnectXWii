@@ -135,7 +135,8 @@ class CApp : public CEvent
          */
         virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept;
 
-        virtual void OnLButtonDown(int32_t iMouseX, int32_t iMouseY);
+        virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+        virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
 
     private:
         static CApp* _SpCAppInstance;   /**< The singleton instance of the application */
@@ -154,6 +155,7 @@ class CApp : public CEvent
         Grid _grid;                             /**< Main playing grid */
         Grid::PlayerMark _EplayerMarkCurrent;   /**< The current player that has to make a play */
         std::vector<Player*> _apPlayer;         /**< The current players in the game */
+        int8_t _yPlayColumn;
 
         /**
          * @brief Default constructor

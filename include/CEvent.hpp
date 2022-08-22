@@ -80,7 +80,8 @@ class CEvent
          */
         virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) = 0;
 
-        virtual void OnLButtonDown(int32_t urMouseX, int32_t urMouseY) = 0;
+        virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY) = 0;
+        virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) = 0;
 
 };
 

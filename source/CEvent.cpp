@@ -48,6 +48,10 @@ void CEvent::OnEvent(SDL_Event* pSdlEvent)
         case SDL_MOUSEBUTTONDOWN:
             OnLButtonDown(pSdlEvent->button.x, pSdlEvent->button.y);
             break;
+        case SDL_KEYDOWN:
+            OnKeyDown(pSdlEvent->key.keysym.sym, pSdlEvent->key.keysym.mod, 
+                pSdlEvent->key.keysym.unicode);
+            break;
         default:    // User-defined events
         {
             OnUser(pSdlEvent->user.type, pSdlEvent->user.code, pSdlEvent->user.data1,

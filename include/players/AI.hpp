@@ -24,7 +24,7 @@ class AI : public Player
         int32_t ab_maxValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark, int32_t iDepth, 
             int32_t iAlpha, int32_t iBeta) const noexcept;
         int32_t heuristic(const Grid& Cgrid) const noexcept;
-        uint8_t playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const noexcept;
+        int8_t playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const;
 };
 
 

@@ -40,14 +40,14 @@ void CApp::OnInit()
 
         // Initialise console
         if (SDL_MUSTLOCK(_pSdlSurfaceDisplay)) SDL_LockSurface(_pSdlSurfaceDisplay);
-        CON_Init(_pSdlSurfaceDisplay->pixels, 20, 20, _pSdlSurfaceDisplay->w, _pSdlSurfaceDisplay->h, 
+        CON_Init(_pSdlSurfaceDisplay->pixels, 20, 20, _pSdlSurfaceDisplay->w, _pSdlSurfaceDisplay->h,
         _pSdlSurfaceDisplay->w * VI_DISPLAY_PIX_SZ);
         std::cout << "\x1b[2;0H";
         if (SDL_MUSTLOCK(_pSdlSurfaceDisplay)) SDL_UnlockSurface(_pSdlSurfaceDisplay);
-	#endif
 
-    _apPlayer.push_back(new Human());   // Create the main human player
-    SDL_JoystickEventState(SDL_ENABLE);
+        _apPlayer.push_back(new Human());   // Create the main human player
+        SDL_JoystickEventState(SDL_ENABLE);
+	#endif
 
     // Retrieve resources from the filesystem
     try

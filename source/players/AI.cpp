@@ -1,6 +1,7 @@
 #include <climits>
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 #include "../../include/players/AI.hpp"
 #include "../../include/players/Player.hpp"
 #include "../../include/Grid.hpp"
@@ -27,8 +28,7 @@ void AI::ab_pruning(Grid& grid) const noexcept
         }
     }
 
-    if (grid.isValidPlay(iBestPlay)) 
-        grid.makePlay(__EplayerMark, iBestPlay);
+    if (grid.isValidPlay(iBestPlay)) grid.makePlay(__EplayerMark, iBestPlay);
 }
 
 
@@ -222,8 +222,14 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
 }
 
 
-uint8_t AI::playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const noexcept
+int8_t AI::playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const
 {
-    if (Cgrid[uyRow][uyColumn] == __EplayerMark) return 1;
-    else return - 1;
+    if (uyRow >= Grid::SCuyHeight || uyColumn >= Grid::SCuyWidth)
+        throw std::out_of_range("Out of the grid range");
+
+    const Grid::PlayerMark CEplayerMarkCell = Cgrid[uyRow][uyColumn];
+    
+    if (CEplayerMarkCell == __EplayerMark) return 1;
+    else if (CEplayerMarkCell == Grid::PlayerMark::GRID_TYPE_NONE) return 0;
+    else return -1;
 }
