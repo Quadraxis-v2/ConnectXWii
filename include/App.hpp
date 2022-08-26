@@ -1,12 +1,14 @@
-#ifndef _CAPP_HPP_
-#define _CAPP_HPP_
+#ifndef _App_HPP_
+#define _App_HPP_
 
 #include <cstdint>
 #include <vector>
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
-#include "CEvent.hpp"
+#include "EventListener.hpp"
+#include "EventManager.hpp"
+#include "Surface.hpp"
 #include "Grid.hpp"
 #include "players/Player.hpp"
 
@@ -15,31 +17,54 @@
  * @brief Main application class
  * Uses the singleton pattern
  */
-class CApp : public CEvent
+class App : public EventListener
 {
     public:
-        enum State_t {STATE_START, STATE_INGAME, STATE_WIN};    /**< Application states for the state machine */
+        enum EState {STATE_START, STATE_INGAME, STATE_WIN};    /**< Application states for the state machine */
 
         static const uint16_t SCurWindowWidth = 640;    /**< Fixed width of the application */
         static const uint16_t SCurWindowHeight = 480;   /**< Fixed height of the application */
 
         /**
          * @brief Creates a singleton instance if it does not exist and gets it
-         * @return CApp* A pointer to the Singleton instance of the application
+         * @return App* A pointer to the Singleton instance of the application
          */
-        static CApp* getInstance();
+        static App* getInstance();
 
         /* Constructors and assignment operators are deleted so no more than one instance of the class 
             is present */
-        CApp(const CApp& CCAppOther) = delete;
-        CApp(CApp&& CAppOther) = delete;
-        CApp& operator =(const CApp& CCAppOther) = delete;
-        CApp&& operator=(CApp&& CAppOther) = delete;
+        App(const App& CAppOther) = delete;
+        App(App&& AppOther) = delete;
+        App& operator =(const App& CAppOther) = delete;
+        App&& operator=(App&& AppOther) = delete;
 
         /**
          * @brief Starts the application and handles general processing
          */
         void OnExecute();
+
+    private:
+        static App* _SpAppInstance;   /**< The singleton instance of the application */
+
+        bool _bRunning;         /**< Marks whether the application should continue running */
+        EventManager _eventManager;
+        EState _eStateCurrent; /**< The current state of the application for the state machine */
+
+        Surface _surfaceDisplay;   /**< The main display surface */
+        Surface _surfaceStart;     /**< Picture for the start screen */
+        Surface _surfaceGrid;      /**< Picture of the grid */
+        Surface _surfaceRed;       /**< Picture of the red marker for the grid */
+        Surface _surfaceYellow;    /**< Picture of the yellow marker for the grid */
+        Surface _surfaceWinRed;    /**< Picture for the winning screen when red wins */
+        Surface _surfaceWinYellow; /**< Picture for the winning screen when yellow wins */
+
+        Grid _grid;                             /**< Main playing grid */
+        Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
+        std::vector<Player*> _apPlayer;         /**< The current players in the game */
+        int8_t _yPlayColumn;
+
+
+        App() noexcept;    /**< Default constructor */
 
         /**
          * @brief Handles the initial loading of data
@@ -66,11 +91,21 @@ class CApp : public CEvent
          */
         void Reset() noexcept;
 
-        /**
-         * @brief Handles all input events
-         * @param pSdlEvent a pointer to an event that was triggered
-         */
-        virtual void OnEvent(SDL_Event* pSdlEvent) noexcept;
+        virtual void OnMouseFocus();
+ 
+        virtual void OnMouseBlur();
+
+        virtual void OnInputFocus();
+ 
+        virtual void OnInputBlur();
+
+        virtual void OnRestore();
+
+        virtual void OnMinimize();
+ 
+        virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
+ 
+        virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
 
         /**
          * @brief Handles mouse/IR movement events
@@ -86,6 +121,20 @@ class CApp : public CEvent
         virtual void OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
             bool bLeft, bool bRight, bool bMiddle) noexcept;
 
+        virtual void OnMouseWheel(bool Up, bool Down);
+ 
+        virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+ 
+        virtual void OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+ 
+        virtual void OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+
+        virtual void OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+
+        virtual void OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+ 
+        virtual void OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+
         /**
          * @brief Handles joystick axis events
          * 
@@ -94,6 +143,8 @@ class CApp : public CEvent
          * @param rValue the axis value
          */
         virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept;
+
+        virtual void OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t rRelativeY);
 
         /**
          * @brief Handles joystick button presses events
@@ -125,6 +176,10 @@ class CApp : public CEvent
          */
         virtual void OnExit() noexcept;
 
+        virtual void OnResize(int32_t iWidth, int32_t iHeight);
+ 
+        virtual void OnExpose();
+
         /**
          * @brief Handles user-defined events
          * 
@@ -134,33 +189,6 @@ class CApp : public CEvent
          * @param pData2 a user-defined data pointer
          */
         virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept;
-
-        virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
-        virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
-
-    private:
-        static CApp* _SpCAppInstance;   /**< The singleton instance of the application */
-
-        bool _bRunning;         /**< Marks whether the application should continue running */
-        State_t _EcurrentState; /**< The current state of the application for the state machine */
-
-        SDL_Surface* _pSdlSurfaceDisplay;   /**< The main display surface */
-        SDL_Surface* _pSdlSurfaceStart;     /**< Picture for the start screen */
-        SDL_Surface* _pSdlSurfaceGrid;      /**< Picture of the grid */
-        SDL_Surface* _pSdlSurfaceRed;       /**< Picture of the red marker for the grid */
-        SDL_Surface* _pSdlSurfaceYellow;    /**< Picture of the yellow marker for the grid */
-        SDL_Surface* _pSdlSurfaceWinRed;    /**< Picture for the winning screen when red wins */
-        SDL_Surface* _pSdlSurfaceWinYellow; /**< Picture for the winning screen when yellow wins */
-
-        Grid _grid;                             /**< Main playing grid */
-        Grid::PlayerMark _EplayerMarkCurrent;   /**< The current player that has to make a play */
-        std::vector<Player*> _apPlayer;         /**< The current players in the game */
-        int8_t _yPlayColumn;
-
-        /**
-         * @brief Default constructor
-         */
-        CApp() noexcept;
 
 };
 

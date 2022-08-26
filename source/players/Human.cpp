@@ -7,7 +7,7 @@
 #include "../../include/Grid.hpp"
 
 
-Human::Human(const Grid::PlayerMark& CEplayerMark) : Player{CEplayerMark}, _pWiiController{nullptr}, 
+Human::Human(const Grid::EPlayerMark& CePlayerMark) : Player{CePlayerMark}, _pWiiController{nullptr}, 
     _pGameCubeController{nullptr}
 {
     uint8_t uyIndex = 0;

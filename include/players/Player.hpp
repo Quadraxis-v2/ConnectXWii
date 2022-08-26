@@ -7,23 +7,23 @@
 class Player
 {
     public:
-        Grid::PlayerMark getPlayerMark() const noexcept;
-        void setPlayerMark(const Grid::PlayerMark& CEplayerMark) noexcept;
+        Grid::EPlayerMark getPlayerMark() const noexcept;
+        void setPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept;
 
-        explicit Player(const Grid::PlayerMark& CEplayerMark = Grid::PlayerMark::GRID_TYPE_NONE) noexcept;
+        explicit Player(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
         virtual ~Player() noexcept = default;
 
     protected:
-        Grid::PlayerMark __EplayerMark;
+        Grid::EPlayerMark __ePlayerMark;
 
 };
 
 
-inline Grid::PlayerMark Player::getPlayerMark() const noexcept { return __EplayerMark; }
-inline void Player::setPlayerMark(const Grid::PlayerMark& CEplayerMark) noexcept 
-{ __EplayerMark = CEplayerMark; }
+inline Grid::EPlayerMark Player::getPlayerMark() const noexcept { return __ePlayerMark; }
+inline void Player::setPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept 
+{ __ePlayerMark = CePlayerMark; }
 
-inline Player::Player(const Grid::PlayerMark& CEplayerMark) noexcept : __EplayerMark{CEplayerMark} {}
+inline Player::Player(const Grid::EPlayerMark& CePlayerMark) noexcept : __ePlayerMark{CePlayerMark} {}
 
 
 #endif

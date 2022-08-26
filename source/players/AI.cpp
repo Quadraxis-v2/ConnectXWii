@@ -1,10 +1,14 @@
+#include <cstdint>
 #include <climits>
 #include <algorithm>
-#include <cstdint>
 #include <stdexcept>
 #include "../../include/players/AI.hpp"
 #include "../../include/players/Player.hpp"
 #include "../../include/Grid.hpp"
+
+
+AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : Player{CePlayerMark}, 
+    _uySearchLimit{uySearchLimit} {}
 
 
 void AI::ab_pruning(Grid& grid) const noexcept
@@ -16,8 +20,8 @@ void AI::ab_pruning(Grid& grid) const noexcept
         if (grid.isValidPlay(i))
         {
             Grid gridAttempt = grid;
-            gridAttempt.makePlay(__EplayerMark, i);
-            iMinimaxValue = ab_minValue(gridAttempt, Grid::nextPlayer(__EplayerMark), iDepth + 1, 
+            gridAttempt.makePlay(__ePlayerMark, i);
+            iMinimaxValue = ab_minValue(gridAttempt, Grid::nextPlayer(__ePlayerMark), iDepth + 1, 
                 iAlpha, iBeta);
 
             if (iMinimaxValue > iAlpha)
@@ -28,16 +32,16 @@ void AI::ab_pruning(Grid& grid) const noexcept
         }
     }
 
-    if (grid.isValidPlay(iBestPlay)) grid.makePlay(__EplayerMark, iBestPlay);
+    if (grid.isValidPlay(iBestPlay)) grid.makePlay(__ePlayerMark, iBestPlay);
 }
 
 
-int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark, int32_t iDepth, 
+int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
     int32_t yWinner = Cgrid.checkWinner();
 
-    if (yWinner != Grid::PlayerMark::GRID_TYPE_NONE) return yWinner;
+    if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
     else if (iDepth == _uySearchLimit) return heuristic(Cgrid);
     else
     {
@@ -46,8 +50,8 @@ int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark,
             if (Cgrid.isValidPlay(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.makePlay(CEplayerMark, i);
-                iBeta = std::min(iBeta, ab_maxValue(gridAttempt, Grid::nextPlayer(CEplayerMark), 
+                gridAttempt.makePlay(CePlayerMark, i);
+                iBeta = std::min(iBeta, ab_maxValue(gridAttempt, Grid::nextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
         }
@@ -56,12 +60,12 @@ int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark,
 }
 
 
-int32_t AI::ab_maxValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark, int32_t iDepth, 
+int32_t AI::ab_maxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
     int32_t yWinner = Cgrid.checkWinner();
 
-    if (yWinner != Grid::PlayerMark::GRID_TYPE_NONE) return yWinner;
+    if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
     else if (iDepth == _uySearchLimit) return heuristic(Cgrid);
     else
     {
@@ -70,8 +74,8 @@ int32_t AI::ab_maxValue(const Grid& Cgrid, const Grid::PlayerMark& CEplayerMark,
             if (Cgrid.isValidPlay(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.makePlay(CEplayerMark, i);
-                iAlpha = std::max(iAlpha, ab_minValue(gridAttempt, Grid::nextPlayer(CEplayerMark), 
+                gridAttempt.makePlay(CePlayerMark, i);
+                iAlpha = std::max(iAlpha, ab_minValue(gridAttempt, Grid::nextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
         }
@@ -88,7 +92,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
     {
         for (uint8_t j = 0; j < Grid::SCuyWidth; j++)
         {
-            if (Cgrid[i][j] != Grid::PlayerMark::GRID_TYPE_NONE)
+            if (Cgrid[i][j] != Grid::EPlayerMark::GRID_TYPE_NONE)
             {
                 // Vertical up check
                 if (i >= Grid::SCuyNumberToMatch && 
@@ -96,7 +100,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                 {
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && (Cgrid[i - uyOffset][j] == Cgrid[i][j] ||
-                        Cgrid[i - uyOffset][j] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i - uyOffset][j] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i - uyOffset][j] == Cgrid[i][j]) uyCounter++;
                         uyOffset++;
@@ -111,7 +115,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                 {
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && (Cgrid[i + uyOffset][j] == Cgrid[i][j] ||
-                        Cgrid[i + uyOffset][j] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i + uyOffset][j] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i + uyOffset][j] == Cgrid[i][j]) uyCounter++;
                         uyOffset++;
@@ -126,7 +130,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                 {
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && (Cgrid[i][j - uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i][j - uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i][j - uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j - uyOffset] == Cgrid[i][j]) uyCounter++;
                         uyOffset++;
@@ -141,7 +145,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                 {
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && (Cgrid[i][j + uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i][j + uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i][j + uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j] == Cgrid[i][j + uyOffset]) uyCounter++;
                         uyOffset++;
@@ -157,7 +161,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && 
                         (Cgrid[i + uyOffset][j + uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i + uyOffset][j + uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i + uyOffset][j + uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j] == Cgrid[i + uyOffset][j + uyOffset]) uyCounter++;
                         uyOffset++;
@@ -173,7 +177,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && 
                         (Cgrid[i + uyOffset][j - uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i + uyOffset][j - uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i + uyOffset][j - uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j] == Cgrid[i + uyOffset][j - uyOffset]) uyCounter++;
                         uyOffset++;
@@ -190,7 +194,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && 
                         (Cgrid[i - uyOffset][j - uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i - uyOffset][j - uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i - uyOffset][j - uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j] == Cgrid[i - uyOffset][j - uyOffset]) uyCounter++;
                         uyOffset++;
@@ -206,7 +210,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                 {
                     uint8_t uyOffset = 1, uyCounter = 1;
                     while (uyCounter < Grid::SCuyNumberToMatch && (Cgrid[i + uyOffset][j + uyOffset] == Cgrid[i][j] ||
-                        Cgrid[i + uyOffset][j + uyOffset] == Grid::PlayerMark::GRID_TYPE_NONE))
+                        Cgrid[i + uyOffset][j + uyOffset] == Grid::EPlayerMark::GRID_TYPE_NONE))
                     {
                         if (Cgrid[i][j] == Cgrid[i + uyOffset][j + uyOffset]) uyCounter++;
                         uyOffset++;
@@ -227,9 +231,9 @@ int8_t AI::playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColu
     if (uyRow >= Grid::SCuyHeight || uyColumn >= Grid::SCuyWidth)
         throw std::out_of_range("Out of the grid range");
 
-    const Grid::PlayerMark CEplayerMarkCell = Cgrid[uyRow][uyColumn];
+    const Grid::EPlayerMark CePlayerMarkCell = Cgrid[uyRow][uyColumn];
     
-    if (CEplayerMarkCell == __EplayerMark) return 1;
-    else if (CEplayerMarkCell == Grid::PlayerMark::GRID_TYPE_NONE) return 0;
+    if (CePlayerMarkCell == __ePlayerMark) return 1;
+    else if (CePlayerMarkCell == Grid::EPlayerMark::GRID_TYPE_NONE) return 0;
     else return -1;
 }

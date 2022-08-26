@@ -1,18 +1,10 @@
-#include <SDL.h>
-#include <SDL_image.h>
-
-#include "../include/CApp.hpp"
+#include "../include/App.hpp"
 
 
 int main(int argc, char** argv)
 {
-	CApp* pCApp = CApp::getInstance();
-	pCApp->OnExecute();
-	
-	/*while (true)
-    {
-		//state_in_game();
-    }*/
+	App* pApp = App::getInstance();
+	pApp->OnExecute();
 
 	return 0;
 }
