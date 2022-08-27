@@ -11,14 +11,14 @@ class Joystick
         explicit Joystick(int32_t yIndex);
         virtual ~Joystick() noexcept;
 
-        int32_t getIndex() const noexcept;
-        int16_t getLeftStickHorizontal() const noexcept;
-        int16_t getLeftStickVertical() const noexcept;
-        int16_t getRightStickHorizontal() const noexcept;
-        int16_t getRightStickVertical() const noexcept;
-        uint8_t getDPadState() const noexcept;
-        uint8_t getButtonA() const noexcept;
-        uint8_t getButtonB() const noexcept;
+        int32_t GetIndex() const noexcept;
+        int16_t GetLeftStickHorizontal() const noexcept;
+        int16_t GetLeftStickVertical() const noexcept;
+        int16_t GetRightStickHorizontal() const noexcept;
+        int16_t GetRightStickVertical() const noexcept;
+        uint8_t GetDPadState() const noexcept;
+        bool GetButtonA() const noexcept;
+        bool GetButtonB() const noexcept;
 
     protected:
         SDL_Joystick* __pSdlJoystick;
@@ -26,21 +26,21 @@ class Joystick
 };
 
 
-inline int32_t Joystick::getIndex() const noexcept
+inline int32_t Joystick::GetIndex() const noexcept
 { return SDL_JoystickIndex(__pSdlJoystick); }
-inline int16_t Joystick::getLeftStickHorizontal() const noexcept 
+inline int16_t Joystick::GetLeftStickHorizontal() const noexcept 
 { return SDL_JoystickGetAxis(__pSdlJoystick, 0); }
-inline int16_t Joystick::getLeftStickVertical() const noexcept
+inline int16_t Joystick::GetLeftStickVertical() const noexcept
 { return SDL_JoystickGetAxis(__pSdlJoystick, 1); }
-inline int16_t Joystick::getRightStickHorizontal() const noexcept
+inline int16_t Joystick::GetRightStickHorizontal() const noexcept
 { return SDL_JoystickGetAxis(__pSdlJoystick, 2); }
-inline int16_t Joystick::getRightStickVertical() const noexcept
+inline int16_t Joystick::GetRightStickVertical() const noexcept
 { return SDL_JoystickGetAxis(__pSdlJoystick, 3); }
-inline uint8_t Joystick::getDPadState() const noexcept 
+inline uint8_t Joystick::GetDPadState() const noexcept 
 { return SDL_JoystickGetHat(__pSdlJoystick, 0); }
-inline uint8_t Joystick::getButtonA() const noexcept
+inline bool Joystick::GetButtonA() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 0); }
-inline uint8_t Joystick::getButtonB() const noexcept 
+inline bool Joystick::GetButtonB() const noexcept 
 { return SDL_JoystickGetButton(__pSdlJoystick, 1); }
 
 

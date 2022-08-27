@@ -2,7 +2,7 @@
 #define _App_HPP_
 
 #include <cstdint>
-#include <vector>
+#include <unordered_map>
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
@@ -17,7 +17,7 @@
  * @brief Main application class
  * Uses the singleton pattern
  */
-class App : public EventListener
+class App : public EventListener    // Receive events in this class
 {
     public:
         enum EState {STATE_START, STATE_INGAME, STATE_WIN};    /**< Application states for the state machine */
@@ -29,7 +29,8 @@ class App : public EventListener
          * @brief Creates a singleton instance if it does not exist and gets it
          * @return App* A pointer to the Singleton instance of the application
          */
-        static App* getInstance();
+        static App* GetInstance();
+
 
         /* Constructors and assignment operators are deleted so no more than one instance of the class 
             is present */
@@ -37,6 +38,7 @@ class App : public EventListener
         App(App&& AppOther) = delete;
         App& operator =(const App& CAppOther) = delete;
         App&& operator=(App&& AppOther) = delete;
+
 
         /**
          * @brief Starts the application and handles general processing
@@ -46,9 +48,9 @@ class App : public EventListener
     private:
         static App* _SpAppInstance;   /**< The singleton instance of the application */
 
-        bool _bRunning;         /**< Marks whether the application should continue running */
-        EventManager _eventManager;
-        EState _eStateCurrent; /**< The current state of the application for the state machine */
+        bool _bRunning;             /**< Marks whether the application should continue running */
+        EventManager _eventManager; /**< Manages and dispatches events to listeners */
+        EState _eStateCurrent;      /**< The current state of the application for the state machine */
 
         Surface _surfaceDisplay;   /**< The main display surface */
         Surface _surfaceStart;     /**< Picture for the start screen */
@@ -60,8 +62,8 @@ class App : public EventListener
 
         Grid _grid;                             /**< Main playing grid */
         Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
-        std::vector<Player*> _apPlayer;         /**< The current players in the game */
-        int8_t _yPlayColumn;
+        std::unordered_map<Grid::EPlayerMark, Player*> _umapPlayers;    /**< The current players in the game */
+        int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
         App() noexcept;    /**< Default constructor */
@@ -91,20 +93,52 @@ class App : public EventListener
          */
         void Reset() noexcept;
 
+        /**
+         * @brief Handles events where the mouse enters the application window
+         */
         virtual void OnMouseFocus();
  
+        /**
+         * @brief Handles events where the mouse exits the application window
+         */
         virtual void OnMouseBlur();
 
+        /**
+         * @brief Handles events where the application gains keyboard focus
+         */
         virtual void OnInputFocus();
- 
+
+        /**
+         * @brief Handles events where the application loses keyboard focus
+         */
         virtual void OnInputBlur();
 
+        /**
+         * @brief Handles events where the window is restored to its size
+         */
         virtual void OnRestore();
 
+        /**
+         * @brief Handles events where the window is minimized
+         */
         virtual void OnMinimize();
  
+        /**
+         * @brief Handles keyboard press events
+         * 
+         * @param sdlKeySymbol the key that was pressed
+         * @param sdlMod the current state of keyboard modifiers
+         * @param urUnicode the Unicode value of the pressed key
+         */
         virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
  
+        /**
+         * @brief Handles keyboard release events
+         * 
+         * @param sdlKeySymbol the key that was released
+         * @param sdlMod the current state of keyboard modifiers
+         * @param urUnicode the Unicode value of the released key
+         */
         virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
 
         /**
@@ -121,18 +155,60 @@ class App : public EventListener
         virtual void OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
             bool bLeft, bool bRight, bool bMiddle) noexcept;
 
-        virtual void OnMouseWheel(bool Up, bool Down);
+        /**
+         * @brief Handles mouse wheel movement events
+         * 
+         * @param bUp true if the mouse wheel is moving upwards
+         * @param bDown true if the mouse wheel is moving downwards
+         */
+        virtual void OnMouseWheel(bool bUp, bool bDown);
  
+        /**
+         * @brief Handles mouse left button press events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
  
+        /**
+         * @brief Handles mouse right button press events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY);
- 
+
+        /**
+         * @brief Handles mouse middle button press events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY);
 
+        /**
+         * @brief Handles mouse left button release events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY);
 
+        /**
+         * @brief Handles mouse right button release events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY);
  
+        /**
+         * @brief Handles mouse middle button release events
+         * 
+         * @param urMouseX the X coordinate of the mouse
+         * @param urMouseY the Y coordinate of the mouse
+         */
         virtual void OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY);
 
         /**
@@ -144,10 +220,18 @@ class App : public EventListener
          */
         virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept;
 
+        /**
+         * @brief Handles joystick trackball motion events
+         * 
+         * @param uyWhich the joystick device index
+         * @param uyBall the joystick ball index
+         * @param rRelativeX the relative motion in the X direction
+         * @param rRelativeY the relative motion in the Y direction
+         */
         virtual void OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t rRelativeY);
 
         /**
-         * @brief Handles joystick button presses events
+         * @brief Handles joystick button press events
          * 
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
@@ -155,7 +239,7 @@ class App : public EventListener
         virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept;
 
         /**
-         * @brief Handles joystick button releases events
+         * @brief Handles joystick button release events
          * 
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
@@ -176,8 +260,17 @@ class App : public EventListener
          */
         virtual void OnExit() noexcept;
 
+        /**
+         * @brief Handles window resize events
+         * 
+         * @param iWidth the new width of the window
+         * @param iHeight the new height of the window
+         */
         virtual void OnResize(int32_t iWidth, int32_t iHeight);
  
+        /**
+         * @brief Handles window redraw events
+         */
         virtual void OnExpose();
 
         /**

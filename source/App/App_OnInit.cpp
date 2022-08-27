@@ -1,5 +1,7 @@
 #include <cstdint>
 #include <stdexcept>
+#include <unordered_map>
+#include <utility>
 
 #include <SDL.h>
 #include <SDL_video.h>
@@ -15,6 +17,7 @@
 
 #include "../../include/App.hpp"
 #include "../../include/Surface.hpp"
+#include "../../include/players/Player.hpp"
 #include "../../include/players/Human.hpp"
 
 
@@ -23,6 +26,10 @@
  */
 void App::OnInit()
 {
+    #ifdef HW_RVL
+        fatInitDefault();   // SDL-wii needs to initialise libFAT first
+    #endif
+
     uint32_t uiInitFlags = SDL_INIT_EVERYTHING;
 
     #ifdef SDL_CDROM_DISABLED
@@ -45,9 +52,8 @@ void App::OnInit()
         std::cout << "\x1b[2;0H";
         if (bMustLock) SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
 
-        _apPlayer.push_back(new Human());   // Create the main human player
-
-        fatInitDefault();   // SDL-wii needs to initialise libFAT first
+        // Create the main human player
+        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_RED, new Human()));
 	#endif
 
     SDL_JoystickEventState(SDL_ENABLE);

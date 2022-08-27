@@ -7,6 +7,9 @@
 #include "../include/Surface.hpp"
 
 
+/**
+ * @brief Constructs a void surface
+ */
 Surface::Surface() noexcept : _pSdlSurface{nullptr} {}
 
 
@@ -29,6 +32,11 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
 }
 
 
+/**
+ * @brief Copy constructor
+ * 
+ * @param CsurfaceOther the surface to be copied
+ */
 Surface::Surface(const Surface& CsurfaceOther) : _pSdlSurface{nullptr}
 {
     if ((_pSdlSurface = SDL_ConvertSurface(CsurfaceOther._pSdlSurface,
@@ -37,10 +45,18 @@ Surface::Surface(const Surface& CsurfaceOther) : _pSdlSurface{nullptr}
 }
 
 
+/**
+ * @brief Movement constructor
+ * 
+ * @param surfaceOther the surface to be moved
+ */
 Surface::Surface(Surface&& surfaceOther) noexcept : _pSdlSurface{surfaceOther._pSdlSurface}
 { surfaceOther._pSdlSurface = nullptr; }
 
 
+/**
+ * @brief Destructor
+ */
 Surface::~Surface() noexcept
 {
     SDL_FreeSurface(_pSdlSurface);
@@ -48,6 +64,12 @@ Surface::~Surface() noexcept
 }
 
 
+/**
+ * @brief Assignment with copy operator
+ * 
+ * @param CsurfaceOther the surface to be assigned
+ * @return Surface& the copied surface
+ */
 Surface& Surface::operator =(const Surface& CsurfaceOther)
 {
     if (this != &CsurfaceOther)
@@ -61,6 +83,12 @@ Surface& Surface::operator =(const Surface& CsurfaceOther)
 }
 
 
+/**
+ * @brief Assignment with movement operator
+ * 
+ * @param surfaceOther the surface to be assigned
+ * @return Surface& the moved surface
+ */
 Surface& Surface::operator =(Surface&& surfaceOther) noexcept
 {
     if (this != &surfaceOther)
@@ -71,7 +99,6 @@ Surface& Surface::operator =(Surface&& surfaceOther) noexcept
     }
     return *this;
 }
-
 
 
 /**

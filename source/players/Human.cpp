@@ -11,8 +11,8 @@ Human::Human(const Grid::EPlayerMark& CePlayerMark) : Player{CePlayerMark}, _pWi
     _pGameCubeController{nullptr}
 {
     uint8_t uyIndex = 0;
-    while (uyIndex < Human::_SCuyMaxWiiJoysticks && uyIndex < SDL_NumJoysticks() && SDL_JoystickOpened(uyIndex))
-        uyIndex++;
+    while (uyIndex < Human::_SCuyMaxWiiJoysticks && uyIndex < SDL_NumJoysticks() && 
+        SDL_JoystickOpened(uyIndex)) uyIndex++;
 
     if (uyIndex == Human::_SCuyMaxWiiJoysticks || uyIndex == SDL_NumJoysticks())
         throw std::out_of_range("There are no joysticks available");

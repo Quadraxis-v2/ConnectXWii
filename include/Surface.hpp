@@ -11,17 +11,15 @@ class App;
 
 
 /**
- * @brief Class for handling operations with surfaces
+ * @brief Class for wrapping surfaces
  */
 class Surface 
 {
     public:
-        /* Getters */
-        int32_t getWidth() const noexcept;
-        int32_t getHeight() const noexcept;
-        uint16_t getPitch() const noexcept;
+        int32_t GetWidth() const noexcept;
+        int32_t GetHeight() const noexcept;
+        uint16_t GetPitch() const noexcept;
 
-        /* Constructors */
         Surface(const Surface& CsurfaceOther);  /**< Copy constructor */
         Surface(Surface&& surfaceOther) noexcept;   /**< Movement constructor */
 
@@ -64,18 +62,18 @@ class Surface
         void Transparent(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
 
     private:
-        SDL_Surface* _pSdlSurface;
+        SDL_Surface* _pSdlSurface;  /**< The raw surface */
 
-        friend class App;
+        friend class App;   /**< Needed for accessing the raw surface */
 
-        Surface() noexcept; /**< Constructs a null surface */
+        Surface() noexcept; /**< Constructs a void surface */
 
 };
 
 
-inline int32_t Surface::getWidth() const noexcept { return _pSdlSurface->w; }
-inline int32_t Surface::getHeight() const noexcept { return _pSdlSurface->h; }
-inline uint16_t Surface::getPitch() const noexcept { return _pSdlSurface->pitch; }
+inline int32_t Surface::GetWidth() const noexcept { return _pSdlSurface->w; }
+inline int32_t Surface::GetHeight() const noexcept { return _pSdlSurface->h; }
+inline uint16_t Surface::GetPitch() const noexcept { return _pSdlSurface->pitch; }
 
 
 #endif

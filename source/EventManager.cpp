@@ -5,12 +5,22 @@
 #include "../include/EventListener.hpp"
 
 
+/**
+ * @brief Attaches a listener to the event manager
+ * 
+ * @param pEventListener the event listener to be be attached
+ */
 void EventManager::AttachListener(EventListener* pEventListener) noexcept
-{ if (pEventListener) _usListeners.insert(pEventListener); }
+{ if (pEventListener) _usetListeners.insert(pEventListener); }
 
 
+/**
+ * @brief Detaches a listener from the event manager
+ * 
+ * @param pEventListener the evetn listener to be detached
+ */
 void EventManager::DetachListener(EventListener* pEventListener) noexcept
-{ if (pEventListener) _usListeners.erase(pEventListener); }
+{ if (pEventListener) _usetListeners.erase(pEventListener); }
 
 
 /**
@@ -19,56 +29,56 @@ void EventManager::DetachListener(EventListener* pEventListener) noexcept
  */
 void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
 {
-    switch(pSdlEvent->type)
+    switch(pSdlEvent->type) // Find the event type and send it to all listeners
     {
-        case SDL_ACTIVEEVENT: 
+        case SDL_ACTIVEEVENT:
         {
             if (pSdlEvent->active.state & SDL_APPMOUSEFOCUS)
             {
                 if (pSdlEvent->active.gain) 
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) (*i)->OnMouseFocus();
-                else for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                    i != _usListeners.end(); ++i) (*i)->OnMouseBlur();
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) (*i)->OnMouseFocus();
+                else for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                    i != _usetListeners.end(); ++i) (*i)->OnMouseBlur();
             }
             if (pSdlEvent->active.state & SDL_APPINPUTFOCUS)
             {
                 if (pSdlEvent->active.gain)
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) (*i)->OnInputFocus();
-                else for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                    i != _usListeners.end(); ++i) (*i)->OnInputBlur();
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) (*i)->OnInputFocus();
+                else for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                    i != _usetListeners.end(); ++i) (*i)->OnInputBlur();
             }
             if (pSdlEvent->active.state & SDL_APPACTIVE)
             {
                 if (pSdlEvent->active.gain)
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) (*i)->OnRestore();
-                else for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                    i != _usListeners.end(); ++i) (*i)->OnMinimize();
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) (*i)->OnRestore();
+                else for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                    i != _usetListeners.end(); ++i) (*i)->OnMinimize();
             }
             break;
         }
         case SDL_KEYDOWN: 
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnKeyDown(pSdlEvent->key.keysym.sym, pSdlEvent->key.keysym.mod, 
                     pSdlEvent->key.keysym.unicode);
             break;
         }
         case SDL_KEYUP: 
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnKeyUp(pSdlEvent->key.keysym.sym, pSdlEvent->key.keysym.mod, 
                     pSdlEvent->key.keysym.unicode);
             break;
         }
         case SDL_MOUSEMOTION:   // Wiimote IR moved
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnMouseMove(pSdlEvent->motion.x, pSdlEvent->motion.y, pSdlEvent->motion.xrel,
                     pSdlEvent->motion.yrel, (pSdlEvent->motion.state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0,
                     (pSdlEvent->motion.state & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0,
@@ -81,22 +91,22 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
             {
                 case SDL_BUTTON_LEFT: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnLButtonDown(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
                 case SDL_BUTTON_RIGHT: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnRButtonDown(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
                 case SDL_BUTTON_MIDDLE: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnMButtonDown(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
@@ -109,22 +119,22 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
             {
                 case SDL_BUTTON_LEFT: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnLButtonUp(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
                 case SDL_BUTTON_RIGHT: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnRButtonUp(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
                 case SDL_BUTTON_MIDDLE: 
                 {
-                    for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                        i != _usListeners.end(); ++i) 
+                    for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                        i != _usetListeners.end(); ++i) 
                         (*i)->OnMButtonUp(pSdlEvent->button.x, pSdlEvent->button.y);
                     break;
                 }
@@ -133,44 +143,44 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
         }
         case SDL_JOYAXISMOTION: // Controller stick or Wiimote gyroscope motion
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnJoyAxis(pSdlEvent->jaxis.which, pSdlEvent->jaxis.axis, pSdlEvent->jaxis.value);
             break;
         }
         case SDL_JOYBALLMOTION: 
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnJoyBall(pSdlEvent->jball.which, pSdlEvent->jball.ball, pSdlEvent->jball.xrel, 
                     pSdlEvent->jball.yrel);
             break;
         }
         case SDL_JOYBUTTONDOWN: // Controller button pressed
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnJoyButtonDown(pSdlEvent->jbutton.which, pSdlEvent->jbutton.button);
             break;
         }
         case SDL_JOYBUTTONUP:   // Controller button released
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnJoyButtonUp(pSdlEvent->jbutton.which, pSdlEvent->jbutton.button);
             break;
         }
         case SDL_JOYHATMOTION:  // Controller D-Pad position changed
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnJoyHat(pSdlEvent->jhat.which, pSdlEvent->jhat.hat, pSdlEvent->jhat.value);
             break;
         }
         case SDL_QUIT:  // User-requested quit
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) (*i)->OnExit();
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) (*i)->OnExit();
             break;
         }
         case SDL_SYSWMEVENT: 
@@ -180,20 +190,20 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
         }
         case SDL_VIDEORESIZE: 
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) (*i)->OnResize(pSdlEvent->resize.w, pSdlEvent->resize.h);
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) (*i)->OnResize(pSdlEvent->resize.w, pSdlEvent->resize.h);
             break;
         }
         case SDL_VIDEOEXPOSE: 
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) (*i)->OnExpose();
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) (*i)->OnExpose();
             break;
         }
         default:    // User-defined events
         {
-            for (std::unordered_set<EventListener*>::const_iterator i = _usListeners.begin(); 
-                i != _usListeners.end(); ++i) 
+            for (std::unordered_set<EventListener*>::const_iterator i = _usetListeners.begin(); 
+                i != _usetListeners.end(); ++i) 
                 (*i)->OnUser(pSdlEvent->user.type, pSdlEvent->user.code, pSdlEvent->user.data1,
                     pSdlEvent->user.data2);
             break;

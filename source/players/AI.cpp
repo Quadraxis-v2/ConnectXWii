@@ -11,17 +11,17 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : 
     _uySearchLimit{uySearchLimit} {}
 
 
-void AI::ab_pruning(Grid& grid) const noexcept
+void AI::AB_Pruning(Grid& grid) const noexcept
 {
     int32_t iAlpha = INT_MIN, iBeta = INT_MAX, iDepth = 1, iBestPlay = 0, iMinimaxValue = 0;
 
     for (uint8_t i = 0; i < Grid::SCuyWidth; i++)
     {
-        if (grid.isValidPlay(i))
+        if (grid.IsValidPlay(i))
         {
             Grid gridAttempt = grid;
-            gridAttempt.makePlay(__ePlayerMark, i);
-            iMinimaxValue = ab_minValue(gridAttempt, Grid::nextPlayer(__ePlayerMark), iDepth + 1, 
+            gridAttempt.MakePlay(__ePlayerMark, i);
+            iMinimaxValue = AB_MinValue(gridAttempt, Grid::NextPlayer(__ePlayerMark), iDepth + 1, 
                 iAlpha, iBeta);
 
             if (iMinimaxValue > iAlpha)
@@ -32,26 +32,26 @@ void AI::ab_pruning(Grid& grid) const noexcept
         }
     }
 
-    if (grid.isValidPlay(iBestPlay)) grid.makePlay(__ePlayerMark, iBestPlay);
+    if (grid.IsValidPlay(iBestPlay)) grid.MakePlay(__ePlayerMark, iBestPlay);
 }
 
 
-int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
+int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    int32_t yWinner = Cgrid.checkWinner();
+    int32_t yWinner = Cgrid.CheckWinner();
 
     if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
-    else if (iDepth == _uySearchLimit) return heuristic(Cgrid);
+    else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
         for (uint8_t i = 0; i < Grid::SCuyWidth && iAlpha < iBeta; i++)
         {
-            if (Cgrid.isValidPlay(i))
+            if (Cgrid.IsValidPlay(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.makePlay(CePlayerMark, i);
-                iBeta = std::min(iBeta, ab_maxValue(gridAttempt, Grid::nextPlayer(CePlayerMark), 
+                gridAttempt.MakePlay(CePlayerMark, i);
+                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, Grid::NextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
         }
@@ -60,22 +60,22 @@ int32_t AI::ab_minValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 }
 
 
-int32_t AI::ab_maxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
+int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    int32_t yWinner = Cgrid.checkWinner();
+    int32_t yWinner = Cgrid.CheckWinner();
 
     if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
-    else if (iDepth == _uySearchLimit) return heuristic(Cgrid);
+    else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
         for (uint8_t i = 0; i < Grid::SCuyWidth && iAlpha < iBeta; i++)
         {
-            if (Cgrid.isValidPlay(i))
+            if (Cgrid.IsValidPlay(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.makePlay(CePlayerMark, i);
-                iAlpha = std::max(iAlpha, ab_minValue(gridAttempt, Grid::nextPlayer(CePlayerMark), 
+                gridAttempt.MakePlay(CePlayerMark, i);
+                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, Grid::NextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
         }
@@ -84,7 +84,7 @@ int32_t AI::ab_maxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 }
 
 
-int32_t AI::heuristic(const Grid& Cgrid) const noexcept
+int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
     uint32_t uiHeuristic = 0;
 
@@ -107,7 +107,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Vertical down check
                 if (i <= Grid::SCuyHeight - Grid::SCuyNumberToMatch && 
@@ -122,7 +122,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Horizontal left check
                 if (j >= Grid::SCuyNumberToMatch && 
@@ -137,7 +137,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Horizontal right check
                 if (j <= Grid::SCuyWidth - Grid::SCuyNumberToMatch && 
@@ -152,7 +152,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Diagonal up right check
                 if (i >= Grid::SCuyNumberToMatch && j <= Grid::SCuyWidth - Grid::SCuyNumberToMatch &&
@@ -168,7 +168,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Diagonal down left check
                 if (i <= Grid::SCuyHeight - Grid::SCuyNumberToMatch && j >= Grid::SCuyNumberToMatch &&
@@ -184,7 +184,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Diagonal up left check
                 if (i >= Grid::SCuyNumberToMatch && j >= Grid::SCuyNumberToMatch &&
@@ -201,7 +201,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
                 // Diagonal down right check
                 if (i <= Grid::SCuyHeight - Grid::SCuyNumberToMatch && 
@@ -217,7 +217,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
                     }
 
                     if (uyCounter == Grid::SCuyNumberToMatch) return Cgrid[i][j];
-                    else uiHeuristic += (playerMark2Heuristic(Cgrid, i, j) * uyCounter);
+                    else uiHeuristic += (PlayerMark2Heuristic(Cgrid, i, j) * uyCounter);
                 }
             }
         }
@@ -226,7 +226,7 @@ int32_t AI::heuristic(const Grid& Cgrid) const noexcept
 }
 
 
-int8_t AI::playerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const
+int8_t AI::PlayerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const
 {
     if (uyRow >= Grid::SCuyHeight || uyColumn >= Grid::SCuyWidth)
         throw std::out_of_range("Out of the grid range");

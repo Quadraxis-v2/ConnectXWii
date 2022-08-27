@@ -1,33 +1,65 @@
 #include <cstdint>
-#include <vector>
+#include <unordered_map>
+#include <utility>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 #include "../../include/App.hpp"
 #include "../../include/Surface.hpp"
+#include "../../include/players/Player.hpp"
 #include "../../include/players/AI.hpp"
 #include "../../include/players/Human.hpp"
 
 
+/**
+ * @brief Handles events where the mouse enters the application window
+ */
 void App::OnMouseFocus() {}
- 
+
+
+/**
+ * @brief Handles events where the mouse exits the application window
+ */
 void App::OnMouseBlur() {}
 
+
+/**
+ * @brief Handles events where the application gains keyboard focus
+ */
 void App::OnInputFocus() {}
- 
+
+
+/**
+ * @brief Handles events where the application loses keyboard focus
+ */
 void App::OnInputBlur() {}
 
+
+/**
+ * @brief Handles events where the window is restored to its size
+ */
 void App::OnRestore() {}
 
+
+/**
+ * @brief Handles events where the window is minimized
+ */
 void App::OnMinimize() {}
 
 
+/**
+ * @brief Handles keyboard press events
+ * 
+ * @param sdlKeySymbol the key that was pressed
+ * @param sdlMod the current state of keyboard modifiers
+ * @param urUnicode the Unicode value of the pressed key
+ */
 void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
 {
     switch (_eStateCurrent)
     {
         case EState::STATE_INGAME:
         {
-            //if (_apPlayer.at(uyWhich)->getPlayerMark() == _ePlayerMarkCurrent)
+            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
             {
                 switch (sdlKeySymbol)
                 {
@@ -35,14 +67,14 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
                         _yPlayColumn--;
                         if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
                         SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.getNextCell(_yPlayColumn) * 
+                            _grid.GetNextCell(_yPlayColumn) *
                             (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
                         break;
                     case SDLK_RIGHT:
                         _yPlayColumn++;
                         if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
                         SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.getNextCell(_yPlayColumn) * 
+                            _grid.GetNextCell(_yPlayColumn) *
                             (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
                         break;
                     default: break;
@@ -53,14 +85,21 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
         default: break;
     }
 }
- 
 
+
+/**
+ * @brief Handles keyboard release events
+ * 
+ * @param sdlKeySymbol the key that was released
+ * @param sdlMod the current state of keyboard modifiers
+ * @param urUnicode the Unicode value of the released key
+ */
 void App::OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) {}
 
 
 /**
  * @brief Handles mouse/IR movement events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  * @param rRelX the relative motion in the X direction
@@ -74,7 +113,7 @@ void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_INGAME:
+        case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
             _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth);
             break;
         default: break;
@@ -82,9 +121,21 @@ void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16
 }
 
 
+/**
+ * @brief Handles mouse wheel movement events
+ * 
+ * @param bUp true if the mouse wheel is moving upwards
+ * @param bDown true if the mouse wheel is moving downwards
+ */
 void App::OnMouseWheel(bool Up, bool Down) {}
 
 
+/**
+ * @brief Handles mouse left button press events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
 void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
 {
     switch (_eStateCurrent)
@@ -100,11 +151,11 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
         {
             uint8_t uyColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth);
 
-            if (_grid.isValidPlay(uyColumn))
+            if (_grid.IsValidPlay(uyColumn))
             {
-                _grid.makePlay(_ePlayerMarkCurrent, uyColumn);
-                if (_grid.checkWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
-                    _ePlayerMarkCurrent = Grid::nextPlayer(_ePlayerMarkCurrent);
+                _grid.MakePlay(_ePlayerMarkCurrent, uyColumn);
+                if (_grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
+                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
                 else _eStateCurrent = EState::STATE_WIN;
             }
 
@@ -120,20 +171,54 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
 }
 
 
-void App::OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) {}
+/**
+ * @brief Handles mouse right button press events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
+void App::OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) { _bRunning = false; }
 
+
+/**
+ * @brief Handles mouse middle button press events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
 void App::OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY) {}
 
+
+/**
+ * @brief Handles mouse left button release events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
 void App::OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 
+
+/**
+ * @brief Handles mouse right button release events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
 void App::OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 
+
+/**
+ * @brief Handles mouse middle button release events
+ * 
+ * @param urMouseX the X coordinate of the mouse
+ * @param urMouseY the Y coordinate of the mouse
+ */
 void App::OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 
 
 /**
  * @brief Handles joystick axis events
- * 
+ *
  * @param uyWhich the joystick device index
  * @param uyAxis the joystick axis index
  * @param rValue the axis value
@@ -141,12 +226,20 @@ void App::OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 void App::OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept {}
 
 
+/**
+ * @brief Handles joystick trackball motion events
+ * 
+ * @param uyWhich the joystick device index
+ * @param uyBall the joystick ball index
+ * @param rRelativeX the relative motion in the X direction
+ * @param rRelativeY the relative motion in the Y direction
+ */
 void App::OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t rRelativeY) {}
 
 
 /**
  * @brief Handles joystick button presses events
- * 
+ *
  * @param uyWhich the joystick device index
  * @param uyButton the joystick button index
  */
@@ -169,16 +262,20 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                     {
                         _eStateCurrent = EState::STATE_INGAME; // Start the game
                         _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-                        _apPlayer.at(0)->setPlayerMark(Grid::EPlayerMark::GRID_TYPE_RED);
-                        _apPlayer.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW));    // Create an AI player
+
+                        // Create an AI player
+                        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                            new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW)));
                     }
                     else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
                         iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
                     {
                         _eStateCurrent = EState::STATE_INGAME; // Start the game
                         _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-                        _apPlayer.at(0)->setPlayerMark(Grid::EPlayerMark::GRID_TYPE_RED);
-                        _apPlayer.push_back(new Human(Grid::EPlayerMark::GRID_TYPE_YELLOW)); // Create another human player
+
+                        // Create another human player
+                        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                            new Human(Grid::EPlayerMark::GRID_TYPE_YELLOW))); 
                     }
 
                     break;
@@ -191,24 +288,26 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
         {
             // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
-            //if (_apPlayer.at(uyWhich)->getPlayerMark() == _ePlayerMarkCurrent)
+            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
             {
                 switch (uyButton)
                 {
                     case 0: // Button A
                     {
-                        if (_grid.isValidPlay(_yPlayColumn)) // Make the play if it's valid and check if it won the game
+                        if (_grid.IsValidPlay(_yPlayColumn)) // Make the play if it's valid and check if it won the game
                         {
-                            _grid.makePlay(_ePlayerMarkCurrent, _yPlayColumn);
+                            _grid.MakePlay(_ePlayerMarkCurrent, _yPlayColumn);
 
                             // If the game is not won switch to the next player
-                            if (_grid.checkWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
+                            if (_grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
                             {
-                                _ePlayerMarkCurrent = Grid::nextPlayer(_ePlayerMarkCurrent);
-                                if (AI* pAI = dynamic_cast<AI*>(_apPlayer.at(1)))   // AI's turn
+                                _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
+
+                                // AI's turn
+                                while (AI* pAI = dynamic_cast<AI*>(_umapPlayers.at(_ePlayerMarkCurrent)))
                                 {
-                                    pAI->ab_pruning(_grid);
-                                    _ePlayerMarkCurrent = Grid::nextPlayer(_ePlayerMarkCurrent);
+                                    pAI->AB_Pruning(_grid);
+                                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
                                 }
                             }
                             else _eStateCurrent = EState::STATE_WIN;   // If the game is won go to the corresponding state
@@ -247,7 +346,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
 
 /**
  * @brief Handles joystick button releases events
- * 
+ *
  * @param uyWhich the joystick device index
  * @param uyButton the joystick button index
  */
@@ -256,18 +355,18 @@ void App::OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) noexcept {}
 
 /**
  * @brief Handles joystick hat position events
- * 
+ *
  * @param uyWhich the joystick device index
  * @param uyHat the joystick hat index
  * @param uyValue the hat value
  */
-void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept 
+void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
 {
     switch (_eStateCurrent)
     {
         case EState::STATE_INGAME:
         {
-            //if (_apPlayer.at(uyWhich)->getPlayerMark() == _ePlayerMarkCurrent)
+            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
             {
                 switch (uyValue)
                 {
@@ -275,14 +374,14 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
                         _yPlayColumn--;
                         if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
                         SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.getNextCell(_yPlayColumn) * 
+                            _grid.GetNextCell(_yPlayColumn) *
                             (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
                         break;
                     case SDL_HAT_RIGHT:
                         _yPlayColumn++;
                         if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
                         SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.getNextCell(_yPlayColumn) * 
+                            _grid.GetNextCell(_yPlayColumn) *
                             (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
                         break;
                     default: break;
@@ -301,14 +400,24 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
 void App::OnExit() noexcept { _bRunning = false; }
 
 
+/**
+ * @brief Handles window resize events
+ * 
+ * @param iWidth the new width of the window
+ * @param iHeight the new height of the window
+ */
 void App::OnResize(int32_t iWidth, int32_t iHeight) {}
- 
+
+
+/**
+ * @brief Handles window redraw events
+ */
 void App::OnExpose() {}
 
 
 /**
  * @brief Handles user-defined events
- * 
+ *
  * @param uyType a user-defined event type
  * @param iCode a user-defined event code
  * @param pData1 a user-defined data pointer

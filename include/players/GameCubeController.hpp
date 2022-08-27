@@ -11,27 +11,27 @@ class GameCubeController : public Joystick
 
         GameCubeController& operator =(const GameCubeController& CgameCubeController) = delete;
 
-        uint8_t getButtonX() const noexcept;
-        uint8_t getButtonY() const noexcept;
-        uint8_t getButtonZ() const noexcept;
-        uint8_t getButtonR() const noexcept;
-        uint8_t getButtonL() const noexcept;
-        uint8_t getButtonStart() const noexcept;
+        bool GetButtonX() const noexcept;
+        bool GetButtonY() const noexcept;
+        bool GetButtonZ() const noexcept;
+        bool GetButtonR() const noexcept;
+        bool GetButtonL() const noexcept;
+        bool GetButtonStart() const noexcept;
         
 };
 
 
 inline GameCubeController::GameCubeController(uint8_t uyIndex) : Joystick{uyIndex + 4}
 {}
-inline uint8_t GameCubeController::getButtonX() const noexcept
+inline bool GameCubeController::GetButtonX() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 2); }
-inline uint8_t GameCubeController::getButtonY() const noexcept
+inline bool GameCubeController::GetButtonY() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 3); }
-inline uint8_t GameCubeController::getButtonZ() const noexcept
+inline bool GameCubeController::GetButtonZ() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 4); }
-inline uint8_t GameCubeController::getButtonR() const noexcept
+inline bool GameCubeController::GetButtonR() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 5); }
-inline uint8_t GameCubeController::getButtonL() const noexcept
+inline bool GameCubeController::GetButtonL() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 6); }
-inline uint8_t GameCubeController::getButtonStart() const noexcept
+inline bool GameCubeController::GetButtonStart() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 7); }

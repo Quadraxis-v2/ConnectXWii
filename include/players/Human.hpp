@@ -12,8 +12,8 @@
 class Human : public Player
 {
     public:
-        WiiController* getWiimote() const noexcept;
-        GameCubeController* getGameCubeController() const noexcept;
+        WiiController* GetWiimote() const noexcept;
+        GameCubeController* GetGameCubeController() const noexcept;
 
         explicit Human(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE);
         virtual ~Human() noexcept;
@@ -27,8 +27,8 @@ class Human : public Player
 };
 
 
-inline WiiController* Human::getWiimote() const noexcept { return _pWiiController; }
-inline GameCubeController* Human::getGameCubeController() const noexcept { return _pGameCubeController; }
+inline WiiController* Human::GetWiimote() const noexcept { return _pWiiController; }
+inline GameCubeController* Human::GetGameCubeController() const noexcept { return _pGameCubeController; }
 
 
 #endif

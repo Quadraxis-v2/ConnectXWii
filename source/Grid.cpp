@@ -21,7 +21,7 @@ Grid::Grid() noexcept : _a2playerMarkCells{std::vector<std::vector<EPlayerMark> 
  * @param CePlayerMark the mark of the current player
  * @return EPlayerMark the mark of the next player
  */
-Grid::EPlayerMark Grid::nextPlayer(const EPlayerMark& CePlayerMark) noexcept
+Grid::EPlayerMark Grid::NextPlayer(const EPlayerMark& CePlayerMark) noexcept
 {
     switch(CePlayerMark)
     {
@@ -38,14 +38,14 @@ Grid::EPlayerMark Grid::nextPlayer(const EPlayerMark& CePlayerMark) noexcept
  * @param CePlayerMark the mark of the player that makes the play
  * @param uyPlayColumn the chosen column for the play
  */
-void Grid::makePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
+void Grid::MakePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
 {
-    if (!isValidPlay(uyPlayColumn)) throw std::domain_error("Play is not valid");
+    if (!IsValidPlay(uyPlayColumn)) throw std::domain_error("Play is not valid");
 
     _a2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CePlayerMark;
     _ayNextCell[uyPlayColumn]--;
 
-    if (isWinnerPlay(CePlayerMark, uyPlayColumn)) _ePlayerMarkWinner = CePlayerMark;
+    if (IsWinnerPlay(CePlayerMark, uyPlayColumn)) _ePlayerMarkWinner = CePlayerMark;
 }
 
 
@@ -56,7 +56,7 @@ void Grid::makePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
  * @return true if the play is valid
  * @return false if the play is invalid
  */
-bool Grid::isValidPlay(uint8_t uyPlayColumn) const noexcept
+bool Grid::IsValidPlay(uint8_t uyPlayColumn) const noexcept
 {
     return (uyPlayColumn < Grid::SCuyWidth && _ayNextCell[uyPlayColumn] >= 0 &&
         _ePlayerMarkWinner == EPlayerMark::GRID_TYPE_NONE);
@@ -71,7 +71,7 @@ bool Grid::isValidPlay(uint8_t uyPlayColumn) const noexcept
  * @return true if the play won the game
  * @return false if the play did not win the game
  */
-bool Grid::isWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept
+bool Grid::IsWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept
 {
     int8_t yPlayRow = _ayNextCell[yPlayColumn] + 1; // The previous row is where the previous play was made
 
@@ -137,7 +137,7 @@ std::ostream& operator <<(std::ostream& ostream, const Grid::EPlayerMark& CePlay
  */
 std::ostream& operator <<(std::ostream& ostream, const Grid& Cgrid) noexcept
 {
-    const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.getCells();
+    const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.GetCells();
 
     for (uint8_t i = 0; i < Grid::SCuyHeight; i++)
     {

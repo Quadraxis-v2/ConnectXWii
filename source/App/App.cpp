@@ -1,13 +1,14 @@
 #include <exception>
-#include <vector>
+#include <unordered_map>
 #include <SDL_events.h>
 #include <SDL_joystick.h>
-#include <SDL_timer.h>
 #include "../../include/App.hpp"
 #include "../../include/EventListener.hpp"
 #include "../../include/EventManager.hpp"
 #include "../../include/Surface.hpp"
 #include "../../include/Grid.hpp"
+#include "../../include/players/Player.hpp"
+#include "../../include/players/Human.hpp"
 
 
 App* App::_SpAppInstance = nullptr;  /**< The singleton instance of the application */
@@ -17,7 +18,7 @@ App* App::_SpAppInstance = nullptr;  /**< The singleton instance of the applicat
  * @brief Creates a singleton instance if it does not exist and gets it
  * @return App* A pointer to the Singleton instance of the application
  */
-App* App::getInstance()
+App* App::GetInstance()
 {
     if (_SpAppInstance == nullptr) _SpAppInstance = new App();
     return _SpAppInstance;
@@ -30,7 +31,7 @@ App* App::getInstance()
 App::App() noexcept : EventListener{}, _bRunning{true}, _eventManager{},
     _eStateCurrent{EState::STATE_START}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{},
     _surfaceRed{}, _surfaceYellow{}, _surfaceWinRed{}, _surfaceWinYellow{}, _grid{},
-    _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, _apPlayer{}, _yPlayColumn{0}
+    _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, _umapPlayers{}, _yPlayColumn{0}
 {}
 
 
@@ -50,8 +51,6 @@ void App::OnExecute()
 
             OnLoop();
             OnRender();
-
-            SDL_Delay(10);
         }
     }
     catch (const std::exception& Cexception) { _bRunning = false; }
@@ -69,7 +68,8 @@ void App::Reset() noexcept
     _grid = Grid{};
     _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_NONE;
 
-    for (std::vector<Player*>::iterator i = ++(_apPlayer.begin()); i != _apPlayer.end(); ++i) delete *i;
-    _apPlayer.resize(1);
-    _apPlayer.shrink_to_fit();
+    for (std::unordered_map<Grid::EPlayerMark, Player*>::iterator i = _umapPlayers.begin(); 
+        i != _umapPlayers.end(); ++i) delete i->second;
+    _umapPlayers.clear();
+    _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_RED, new Human()));
 }
