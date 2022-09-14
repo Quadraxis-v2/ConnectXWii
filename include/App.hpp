@@ -1,5 +1,5 @@
-#ifndef _App_HPP_
-#define _App_HPP_
+#ifndef _APP_HPP_
+#define _APP_HPP_
 
 #include <cstdint>
 #include <unordered_map>
@@ -7,9 +7,9 @@
 #include <SDL_video.h>
 #include <SDL_events.h>
 #include "EventListener.hpp"
-#include "EventManager.hpp"
 #include "Surface.hpp"
 #include "Grid.hpp"
+#include "players/Joystick.hpp"
 #include "players/Player.hpp"
 
 
@@ -25,19 +25,13 @@ class App : public EventListener    // Receive events in this class
         static const uint16_t SCurWindowWidth = 640;    /**< Fixed width of the application */
         static const uint16_t SCurWindowHeight = 480;   /**< Fixed height of the application */
 
-        /**
-         * @brief Creates a singleton instance if it does not exist and gets it
-         * @return App* A pointer to the Singleton instance of the application
-         */
-        static App* GetInstance();
 
+        static App& GetInstance();
 
-        /* Constructors and assignment operators are deleted so no more than one instance of the class 
-            is present */
-        App(const App& CAppOther) = delete;
-        App(App&& AppOther) = delete;
-        App& operator =(const App& CAppOther) = delete;
-        App&& operator=(App&& AppOther) = delete;
+        App(const App& CappOther) = delete;             /**< Copy constructor */
+        App(App&& appOther) = default;                  /**< Move constructor */
+        App& operator =(const App& CappOther) = delete; /**< Copy assignment operator */
+        App& operator =(App&& appOther) = default;      /**< Move assignment operator */
 
 
         /**
@@ -46,10 +40,7 @@ class App : public EventListener    // Receive events in this class
         void OnExecute();
 
     private:
-        static App* _SpAppInstance;   /**< The singleton instance of the application */
-
         bool _bRunning;             /**< Marks whether the application should continue running */
-        EventManager _eventManager; /**< Manages and dispatches events to listeners */
         EState _eStateCurrent;      /**< The current state of the application for the state machine */
 
         Surface _surfaceDisplay;   /**< The main display surface */
@@ -62,7 +53,8 @@ class App : public EventListener    // Receive events in this class
 
         Grid _grid;                             /**< Main playing grid */
         Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
-        std::unordered_map<Grid::EPlayerMark, Player*> _umapPlayers;    /**< The current players in the game */
+        std::unordered_map<uint8_t, Joystick*>  _htJoysticks;         /**< The joysticks in use */
+        std::unordered_map<Grid::EPlayerMark, Player*> _htPlayers;    /**< The current players in the game */
         int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 

@@ -9,7 +9,7 @@
 
 /**
  * @brief Event Listener abstract class
- * @details Classes that wish to receive events should inherit this class and register to an event manager
+ * @details Classes that wish to receive events should inherit this class and register to the event manager
  */
 class EventListener
 {

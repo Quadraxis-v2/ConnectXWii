@@ -17,15 +17,14 @@ class Grid
         /**< Types of player markers */
         enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = INT_MIN, GRID_TYPE_YELLOW = INT_MAX};
 
-        static const uint8_t SCuyHeight = 6;        /**< Height of the grid */
-        static const uint8_t SCuyWidth = 7;         /**< Width of the grid */
-        static const uint8_t SCuyNumberToMatch = 4; /**< Number of markers in a row that must be achieved */
-
         /* Getters */
+        uint8_t GetWidth() const noexcept;
+        uint8_t GetHeight() const noexcept;
+        uint8_t GetNumberToMatch() const noexcept;
         const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
         int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
-        explicit Grid() noexcept;   /**< Default constructor */
+        explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4) noexcept;   /**< Default constructor */
 
         /**
          * @brief Gets the mark of the next player
@@ -62,6 +61,9 @@ class Grid
         EPlayerMark CheckWinner() const noexcept;
 
     private:
+        uint8_t _uyWidth;            /**< Width of the grid */
+        uint8_t _uyHeight;           /**< Height of the grid */
+        uint8_t _uyNumberToMatch;    /**< Number of markers in a row that must be achieved */
         std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
         std::vector<int8_t> _ayNextCell;    /**< Indicates the next playable cell in a column */
         EPlayerMark _ePlayerMarkWinner;       /**< The marker of the player who won the game */
@@ -79,6 +81,9 @@ class Grid
 };
 
 
+inline uint8_t Grid::GetWidth() const noexcept { return _uyWidth; }
+inline uint8_t Grid::GetHeight() const noexcept { return _uyHeight; }
+inline uint8_t Grid::GetNumberToMatch() const noexcept { return _uyNumberToMatch; }
 inline const std::vector<std::vector<Grid::EPlayerMark> >& Grid::GetCells() const noexcept 
 { return _a2playerMarkCells; }
 inline int8_t Grid::GetNextCell(uint8_t uyColumn) const noexcept { return _ayNextCell[uyColumn]; }

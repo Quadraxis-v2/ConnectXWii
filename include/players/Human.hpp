@@ -2,6 +2,7 @@
 #define _HUMAN_HPP_
 
 #include <cstdint>
+#include <map>
 #include <SDL_joystick.h>
 #include "Player.hpp"
 #include "WiiController.hpp"
@@ -12,23 +13,23 @@
 class Human : public Player
 {
     public:
-        WiiController* GetWiimote() const noexcept;
-        GameCubeController* GetGameCubeController() const noexcept;
+        typedef std::map<uint8_t, Joystick*> Joysticks;
 
-        explicit Human(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE);
-        virtual ~Human() noexcept;
+        const Joysticks& GetJoysticks() const noexcept;
+
+        explicit Human(Joystick& joystick,
+            const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
+
+        void AssociateJoystick(Joystick& joystick) noexcept;
+        void DisassociateJoystick(Joystick& joystick) noexcept;
 
     private:
-        static const uint8_t _SCuyMaxWiiJoysticks = 4;
-        
-        WiiController* _pWiiController;
-        GameCubeController* _pGameCubeController;
+        Joysticks _htJoysticks;
 
 };
 
 
-inline WiiController* Human::GetWiimote() const noexcept { return _pWiiController; }
-inline GameCubeController* Human::GetGameCubeController() const noexcept { return _pGameCubeController; }
+inline const Human::Joysticks& Human::GetJoysticks() const noexcept { return _htJoysticks; }
 
 
 #endif

@@ -10,9 +10,13 @@
  */
 void App::OnCleanup() noexcept 
 {
+    // Delete joysticks
+    for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin(); 
+        i != _htJoysticks.end(); ++i) delete i->second;
+
     // Delete players
-    for (std::unordered_map<Grid::EPlayerMark, Player*>::iterator i = _umapPlayers.begin(); 
-        i != _umapPlayers.end(); ++i) delete i->second;
+    for (std::unordered_map<Grid::EPlayerMark, Player*>::iterator i = _htPlayers.begin(); 
+        i != _htPlayers.end(); ++i) delete i->second;
 
     // The display surface must be freed by SDL_Quit
     SDL_Quit();

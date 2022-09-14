@@ -61,21 +61,24 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
         {
             //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
             {
+                uint8_t uyGridWidth = _grid.GetWidth();
+                uint8_t uyGridHeight = _grid.GetHeight();
+
                 switch (sdlKeySymbol)
                 {
                     case SDLK_LEFT:
                         _yPlayColumn--;
-                        if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
+                        if (_yPlayColumn < 0) _yPlayColumn = uyGridWidth - 1;
+                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / uyGridWidth),
+                            _grid.GetNextCell(_yPlayColumn) * 
+                            (_surfaceDisplay._pSdlSurface->h / uyGridHeight));
                         break;
                     case SDLK_RIGHT:
                         _yPlayColumn++;
-                        if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
-                            _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
+                        if (_yPlayColumn >= uyGridWidth) _yPlayColumn = 0;
+                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / uyGridWidth),
+                            _grid.GetNextCell(_yPlayColumn) * 
+                            (_surfaceDisplay._pSdlSurface->h / uyGridHeight));
                         break;
                     default: break;
                 }
@@ -114,7 +117,7 @@ void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16
     switch (_eStateCurrent)
     {
         case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
-            _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth);
+            _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
             break;
         default: break;
     }
@@ -149,7 +152,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
         }
         case EState::STATE_INGAME:
         {
-            uint8_t uyColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth);
+            uint8_t uyColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
 
             if (_grid.IsValidPlay(uyColumn))
             {
@@ -264,7 +267,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
                         // Create an AI player
-                        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                        _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
                             new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW)));
                     }
                     else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
@@ -274,8 +277,10 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
                         // Create another human player
-                        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
-                            new Human(Grid::EPlayerMark::GRID_TYPE_YELLOW))); 
+                        Joystick* pJoystickMain = new WiiController(1);
+                        _htJoysticks.insert(std::make_pair(1, pJoystickMain));
+                        _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                            new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW)));
                     }
 
                     break;
@@ -298,21 +303,20 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         {
                             _grid.MakePlay(_ePlayerMarkCurrent, _yPlayColumn);
 
-                            // If the game is not won switch to the next player
-                            if (_grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
+                            // AIs' turn
+                            AI* pAI = nullptr;
+                            while (_grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE &&
+                                (pAI = dynamic_cast<AI*>(_htPlayers.at(_ePlayerMarkCurrent))))
                             {
                                 _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-
-                                // AI's turn
-                                while (AI* pAI = dynamic_cast<AI*>(_umapPlayers.at(_ePlayerMarkCurrent)))
-                                {
-                                    pAI->AB_Pruning(_grid);
-                                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-                                }
+                                pAI->AB_Pruning(_grid);
                             }
+
+                            // If the game is not won switch to the next player
+                            if (_grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE)
+                                _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
                             else _eStateCurrent = EState::STATE_WIN;   // If the game is won go to the corresponding state
                         }
-
                         break;
                     }
                     case 6: _bRunning = false; break;   // HOME button closes the game
@@ -368,21 +372,24 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
         {
             //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
             {
+                uint8_t uyGridWidth = _grid.GetWidth();
+                uint8_t uyGridHeight = _grid.GetHeight();
+
                 switch (uyValue)
                 {
                     case SDL_HAT_LEFT:
                         _yPlayColumn--;
-                        if (_yPlayColumn < 0) _yPlayColumn = Grid::SCuyWidth - 1;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
+                        if (_yPlayColumn < 0) _yPlayColumn = uyGridWidth - 1;
+                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / uyGridWidth),
                             _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
+                            (_surfaceDisplay._pSdlSurface->h / uyGridHeight));
                         break;
                     case SDL_HAT_RIGHT:
                         _yPlayColumn++;
-                        if (_yPlayColumn >= Grid::SCuyWidth) _yPlayColumn = 0;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth),
+                        if (_yPlayColumn >= uyGridWidth) _yPlayColumn = 0;
+                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / uyGridWidth),
                             _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight));
+                            (_surfaceDisplay._pSdlSurface->h / uyGridHeight));
                         break;
                     default: break;
                 }

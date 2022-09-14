@@ -13,12 +13,13 @@
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
 	#include <fat.h>
+    #include "../../include/players/Player.hpp"
+    #include "../../include/players/Human.hpp"
 #endif
 
 #include "../../include/App.hpp"
 #include "../../include/Surface.hpp"
-#include "../../include/players/Player.hpp"
-#include "../../include/players/Human.hpp"
+#include "../../include/EventManager.hpp"
 
 
 /**
@@ -41,7 +42,7 @@ void App::OnInit()
     if ((_surfaceDisplay._pSdlSurface = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
         16, SDL_HWSURFACE | SDL_DOUBLEBUF)) == nullptr) throw std::runtime_error(SDL_GetError());
 
-    _eventManager.AttachListener(this);
+    EventManager::GetInstance().AttachListener(this);
 
     #ifdef HW_RVL
 		// Initialise console
@@ -53,7 +54,17 @@ void App::OnInit()
         if (bMustLock) SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
 
         // Create the main human player
-        _umapPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_RED, new Human()));
+        WiiController* pJoystickWii = new WiiController(0);
+        _htJoysticks.insert(std::make_pair(0, pJoystickWii));
+
+        GameCubeController* pJoystickGameCube = new GameCubeController(0);
+        _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
+
+        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
+        pPlayerMain->AssociateJoystick(*pJoystickGameCube);
+
+        _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_RED, 
+            new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED)));
 	#endif
 
     SDL_JoystickEventState(SDL_ENABLE);

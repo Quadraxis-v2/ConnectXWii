@@ -32,8 +32,8 @@ class Surface
 
         ~Surface() noexcept;    /**< Destructor */
 
-        Surface& operator =(const Surface& CsurfaceOther);  /**< Assign with copy operator */
-        Surface& operator =(Surface&& surfaceOther) noexcept; /**< Assign with movement operator */
+        Surface& operator =(const Surface& CsurfaceOther);      /**< Copy assignment operator */
+        Surface& operator =(Surface&& surfaceOther) noexcept;   /**< Move assignment operator */
 
         /**
          * @brief Blits part of a surface into this surface

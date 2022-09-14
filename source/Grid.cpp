@@ -2,15 +2,18 @@
 #include <stdexcept>
 #include <ostream>
 #include <cstdint>
+#include <string>
 #include "../include/Grid.hpp"
 
 
 /**
  * @brief Construct a new empty Grid
  */
-Grid::Grid() noexcept : _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(Grid::SCuyHeight,
-    std::vector<EPlayerMark>(Grid::SCuyWidth, GRID_TYPE_NONE))},
-    _ayNextCell{std::vector<int8_t>(Grid::SCuyWidth, Grid::SCuyHeight - 1)},
+Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) noexcept : _uyWidth{uyWidth},
+    _uyHeight{uyHeight}, _uyNumberToMatch{uyNumberToMatch}, 
+    _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
+    std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))},
+    _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)},
     _ePlayerMarkWinner{EPlayerMark::GRID_TYPE_NONE}
 {}
 
@@ -58,7 +61,7 @@ void Grid::MakePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
  */
 bool Grid::IsValidPlay(uint8_t uyPlayColumn) const noexcept
 {
-    return (uyPlayColumn < Grid::SCuyWidth && _ayNextCell[uyPlayColumn] >= 0 &&
+    return (uyPlayColumn < _uyWidth && _ayNextCell[uyPlayColumn] >= 0 &&
         _ePlayerMarkWinner == EPlayerMark::GRID_TYPE_NONE);
 }
 
@@ -77,12 +80,12 @@ bool Grid::IsWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 
     // Downwards check
     uint8_t uyCounter = 1;
-    if (yPlayRow <= Grid::SCuyHeight - Grid::SCuyNumberToMatch)
+    if (yPlayRow <= _uyHeight - _uyNumberToMatch)
     {
-        for (uint8_t i = 1; i < Grid::SCuyNumberToMatch && yPlayRow + i < Grid::SCuyHeight &&
+        for (uint8_t i = 1; i < _uyNumberToMatch && yPlayRow + i < _uyHeight &&
             _a2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; i++) uyCounter++;
 
-        if (uyCounter == Grid::SCuyNumberToMatch) return true;
+        if (uyCounter == _uyNumberToMatch) return true;
     }
 
     // Check the remaining directions except upwards
@@ -95,22 +98,22 @@ bool Grid::IsWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 
         // Check one way
         uyCounter = 1;
-        for (int8_t i = 1; i < Grid::SCuyNumberToMatch &&
-            yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < Grid::SCuyHeight &&
-            yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < Grid::SCuyWidth &&
+        for (int8_t i = 1; i < _uyNumberToMatch &&
+            yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < _uyHeight &&
+            yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < _uyWidth &&
             _a2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == CePlayerMark;
             i++) uyCounter++;
 
-        if (uyCounter == Grid::SCuyNumberToMatch) return true;
+        if (uyCounter == _uyNumberToMatch) return true;
 
         // Check the opposite way
-        for (int8_t i = 1; i < Grid::SCuyNumberToMatch &&
-            yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < Grid::SCuyHeight &&
-            yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < Grid::SCuyWidth &&
+        for (int8_t i = 1; i < _uyNumberToMatch &&
+            yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < _uyHeight &&
+            yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < _uyWidth &&
             _a2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == CePlayerMark;
             i++) uyCounter++;
 
-        if (uyCounter == Grid::SCuyNumberToMatch) return true;
+        if (uyCounter == _uyNumberToMatch) return true;
     }
 
     return false;
@@ -138,18 +141,22 @@ std::ostream& operator <<(std::ostream& ostream, const Grid::EPlayerMark& CePlay
 std::ostream& operator <<(std::ostream& ostream, const Grid& Cgrid) noexcept
 {
     const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.GetCells();
+    std::string sSeparator{};
 
-    for (uint8_t i = 0; i < Grid::SCuyHeight; i++)
+    for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; i++) sSeparator.append("---+");
+    sSeparator.append("---");
+
+    for (uint8_t i = 0; i < Cgrid.GetHeight(); i++)
     {
-        ostream << "---+---+---+---+---+---+---" << std::endl <<
+        ostream << sSeparator << std::endl <<
             " " << a2playerMarkCells[i][0] << " ";
 
-        for (uint8_t j = 1; j < Grid::SCuyWidth; j++)
+        for (uint8_t j = 1; j < Cgrid.GetWidth(); j++)
             ostream << "| " << a2playerMarkCells[i][j] << " ";
 
         ostream << std::endl;
     }
-    ostream << "---+---+---+---+---+---+---" << std::endl;
+    ostream << sSeparator << std::endl;
 
     return ostream;
 }

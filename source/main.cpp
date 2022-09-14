@@ -3,10 +3,7 @@
 
 int main(int argc, char** argv)
 {
-	App* pApp = App::GetInstance();
-	pApp->OnExecute();
-
-	delete pApp;
-
+	App::GetInstance().OnExecute();
+	
 	return 0;
 }

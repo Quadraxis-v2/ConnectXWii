@@ -20,15 +20,18 @@ void App::OnRender()
         {
             _surfaceDisplay.OnDraw(_surfaceGrid);
 
-            for(int32_t i = 0; i < Grid::SCuyHeight; i++)  // Search for markers and draw them
+            uint8_t uyGridWidth = _grid.GetWidth();
+            uint8_t uyGridHeight = _grid.GetHeight();
+
+            for(int32_t i = 0; i < uyGridHeight; i++)  // Search for markers and draw them
             {
                 // Surface coordinate of the i'th row of the grid
-                int32_t iY = i * (_surfaceDisplay._pSdlSurface->h / Grid::SCuyHeight);
+                int32_t iY = i * (_surfaceDisplay._pSdlSurface->h / uyGridHeight);
 
-                for (int32_t j = 0; j < Grid::SCuyWidth; j++)
+                for (int32_t j = 0; j < uyGridWidth; j++)
                 {
                     // Surface coordinate of the j'th column of the grid
-                    int32_t iX = j * (_surfaceDisplay._pSdlSurface->w / Grid::SCuyWidth);
+                    int32_t iX = j * (_surfaceDisplay._pSdlSurface->w / uyGridWidth);
 
                     if(_grid[i][j] == Grid::EPlayerMark::GRID_TYPE_RED)
                         _surfaceDisplay.OnDraw(_surfaceRed, iX, iY);

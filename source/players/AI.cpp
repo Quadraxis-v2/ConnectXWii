@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <climits>
+#include <limits>
 #include <algorithm>
 #include <stdexcept>
 #include "../../include/players/AI.hpp"
@@ -13,9 +13,11 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : 
 
 void AI::AB_Pruning(Grid& grid) const noexcept
 {
-    int32_t iAlpha = INT_MIN, iBeta = INT_MAX, iDepth = 1, iBestPlay = 0, iMinimaxValue = 0;
+    int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max(), 
+        iDepth = 1, iBestPlay = 0, iMinimaxValue = 0;
+    uint8_t uyGridWidth = grid.GetWidth();
 
-    for (uint8_t i = 0; i < Grid::SCuyWidth; i++)
+    for (uint8_t i = 0; i < uyGridWidth; i++)
     {
         if (grid.IsValidPlay(i))
         {
@@ -45,7 +47,9 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Grid::SCuyWidth && iAlpha < iBeta; i++)
+        uint8_t uyGridWidth = Cgrid.GetWidth();
+
+        for (uint8_t i = 0; i < uyGridWidth && iAlpha < iBeta; i++)
         {
             if (Cgrid.IsValidPlay(i))
             {
@@ -69,7 +73,9 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Grid::SCuyWidth && iAlpha < iBeta; i++)
+        uint8_t uyGridWidth = Cgrid.GetWidth();
+
+        for (uint8_t i = 0; i < uyGridWidth && iAlpha < iBeta; i++)
         {
             if (Cgrid.IsValidPlay(i))
             {
@@ -88,7 +94,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
     uint32_t uiHeuristic = 0;
 
-    for (uint8_t i = 0; i < Grid::SCuyHeight; i++)
+    /*for (uint8_t i = 0; i < Grid::SCuyHeight; i++)
     {
         for (uint8_t j = 0; j < Grid::SCuyWidth; j++)
         {
@@ -221,14 +227,14 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
                 }
             }
         }
-    }
+    }*/
     return uiHeuristic;
 }
 
 
 int8_t AI::PlayerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const
 {
-    if (uyRow >= Grid::SCuyHeight || uyColumn >= Grid::SCuyWidth)
+    if (uyRow >= Cgrid.GetHeight() || uyColumn >= Cgrid.GetWidth())
         throw std::out_of_range("Out of the grid range");
 
     const Grid::EPlayerMark CePlayerMarkCell = Cgrid[uyRow][uyColumn];
