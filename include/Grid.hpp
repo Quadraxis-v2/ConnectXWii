@@ -9,7 +9,7 @@
 
 
 /**
- * @brief Class for the main playing board
+ * @brief Grid class
  */
 class Grid
 {
@@ -37,21 +37,29 @@ class Grid
         const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
 
         /**
-         * @brief Makes a play in the grid
+         * @brief Makes a move in the grid
          * 
-         * @param CePlayerMark the mark of the player that makes the play
-         * @param uyPlayColumn the chosen column for the play
+         * @param CePlayerMark the mark of the player that makes the move
+         * @param uyPlayColumn the chosen column for the move
          */
-        void MakePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn);
+        void MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn);
 
         /**
-         * @brief Checks if a play would be valid
+         * @brief Checks if a move would be valid
          * 
-         * @param uyPlayColumn the chosen column for the play
-         * @return true if the play is valid
-         * @return false if the play is invalid
+         * @param uyPlayColumn the chosen column for the move
+         * @return true if the move is valid
+         * @return false if the move is invalid
          */
-        bool IsValidPlay(uint8_t uyPlayColumn) const noexcept;
+        bool IsValidMove(uint8_t uyPlayColumn) const noexcept;
+
+        /**
+         * @brief Checks if the grid is full
+         * 
+         * @return true if the grid is full
+         * @return false if the grid is not full
+         */
+        bool IsFull() const noexcept;
 
         /**
          * @brief Checks if the game has been won
@@ -65,18 +73,19 @@ class Grid
         uint8_t _uyHeight;           /**< Height of the grid */
         uint8_t _uyNumberToMatch;    /**< Number of markers in a row that must be achieved */
         std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
-        std::vector<int8_t> _ayNextCell;    /**< Indicates the next playable cell in a column */
-        EPlayerMark _ePlayerMarkWinner;       /**< The marker of the player who won the game */
+        std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
+        uint8_t _uyEmptyCells;                  /**< Indicates if the number of empty cells remaining */
+        EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game */
 
         /**
-         * @brief Checks if a given play has won the game
+         * @brief Checks if a given move has won the game
          * 
-         * @param CePlayerMark the mark of the player that made the previous play
-         * @param yPlayColumn the chosen column for the play
-         * @return true if the play won the game
-         * @return false if the play did not win the game
+         * @param CePlayerMark the mark of the player that made the previous move
+         * @param yPlayColumn the chosen column for the move
+         * @return true if the move won the game
+         * @return false if the move did not win the game
          */
-        bool IsWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept;
+        bool IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept;
 
 };
 
@@ -96,6 +105,8 @@ inline bool operator ==(const Grid& Cgrid1, const Grid& Cgrid2) noexcept
 { return Cgrid1.GetCells() == Cgrid2.GetCells(); }
 
 inline Grid::EPlayerMark Grid::CheckWinner() const noexcept { return _ePlayerMarkWinner; }
+
+inline bool Grid::IsFull() const noexcept { return (_uyEmptyCells == 0); }
 
 
 /* Stream insertion operator overloads */

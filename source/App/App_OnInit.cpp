@@ -8,7 +8,7 @@
 #include <SDL_events.h>
 #include <SDL_joystick.h>
 
-#ifdef HW_RVL
+#ifdef __wii__
     #include <iostream>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
@@ -27,7 +27,7 @@
  */
 void App::OnInit()
 {
-    #ifdef HW_RVL
+    #ifdef __wii__
         fatInitDefault();   // SDL-wii needs to initialise libFAT first
     #endif
 
@@ -42,9 +42,9 @@ void App::OnInit()
     if ((_surfaceDisplay._pSdlSurface = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
         16, SDL_HWSURFACE | SDL_DOUBLEBUF)) == nullptr) throw std::runtime_error(SDL_GetError());
 
-    EventManager::GetInstance().AttachListener(this);
+    EventManager::GetInstance().AttachListener(this);   // Receive events
 
-    #ifdef HW_RVL
+    #ifdef __wii__
 		// Initialise console
         bool bMustLock = SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface);
         if (bMustLock) SDL_LockSurface(_surfaceDisplay._pSdlSurface);
@@ -70,12 +70,13 @@ void App::OnInit()
     SDL_JoystickEventState(SDL_ENABLE);
 
     // Retrieve resources from the filesystem
-    _surfaceStart = Surface("/apps/test/resources/gfx/start.bmp");
-    _surfaceGrid = Surface("/apps/test/resources/gfx/grid.bmp");
-    _surfaceRed = Surface("/apps/test/resources/gfx/red.bmp");
-    _surfaceYellow = Surface("/apps/test/resources/gfx/yellow.bmp");
-    _surfaceWinRed = Surface("/apps/test/resources/gfx/winRed.bmp");
-    _surfaceWinYellow = Surface("/apps/test/resources/gfx/winYellow.bmp");
+    _surfaceStart = Surface("/apps/Connect4Wii/gfx/start.bmp");
+    _surfaceGrid = Surface("/apps/Connect4Wii/gfx/grid.bmp");
+    _surfaceRed = Surface("/apps/Connect4Wii/gfx/red.bmp");
+    _surfaceYellow = Surface("/apps/Connect4Wii/gfx/yellow.bmp");
+    _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/winRed.bmp");
+    _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/winYellow.bmp");
+    _surfaceDraw = Surface("/apps/Connect4Wii/gfx/draw.bmp");
 
     // Take the background out of the marker pictures
     _surfaceRed.Transparent(255, 0, 255);

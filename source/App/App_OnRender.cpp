@@ -42,13 +42,13 @@ void App::OnRender()
 
             break;
         }
-        case EState::STATE_WIN:    // In the win state we show a surface depending on who won
+        case EState::STATE_END:    // In the win state we show a surface depending on who won
         {
-            switch (_ePlayerMarkCurrent)
+            switch (_grid.CheckWinner())
             {
                 case Grid::EPlayerMark::GRID_TYPE_RED: _surfaceDisplay.OnDraw(_surfaceWinRed); break;
                 case Grid::EPlayerMark::GRID_TYPE_YELLOW: _surfaceDisplay.OnDraw(_surfaceWinYellow); break;
-                default: Reset(); break;
+                case Grid::EPlayerMark::GRID_TYPE_NONE: _surfaceDisplay.OnDraw(_surfaceDraw); break;
             }
 
             break;

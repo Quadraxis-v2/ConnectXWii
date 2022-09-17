@@ -25,8 +25,7 @@ INCLUDES	:=	include include/players
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `sdl-config --cflags` \
-			`$(PREFIX)pkg-config --cflags libturbojpeg jansson`
+CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `sdl-config --cflags`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -34,9 +33,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`sdl-config --libs` `$(PREFIX)pkg-config libturbojpeg jansson --libs` \
-			-lwiiuse -lbte -lmodplay -laesnd -lfat -logc -lm
-# For MP3s: -lmad -lasnd
+LIBS	:=	`sdl-config --libs` -lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -134,22 +131,6 @@ $(OFILES_SOURCES) : $(HFILES)
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.jpg.o	%_jpg.h :	%.jpg
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .mod extension
-#---------------------------------------------------------------------------------
-%.mod.o	%_mod.h :	%.mod
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .mp3 extension
-#---------------------------------------------------------------------------------
-%.mp3.o	%_mp3.h :	%.mp3
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)

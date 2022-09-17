@@ -13,7 +13,8 @@ Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) noexcept 
     _uyHeight{uyHeight}, _uyNumberToMatch{uyNumberToMatch}, 
     _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
     std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))},
-    _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)},
+    _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
+    _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
     _ePlayerMarkWinner{EPlayerMark::GRID_TYPE_NONE}
 {}
 
@@ -41,14 +42,15 @@ Grid::EPlayerMark Grid::NextPlayer(const EPlayerMark& CePlayerMark) noexcept
  * @param CePlayerMark the mark of the player that makes the play
  * @param uyPlayColumn the chosen column for the play
  */
-void Grid::MakePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
+void Grid::MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
 {
-    if (!IsValidPlay(uyPlayColumn)) throw std::domain_error("Play is not valid");
+    if (!IsValidMove(uyPlayColumn)) throw std::domain_error("Play is not valid");
 
     _a2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CePlayerMark;
     _ayNextCell[uyPlayColumn]--;
+    _uyEmptyCells--;
 
-    if (IsWinnerPlay(CePlayerMark, uyPlayColumn)) _ePlayerMarkWinner = CePlayerMark;
+    if (IsWinnerMove(CePlayerMark, uyPlayColumn)) _ePlayerMarkWinner = CePlayerMark;
 }
 
 
@@ -59,7 +61,7 @@ void Grid::MakePlay(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
  * @return true if the play is valid
  * @return false if the play is invalid
  */
-bool Grid::IsValidPlay(uint8_t uyPlayColumn) const noexcept
+bool Grid::IsValidMove(uint8_t uyPlayColumn) const noexcept
 {
     return (uyPlayColumn < _uyWidth && _ayNextCell[uyPlayColumn] >= 0 &&
         _ePlayerMarkWinner == EPlayerMark::GRID_TYPE_NONE);
@@ -74,7 +76,7 @@ bool Grid::IsValidPlay(uint8_t uyPlayColumn) const noexcept
  * @return true if the play won the game
  * @return false if the play did not win the game
  */
-bool Grid::IsWinnerPlay(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept
+bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept
 {
     int8_t yPlayRow = _ayNextCell[yPlayColumn] + 1; // The previous row is where the previous play was made
 

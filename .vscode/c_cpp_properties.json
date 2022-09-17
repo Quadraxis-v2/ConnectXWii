@@ -15,7 +15,8 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "HW_RVL"
+                "HW_RVL",
+                "__wii__"
             ],
             "cStandard": "c17",
             "cppStandard": "c++20",

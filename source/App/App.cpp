@@ -24,8 +24,9 @@ App& App::GetInstance()
  */
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, 
     _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceRed{}, _surfaceYellow{}, 
-    _surfaceWinRed{}, _surfaceWinYellow{}, _grid{}, _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, 
-    _htJoysticks{}, _htPlayers{}, _yPlayColumn{0}
+    _surfaceWinRed{}, _surfaceWinYellow{}, _surfaceDraw{},
+    _grid{7, 6, 4}, _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, _htJoysticks{}, _htPlayers{}, 
+    _yPlayColumn{0}
 {}
 
 

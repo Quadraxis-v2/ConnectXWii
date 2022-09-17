@@ -76,7 +76,7 @@ class EventListener
          * @param bMiddle the current state of the middle mouse button
          */
         virtual void OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
-            bool bLeft, bool bRight, bool bMiddle) noexcept = 0;
+            bool bLeft, bool bRight, bool bMiddle) = 0;
 
         /**
          * @brief Handles mouse wheel movement events
@@ -141,7 +141,7 @@ class EventListener
          * @param uyAxis the joystick axis index
          * @param rValue the axis value
          */
-        virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept = 0;
+        virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) = 0;
 
         /**
          * @brief Handles joystick trackball motion events
@@ -159,7 +159,7 @@ class EventListener
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
          */
-        virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept = 0;
+        virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) = 0;
 
         /**
          * @brief Handles joystick button release events
@@ -167,7 +167,7 @@ class EventListener
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
          */
-        virtual void OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) noexcept = 0;
+        virtual void OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) = 0;
 
         /**
          * @brief Handles joystick hat position events
@@ -176,12 +176,12 @@ class EventListener
          * @param uyHat the joystick hat index
          * @param uyValue the hat value
          */
-        virtual void OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept = 0;
+        virtual void OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) = 0;
 
         /**
          * @brief Handles user-requested quits
          */
-        virtual void OnExit() noexcept = 0;
+        virtual void OnExit() = 0;
 
         /**
          * @brief Handles window resize events
@@ -204,7 +204,7 @@ class EventListener
          * @param pData1 a user-defined data pointer
          * @param pData2 a user-defined data pointer
          */
-        virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept = 0;
+        virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) = 0;
 
 };
 

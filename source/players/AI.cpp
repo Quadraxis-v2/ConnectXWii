@@ -7,22 +7,32 @@
 #include "../../include/Grid.hpp"
 
 
+/**
+ * @brief Construct a new AI player
+ * 
+ * @param CePlayerMark the mark assigned to this player
+ * @param uySearchLimit the depth of levels that the AI will explore
+ */
 AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : Player{CePlayerMark}, 
     _uySearchLimit{uySearchLimit} {}
 
 
-void AI::AB_Pruning(Grid& grid) const noexcept
+/**
+ * @brief Makes the AI choose a play on the board
+ * 
+ * @param grid the main game board
+ */
+void AI::ChooseMove(Grid& grid) const noexcept
 {
     int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max(), 
         iDepth = 1, iBestPlay = 0, iMinimaxValue = 0;
-    uint8_t uyGridWidth = grid.GetWidth();
 
-    for (uint8_t i = 0; i < uyGridWidth; i++)
+    for (uint8_t i = 0; i < grid.GetWidth(); i++)
     {
-        if (grid.IsValidPlay(i))
+        if (grid.IsValidMove(i))
         {
             Grid gridAttempt = grid;
-            gridAttempt.MakePlay(__ePlayerMark, i);
+            gridAttempt.MakeMove(__ePlayerMark, i);
             iMinimaxValue = AB_MinValue(gridAttempt, Grid::NextPlayer(__ePlayerMark), iDepth + 1, 
                 iAlpha, iBeta);
 
@@ -34,27 +44,33 @@ void AI::AB_Pruning(Grid& grid) const noexcept
         }
     }
 
-    if (grid.IsValidPlay(iBestPlay)) grid.MakePlay(__ePlayerMark, iBestPlay);
+    if (grid.IsValidMove(iBestPlay)) grid.MakeMove(__ePlayerMark, iBestPlay);
 }
 
 
+/**
+ * @brief Min function of the AB-Pruning algorithm
+ * 
+ * @param Cgrid the main game board
+ * @param CePlayerMark the mark of the min player
+ * @param iDepth the depth level of exploration
+ * @param iAlpha alpha value for the AB-Pruning algorithm
+ * @param iBeta beta value for the AB-Pruning algorithm
+ * @return int32_t the revised value of beta
+ */
 int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    int32_t yWinner = Cgrid.CheckWinner();
-
-    if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE) return Cgrid.CheckWinner();
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        uint8_t uyGridWidth = Cgrid.GetWidth();
-
-        for (uint8_t i = 0; i < uyGridWidth && iAlpha < iBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
-            if (Cgrid.IsValidPlay(i))
+            if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.MakePlay(CePlayerMark, i);
+                gridAttempt.MakeMove(CePlayerMark, i);
                 iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, Grid::NextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
@@ -64,23 +80,29 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 }
 
 
+/**
+ * @brief Max function of the AB-Pruning algorithm
+ * 
+ * @param Cgrid the main game board
+ * @param CePlayerMark the mark of the max player
+ * @param iDepth the depth level of exploration
+ * @param iAlpha alpha value for the AB-Pruning algorithm
+ * @param iBeta beta value for the AB-Pruning algorithm
+ * @return int32_t the revised value of alpha
+ */
 int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth, 
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    int32_t yWinner = Cgrid.CheckWinner();
-
-    if (yWinner != Grid::EPlayerMark::GRID_TYPE_NONE) return yWinner;
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE) return Cgrid.CheckWinner();
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        uint8_t uyGridWidth = Cgrid.GetWidth();
-
-        for (uint8_t i = 0; i < uyGridWidth && iAlpha < iBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
-            if (Cgrid.IsValidPlay(i))
+            if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
-                gridAttempt.MakePlay(CePlayerMark, i);
+                gridAttempt.MakeMove(CePlayerMark, i);
                 iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, Grid::NextPlayer(CePlayerMark), 
                     iDepth + 1, iAlpha, iBeta));
             }
@@ -90,6 +112,12 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 }
 
 
+/**
+ * @brief Evaluation function
+ * 
+ * @param Cgrid the main game board
+ * @return int32_t a numeric evaluation of the board
+ */
 int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
     uint32_t uiHeuristic = 0;
@@ -232,14 +260,20 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 }
 
 
+/**
+ * @brief Converts a cell into a value for the evaluation function
+ * 
+ * @param Cgrid the main game board
+ * @param uyRow the row of the cell to convert
+ * @param uyColumn the column of the cell to convert
+ * @return int8_t a numeric representation of the cell for the evaluation function
+ */
 int8_t AI::PlayerMark2Heuristic(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn) const
 {
     if (uyRow >= Cgrid.GetHeight() || uyColumn >= Cgrid.GetWidth())
         throw std::out_of_range("Out of the grid range");
 
-    const Grid::EPlayerMark CePlayerMarkCell = Cgrid[uyRow][uyColumn];
-    
-    if (CePlayerMarkCell == __ePlayerMark) return 1;
-    else if (CePlayerMarkCell == Grid::EPlayerMark::GRID_TYPE_NONE) return 0;
+    if (Cgrid[uyRow][uyColumn] == __ePlayerMark) return 1;
+    else if (Cgrid[uyRow][uyColumn] == Grid::EPlayerMark::GRID_TYPE_NONE) return 0;
     else return -1;
 }

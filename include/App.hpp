@@ -20,7 +20,7 @@
 class App : public EventListener    // Receive events in this class
 {
     public:
-        enum EState {STATE_START, STATE_INGAME, STATE_WIN};    /**< Application states for the state machine */
+        enum EState {STATE_START, STATE_INGAME, STATE_END};    /**< Application states for the state machine */
 
         static const uint16_t SCurWindowWidth = 640;    /**< Fixed width of the application */
         static const uint16_t SCurWindowHeight = 480;   /**< Fixed height of the application */
@@ -43,13 +43,14 @@ class App : public EventListener    // Receive events in this class
         bool _bRunning;             /**< Marks whether the application should continue running */
         EState _eStateCurrent;      /**< The current state of the application for the state machine */
 
-        Surface _surfaceDisplay;   /**< The main display surface */
-        Surface _surfaceStart;     /**< Picture for the start screen */
-        Surface _surfaceGrid;      /**< Picture of the grid */
-        Surface _surfaceRed;       /**< Picture of the red marker for the grid */
-        Surface _surfaceYellow;    /**< Picture of the yellow marker for the grid */
-        Surface _surfaceWinRed;    /**< Picture for the winning screen when red wins */
-        Surface _surfaceWinYellow; /**< Picture for the winning screen when yellow wins */
+        Surface _surfaceDisplay;    /**< The main display surface */
+        Surface _surfaceStart;      /**< Picture for the start screen */
+        Surface _surfaceGrid;       /**< Picture of the grid */
+        Surface _surfaceRed;        /**< Picture of the red marker for the grid */
+        Surface _surfaceYellow;     /**< Picture of the yellow marker for the grid */
+        Surface _surfaceWinRed;     /**< Picture for the end screen when red wins */
+        Surface _surfaceWinYellow;  /**< Picture for the end screen when yellow wins */
+        Surface _surfaceDraw;       /**< Picture for the end screen when there is a draw */
 
         Grid _grid;                             /**< Main playing grid */
         Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
