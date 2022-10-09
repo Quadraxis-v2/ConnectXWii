@@ -62,6 +62,8 @@
         "fstream": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "climits": "cpp"
+        "climits": "cpp",
+        "codecvt": "cpp",
+        "ratio": "cpp"
     }
 }

@@ -13,6 +13,7 @@
 
 
 #include <cstdint>
+#include <string>
 
 
 /**
@@ -23,6 +24,7 @@ class Settings
 public:
     static const char* SCsDefaultPath;   /**< Default path for storing the application's settings */
 
+
     /* Getters and setters */
     uint8_t GetBoardWidth() const noexcept;
     void SetBoardWidth(uint8_t yBoardWidth) noexcept;
@@ -32,29 +34,35 @@ public:
     void SetCellsToWin(uint8_t yCellsToWin) noexcept;
     uint8_t GetAIDifficulty() const noexcept;
     void SetAIDifficulty(uint8_t yAIDifficulty) noexcept;
+    std::string GetCustomPath() const noexcept;
+    void SetCustomPath(std::string sCustomPath) noexcept;
 
-    /**
-     * @brief Creates an object with the default settings
-     */
-    Settings() noexcept;
+    static Settings& GetInstance();
 
-    /**
-     * @brief Constructs a new object by reading a settings file
-     * @param CsFilePath the path to the JSON file holding the settings
-     */
-    explicit Settings(const char* CsFilePath);
+    Settings(const Settings& CsettingsOther) = delete;             /**< Copy constructor */
+    Settings(Settings&& settingsOther) = default;                  /**< Move constructor */
+    Settings& operator =(const Settings& CsettingsOther) = delete; /**< Copy assignment operator */
+    Settings& operator =(Settings&& settingsOther) = default;      /**< Move assignment operator */
 
     /**
      * @brief Saves the settings on disk
      * @param CsPath the path where the settings are to be stored
      */
-    void Save(const char* CsPath) const;
+    void Save(std::string CsPath = SCsDefaultPath) const;
 
 private:
     uint8_t _yBoardWidth;
     uint8_t _yBoardHeight;
     uint8_t _yCellsToWin;
     uint8_t _yAIDifficulty;
+    std::string _sCustomPath;
+
+
+    /**
+     * @brief Constructs a new object by reading a settings file
+     * @param CsFilePath the path to the JSON file holding the settings
+     */
+    explicit Settings(std::string CsFilePath = SCsDefaultPath);
     
 };
 
@@ -67,6 +75,7 @@ inline uint8_t Settings::GetCellsToWin() const noexcept { return _yCellsToWin; }
 inline void Settings::SetCellsToWin(uint8_t yCellsToWin) noexcept { _yCellsToWin = yCellsToWin; }
 inline uint8_t Settings::GetAIDifficulty() const noexcept { return _yAIDifficulty; }
 inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _yAIDifficulty = yAIDifficulty; }
-
+inline std::string Settings::GetCustomPath() const noexcept { return _sCustomPath; }
+inline void Settings::SetCustomPath(std::string sCustomPath) noexcept { _sCustomPath = sCustomPath; }
 
 #endif

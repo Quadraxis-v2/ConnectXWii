@@ -47,12 +47,11 @@ void App::OnInit()
 
     #ifdef __wii__
 		// Initialise console
-        bool bMustLock = SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface);
-        if (bMustLock) SDL_LockSurface(_surfaceDisplay._pSdlSurface);
+        if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface)) SDL_LockSurface(_surfaceDisplay._pSdlSurface);
         CON_Init(_surfaceDisplay._pSdlSurface->pixels, 20, 20, _surfaceDisplay._pSdlSurface->w,
             _surfaceDisplay._pSdlSurface->h, _surfaceDisplay._pSdlSurface->w * VI_DISPLAY_PIX_SZ);
         std::cout << "\x1b[2;0H";
-        if (bMustLock) SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
+        if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface)) SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
 
         // Create the main human player
         WiiController* pJoystickWii = new WiiController(0);
@@ -72,25 +71,25 @@ void App::OnInit()
     // Retrieve resources from the filesystem
     try { _surfaceStart = Surface("/apps/Connect4Wii/gfx/custom/start.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface("apps/Connect4Wii/gfx/start.bmp"); }
+    { _surfaceStart = Surface("/apps/Connect4Wii/gfx/start.bmp"); }
     try { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/custom/grid.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface("apps/Connect4Wii/gfx/grid.bmp"); }
+    { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/grid.bmp"); }
     try { _surfaceRed = Surface("/apps/Connect4Wii/gfx/custom/red.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceRed = Surface("apps/Connect4Wii/gfx/red.bmp"); }
+    { _surfaceRed = Surface("/apps/Connect4Wii/gfx/red.bmp"); }
     try { _surfaceYellow = Surface("/apps/Connect4Wii/gfx/custom/yellow.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceYellow = Surface("apps/Connect4Wii/gfx/yellow.bmp"); }
+    { _surfaceYellow = Surface("/apps/Connect4Wii/gfx/yellow.bmp"); }
     try { _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/custom/winRed.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinRed = Surface("apps/Connect4Wii/gfx/winRed.bmp"); }
+    { _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/winRed.bmp"); }
     try { _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/custom/winYellow.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinYellow = Surface("apps/Connect4Wii/gfx/winYellow.bmp"); }
+    { _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/winYellow.bmp"); }
     try { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/custom/draw.bmp"); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface("apps/Connect4Wii/gfx/draw.bmp"); }
+    { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/draw.bmp"); }
 
     // Take the background out of the marker pictures
     _surfaceRed.Transparent(255, 0, 255);

@@ -2,6 +2,11 @@
 #include <vector>
 #include <SDL.h>
 #include <SDL_video.h>
+
+#ifdef __wii__
+    #include <fat.h>
+#endif
+
 #include "../../include/App.hpp"
 #include "../../include/players/Player.hpp"
 
@@ -11,6 +16,10 @@
  */
 void App::OnCleanup() noexcept 
 {
+    #ifdef __wii__
+        fatUnmount(nullptr);
+    #endif
+
     // Delete joysticks
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin(); 
         i != _htJoysticks.end(); ++i) delete i->second;

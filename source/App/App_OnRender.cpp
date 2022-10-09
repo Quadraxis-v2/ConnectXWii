@@ -38,7 +38,7 @@ void App::OnRender()
             }
         }
 
-        /*if (dynamic_cast<AI*>(_vectorPlayers.at(0)))
+        /*if (typeid(*(_vectorPlayers.at(0))) == typeid(AI))
             _bAITurn = true;*/
 
         break;
