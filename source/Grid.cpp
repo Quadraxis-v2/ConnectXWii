@@ -9,14 +9,17 @@
 /**
  * @brief Construct a new empty Grid
  */
-Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) noexcept : _uyWidth{uyWidth},
+Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) : _uyWidth{uyWidth},
     _uyHeight{uyHeight}, _uyNumberToMatch{uyNumberToMatch}, 
     _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
-    std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))},
+    std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
     _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
     _ePlayerMarkWinner{EPlayerMark::GRID_TYPE_NONE}
-{}
+{ 
+    if (_uyNumberToMatch > _uyWidth && _uyNumberToMatch > _uyHeight) 
+        throw std::length_error("Number to match is too big"); 
+}
 
 
 /**

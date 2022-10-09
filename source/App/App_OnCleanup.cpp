@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <vector>
 #include <SDL.h>
 #include <SDL_video.h>
 #include "../../include/App.hpp"
@@ -15,8 +16,8 @@ void App::OnCleanup() noexcept
         i != _htJoysticks.end(); ++i) delete i->second;
 
     // Delete players
-    for (std::unordered_map<Grid::EPlayerMark, Player*>::iterator i = _htPlayers.begin(); 
-        i != _htPlayers.end(); ++i) delete i->second;
+    for (std::vector<Player*>::iterator i = _vectorPlayers.begin(); i != _vectorPlayers.end(); ++i) 
+        delete *i;
 
     // The display surface must be freed by SDL_Quit
     SDL_Quit();

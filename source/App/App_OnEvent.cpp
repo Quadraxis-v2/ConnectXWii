@@ -48,7 +48,7 @@ void App::OnMinimize() {}
 
 /**
  * @brief Handles keyboard press events
- * 
+ *
  * @param sdlKeySymbol the key that was pressed
  * @param sdlMod the current state of keyboard modifiers
  * @param urUnicode the Unicode value of the pressed key
@@ -57,39 +57,39 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_INGAME:
+    case EState::STATE_INGAME:
+    {
+        //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
         {
-            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
+            switch (sdlKeySymbol)
             {
-                switch (sdlKeySymbol)
-                {
-                    case SDLK_LEFT:
-                        _yPlayColumn--;
-                        if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
-                            _grid.GetNextCell(_yPlayColumn) * 
-                            (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
-                        break;
-                    case SDLK_RIGHT:
-                        _yPlayColumn++;
-                        if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
-                            _grid.GetNextCell(_yPlayColumn) * 
-                            (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
-                        break;
-                    default: break;
-                }
+            case SDLK_LEFT:
+                _yPlayColumn--;
+                if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) *
+                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                break;
+            case SDLK_RIGHT:
+                _yPlayColumn++;
+                if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) *
+                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                break;
+            default: break;
             }
-            break;
         }
-        default: break;
+        break;
+    }
+    default: break;
     }
 }
 
 
 /**
  * @brief Handles keyboard release events
- * 
+ *
  * @param sdlKeySymbol the key that was released
  * @param sdlMod the current state of keyboard modifiers
  * @param urUnicode the Unicode value of the released key
@@ -113,17 +113,17 @@ void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
-            _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
-            break;
-        default: break;
+    case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
+        _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
+        break;
+    default: break;
     }
 }
 
 
 /**
  * @brief Handles mouse wheel movement events
- * 
+ *
  * @param bUp true if the mouse wheel is moving upwards
  * @param bDown true if the mouse wheel is moving downwards
  */
@@ -132,7 +132,7 @@ void App::OnMouseWheel(bool Up, bool Down) {}
 
 /**
  * @brief Handles mouse left button press events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -140,65 +140,52 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_START:
+    case EState::STATE_START:
+    {
+        if (urMouseX >= 0 && urMouseX < (App::SCurWindowWidth >> 1) && urMouseY >= 0 &&
+            urMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
         {
-            if (urMouseX >= 0 && urMouseX < (App::SCurWindowWidth >> 1) && urMouseY >= 0 &&
-                urMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
-            {
-                _eStateCurrent = EState::STATE_INGAME; // Start the game
-                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
+            _eStateCurrent = EState::STATE_INGAME; // Start the game
+            _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
-                // Create an AI player
-                _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
-                    new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW)));
-            }
-            else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
-                urMouseY >= 0 && urMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
-            {
-                _eStateCurrent = EState::STATE_INGAME; // Start the game
-                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-            }
-
-            break;
+            // Create an AI player
+            _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 4));
         }
-        case EState::STATE_INGAME:
+        else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
+            urMouseY >= 0 && urMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
         {
-            if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid and check if it won the game
-            {
-                _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
-
-                // AIs' turn
-                if (!_grid.IsFull() && 
-                    _grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE &&
-                    _htPlayers.find(Grid::EPlayerMark::GRID_TYPE_YELLOW) != _htPlayers.end())
-                {
-                    AI* pAI = dynamic_cast<AI*>(_htPlayers.at(Grid::EPlayerMark::GRID_TYPE_YELLOW));
-                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-                    pAI->ChooseMove(_grid);
-                }
-
-                // If the game is won or there is a draw go to the corresponding state
-                if (_grid.IsFull() || 
-                    _grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE) 
-                    _eStateCurrent = EState::STATE_END;
-                else _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);   // If the game is not won switch to the next player
-            }
-
-            break;
+            _eStateCurrent = EState::STATE_INGAME; // Start the game
+            _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
         }
-        case EState::STATE_END:
+
+        break;
+    }
+    case EState::STATE_INGAME:
+    {
+        if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
         {
-            Reset();
-
-            break;
+            _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
+            _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
+_bAITurn = true;
+            // If the game is won or there is a draw go to the corresponding state
+            if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
+                _eStateCurrent = EState::STATE_END;
         }
+        break;
+    }
+    case EState::STATE_END:
+    {
+        Reset();
+
+        break;
+    }
     }
 }
 
 
 /**
  * @brief Handles mouse right button press events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -207,7 +194,7 @@ void App::OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) { _bRunning = fals
 
 /**
  * @brief Handles mouse middle button press events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -216,7 +203,7 @@ void App::OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY) {}
 
 /**
  * @brief Handles mouse left button release events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -225,7 +212,7 @@ void App::OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 
 /**
  * @brief Handles mouse right button release events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -234,7 +221,7 @@ void App::OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY) {}
 
 /**
  * @brief Handles mouse middle button release events
- * 
+ *
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
@@ -253,7 +240,7 @@ void App::OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept {}
 
 /**
  * @brief Handles joystick trackball motion events
- * 
+ *
  * @param uyWhich the joystick device index
  * @param uyBall the joystick ball index
  * @param rRelativeX the relative motion in the X direction
@@ -272,100 +259,87 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_START:  // In the starting state we handle the clicks on any of the gamemodes
+    case EState::STATE_START:  // In the starting state we handle the clicks on any of the gamemodes
+    {
+        switch (uyButton)
+        {
+        case 0: // Button A press
+        {
+            // Get the position of the main Wiimote's IR
+            int32_t iMouseX = 0, iMouseY = 0;
+            SDL_GetMouseState(&iMouseX, &iMouseY);
+
+            if (iMouseX >= 0 && iMouseX < (App::SCurWindowWidth >> 1) && iMouseY >= 0 &&
+                iMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
+            {
+                _eStateCurrent = EState::STATE_INGAME; // Start the game
+                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
+
+                // Create an AI player
+                _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 4));
+            }
+            else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
+                iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
+            {
+                _eStateCurrent = EState::STATE_INGAME; // Start the game
+                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
+
+                // Create another human player
+                Joystick* pJoystickMain = new WiiController(1);
+                _htJoysticks.insert(std::make_pair(1, pJoystickMain));
+                _vectorPlayers.push_back(new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW));
+            }
+
+            break;
+        }
+        case 6: _bRunning = false; break;   // HOME button closes the game
+        }
+        break;
+    }
+    case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
+    {
+        // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
+        //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
         {
             switch (uyButton)
             {
-                case 0: // Button A press
-                {
-                    // Get the position of the main Wiimote's IR
-                    int32_t iMouseX = 0, iMouseY = 0;
-                    SDL_GetMouseState(&iMouseX, &iMouseY);
-
-                    if (iMouseX >= 0 && iMouseX < (App::SCurWindowWidth >> 1) && iMouseY >= 0 &&
-                        iMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
-                    {
-                        _eStateCurrent = EState::STATE_INGAME; // Start the game
-                        _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-
-                        // Create an AI player
-                        _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
-                            new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW)));
-                    }
-                    else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
-                        iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
-                    {
-                        _eStateCurrent = EState::STATE_INGAME; // Start the game
-                        _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-
-                        // Create another human player
-                        Joystick* pJoystickMain = new WiiController(1);
-                        _htJoysticks.insert(std::make_pair(1, pJoystickMain));
-                        _htPlayers.insert(std::make_pair(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
-                            new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW)));
-                    }
-
-                    break;
-                }
-                case 6: _bRunning = false; break;   // HOME button closes the game
-            }
-            break;
-        }
-        case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
-        {
-            // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
-            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
+            case 0: // Button A
             {
-                switch (uyButton)
+                if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                 {
-                    case 0: // Button A
-                    {
-                        if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid and check if it won the game
-                        {
-                            _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
+                    _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
+                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
 
-                            // AIs' turn
-                            AI* pAI = nullptr;
-                            while (!_grid.IsFull() && 
-                                _grid.CheckWinner() == Grid::EPlayerMark::GRID_TYPE_NONE &&
-                                (pAI = dynamic_cast<AI*>(_htPlayers.at(_ePlayerMarkCurrent))))
-                            {
-                                _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-                                pAI->ChooseMove(_grid);
-                            }
-
-                            // If the game is won or there is a draw go to the corresponding state
-                            if (_grid.IsFull() || 
-                                _grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE) 
-                                _eStateCurrent = EState::STATE_END;
-                            else _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);   // If the game is not won switch to the next player
-                        }
-                        break;
-                    }
-                    case 6: _bRunning = false; break;   // HOME button closes the game
+                    // If the game is won or there is a draw go to the corresponding state
+                    if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
+                        _eStateCurrent = EState::STATE_END;
                 }
+                break;
             }
-            break;
+            case 6: _bRunning = false; break;   // HOME button closes the game
+            }
         }
-        case EState::STATE_END:    // In the winning state we just check for a click to reset the game
+        break;
+    }
+    case EState::STATE_END:    // In the winning state we just check for a click to reset the game
+    {
+        switch (uyButton)
         {
-            switch (uyButton)
-            {
-                case 0: // Button A
-                {
-                    // Get the position of the main Wiimote's IR
-                    int32_t iMouseX = 0, iMouseY = 0;
-                    SDL_GetMouseState(&iMouseX, &iMouseY);
+        case 0: // Button A
+        {
+            // Get the position of the main Wiimote's IR
+            int32_t iMouseX = 0, iMouseY = 0;
+            SDL_GetMouseState(&iMouseX, &iMouseY);
 
-                    if (iMouseX >= 0 && iMouseX < App::SCurWindowWidth && iMouseY >= 0 &&
-                        iMouseY < App::SCurWindowHeight) Reset();
+            if (iMouseX >= 0 && iMouseX < App::SCurWindowWidth && iMouseY >= 0 &&
+                iMouseY < App::SCurWindowHeight) Reset();
 
-                    break;
-                }
-                case 6: _bRunning = false; break;   // HOME button closes the game
-            }
             break;
         }
+        case 6: _bRunning = false; break;   // HOME button closes the game
+        }
+        break;
+    }
     }
 }
 
@@ -390,32 +364,32 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
 {
     switch (_eStateCurrent)
     {
-        case EState::STATE_INGAME:
+    case EState::STATE_INGAME:
+    {
+        //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
         {
-            //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
+            switch (uyValue)
             {
-                switch (uyValue)
-                {
-                    case SDL_HAT_LEFT:
-                        _yPlayColumn--;
-                        if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
-                            _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
-                        break;
-                    case SDL_HAT_RIGHT:
-                        _yPlayColumn++;
-                        if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                        SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
-                            _grid.GetNextCell(_yPlayColumn) *
-                            (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
-                        break;
-                    default: break;
-                }
+            case SDL_HAT_LEFT:
+                _yPlayColumn--;
+                if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) *
+                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                break;
+            case SDL_HAT_RIGHT:
+                _yPlayColumn++;
+                if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) *
+                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                break;
+            default: break;
             }
-            break;
         }
-        default: break;
+        break;
+    }
+    default: break;
     }
 }
 
@@ -428,7 +402,7 @@ void App::OnExit() noexcept { _bRunning = false; }
 
 /**
  * @brief Handles window resize events
- * 
+ *
  * @param iWidth the new width of the window
  * @param iHeight the new height of the window
  */

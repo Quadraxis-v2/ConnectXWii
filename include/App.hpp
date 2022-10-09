@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <vector>
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
@@ -54,8 +55,9 @@ class App : public EventListener    // Receive events in this class
 
         Grid _grid;                             /**< Main playing grid */
         Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
+        bool _bAITurn;                          /**< An AI player has the turn */
         std::unordered_map<uint8_t, Joystick*>  _htJoysticks;         /**< The joysticks in use */
-        std::unordered_map<Grid::EPlayerMark, Player*> _htPlayers;    /**< The current players in the game */
+        std::vector<Player*> _vectorPlayers;    /**< The current players in the game */
         int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
@@ -69,7 +71,7 @@ class App : public EventListener    // Receive events in this class
         /**
          * @brief Handles all the data updates between frames
          */
-        void OnLoop() const noexcept;
+        void OnLoop() noexcept;
 
         /**
          * @brief Handles all the rendering for each frame
@@ -90,7 +92,7 @@ class App : public EventListener    // Receive events in this class
          * @brief Handles events where the mouse enters the application window
          */
         virtual void OnMouseFocus();
- 
+
         /**
          * @brief Handles events where the mouse exits the application window
          */
@@ -115,19 +117,19 @@ class App : public EventListener    // Receive events in this class
          * @brief Handles events where the window is minimized
          */
         virtual void OnMinimize();
- 
+
         /**
          * @brief Handles keyboard press events
-         * 
+         *
          * @param sdlKeySymbol the key that was pressed
          * @param sdlMod the current state of keyboard modifiers
          * @param urUnicode the Unicode value of the pressed key
          */
         virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
- 
+
         /**
          * @brief Handles keyboard release events
-         * 
+         *
          * @param sdlKeySymbol the key that was released
          * @param sdlMod the current state of keyboard modifiers
          * @param urUnicode the Unicode value of the released key
@@ -136,7 +138,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles mouse/IR movement events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          * @param rRelX the relative motion in the X direction
@@ -150,23 +152,23 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles mouse wheel movement events
-         * 
+         *
          * @param bUp true if the mouse wheel is moving upwards
          * @param bDown true if the mouse wheel is moving downwards
          */
         virtual void OnMouseWheel(bool bUp, bool bDown);
- 
+
         /**
          * @brief Handles mouse left button press events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
         virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
- 
+
         /**
          * @brief Handles mouse right button press events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
@@ -174,7 +176,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles mouse middle button press events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
@@ -182,7 +184,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles mouse left button release events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
@@ -190,15 +192,15 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles mouse right button release events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
         virtual void OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY);
- 
+
         /**
          * @brief Handles mouse middle button release events
-         * 
+         *
          * @param urMouseX the X coordinate of the mouse
          * @param urMouseY the Y coordinate of the mouse
          */
@@ -206,7 +208,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles joystick axis events
-         * 
+         *
          * @param uyWhich the joystick device index
          * @param uyAxis the joystick axis index
          * @param rValue the axis value
@@ -215,7 +217,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles joystick trackball motion events
-         * 
+         *
          * @param uyWhich the joystick device index
          * @param uyBall the joystick ball index
          * @param rRelativeX the relative motion in the X direction
@@ -225,7 +227,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles joystick button press events
-         * 
+         *
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
          */
@@ -233,7 +235,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles joystick button release events
-         * 
+         *
          * @param uyWhich the joystick device index
          * @param uyButton the joystick button index
          */
@@ -241,7 +243,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles joystick hat position events
-         * 
+         *
          * @param uyWhich the joystick device index
          * @param uyHat the joystick hat index
          * @param uyValue the hat value
@@ -255,12 +257,12 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles window resize events
-         * 
+         *
          * @param iWidth the new width of the window
          * @param iHeight the new height of the window
          */
         virtual void OnResize(int32_t iWidth, int32_t iHeight);
- 
+
         /**
          * @brief Handles window redraw events
          */
@@ -268,7 +270,7 @@ class App : public EventListener    // Receive events in this class
 
         /**
          * @brief Handles user-defined events
-         * 
+         *
          * @param uyType a user-defined event type
          * @param iCode a user-defined event code
          * @param pData1 a user-defined data pointer

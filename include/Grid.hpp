@@ -1,5 +1,5 @@
-#ifndef GRID_HPP_
-#define GRID_HPP_
+#ifndef _GRID_HPP_
+#define _GRID_HPP_
 
 
 #include <vector>
@@ -24,7 +24,7 @@ class Grid
         const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
         int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
-        explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4) noexcept;   /**< Default constructor */
+        explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4);   /**< Default constructor */
 
         /**
          * @brief Gets the mark of the next player
