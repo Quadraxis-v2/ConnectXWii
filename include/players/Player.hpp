@@ -6,22 +6,22 @@
 
 class Player
 {
-    public:
-        Grid::EPlayerMark GetPlayerMark() const noexcept;
-        void SetPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept;
+public:
+    Grid::EPlayerMark GetPlayerMark() const noexcept;
+    void SetPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept;
 
-        Player(const Player& CplayerOther) = delete;
-        Player(Player&& playerOther) = delete;
+    Player(const Player& CplayerOther) = delete;
+    Player(Player&& playerOther) = delete;
 
-        Player& operator =(const Player& CplayerOther) = delete;
-        Player& operator =(Player&& playerOther) = delete;
+    Player& operator =(const Player& CplayerOther) = delete;
+    Player& operator =(Player&& playerOther) = delete;
 
-        virtual ~Player() noexcept = default;
+    virtual ~Player() noexcept = default;
 
-    protected:
-        Grid::EPlayerMark __ePlayerMark;
+protected:
+    Grid::EPlayerMark __ePlayerMark;
 
-        explicit Player(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
+    explicit Player(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
 
 };
 

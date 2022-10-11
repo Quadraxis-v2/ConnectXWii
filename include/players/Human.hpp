@@ -12,19 +12,19 @@
 
 class Human : public Player
 {
-    public:
-        typedef std::map<uint8_t, Joystick*> Joysticks;
+public:
+    typedef std::map<uint8_t, Joystick*> Joysticks;
 
-        const Joysticks& GetJoysticks() const noexcept;
+    const Joysticks& GetJoysticks() const noexcept;
 
-        explicit Human(Joystick& joystick,
-            const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
+    explicit Human(Joystick& joystick,
+        const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
 
-        void AssociateJoystick(Joystick& joystick) noexcept;
-        void DisassociateJoystick(Joystick& joystick) noexcept;
+    void AssociateJoystick(Joystick& joystick) noexcept;
+    void DisassociateJoystick(Joystick& joystick) noexcept;
 
-    private:
-        Joysticks _htJoysticks;
+private:
+    Joysticks _htJoysticks;
 
 };
 

@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <utility>
 #include <ios>
+#include <filesystem>
 
 #include <SDL.h>
 #include <SDL_video.h>
@@ -21,6 +22,7 @@
 #include "../../include/App.hpp"
 #include "../../include/Surface.hpp"
 #include "../../include/EventManager.hpp"
+#include "../../include/Settings.hpp"
 
 
 /**
@@ -41,9 +43,8 @@ void App::OnInit()
     if(SDL_Init(uiInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
     if ((_surfaceDisplay._pSdlSurface = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
-        16, SDL_HWSURFACE | SDL_DOUBLEBUF)) == nullptr) throw std::runtime_error(SDL_GetError());
-
-    EventManager::GetInstance().AttachListener(this);   // Receive events
+        16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr) 
+        throw std::runtime_error(SDL_GetError());
 
     #ifdef __wii__
 		// Initialise console
@@ -68,26 +69,41 @@ void App::OnInit()
 
     SDL_JoystickEventState(SDL_ENABLE);
 
+    EventManager::GetInstance().AttachListener(this);   // Receive events
+    try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
+    catch (const std::ios_base::failure& CiosBaseFailure) {}
+
+    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
+        _settingsGlobal.GetCellsToWin());
+
     // Retrieve resources from the filesystem
-    try { _surfaceStart = Surface("/apps/Connect4Wii/gfx/custom/start.bmp"); }
+    try 
+    { _surfaceStart = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/start.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceStart = Surface("/apps/Connect4Wii/gfx/start.bmp"); }
-    try { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/custom/grid.bmp"); }
+    try { _surfaceGrid = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/grid.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/grid.bmp"); }
-    try { _surfaceRed = Surface("/apps/Connect4Wii/gfx/custom/red.bmp"); }
+    try { _surfaceRed = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/red.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceRed = Surface("/apps/Connect4Wii/gfx/red.bmp"); }
-    try { _surfaceYellow = Surface("/apps/Connect4Wii/gfx/custom/yellow.bmp"); }
+    try { _surfaceYellow = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/yellow.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceYellow = Surface("/apps/Connect4Wii/gfx/yellow.bmp"); }
-    try { _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/custom/winRed.bmp"); }
+    try { _surfaceWinRed = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winRed.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/winRed.bmp"); }
-    try { _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/custom/winYellow.bmp"); }
+    try { _surfaceWinYellow = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winYellow.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/winYellow.bmp"); }
-    try { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/custom/draw.bmp"); }
+    try { _surfaceDraw = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/draw.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/draw.bmp"); }
 

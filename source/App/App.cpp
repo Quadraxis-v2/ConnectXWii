@@ -23,8 +23,8 @@ App& App::GetInstance()
  * @brief Default constructor
  */
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START},
-    _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceRed{}, _surfaceYellow{},
-    _surfaceWinRed{}, _surfaceWinYellow{}, _surfaceDraw{}, _grid{7, 6, 4},
+    _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceRed{},
+    _surfaceYellow{}, _surfaceWinRed{}, _surfaceWinYellow{}, _surfaceDraw{}, _grid{},
     _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, _bAITurn{false}, _htJoysticks{},
     _vectorPlayers{}, _yPlayColumn{0}
 {}
@@ -67,13 +67,13 @@ void App::Reset() noexcept
     _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_NONE;
     _bAITurn = false;
 
-    /*for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
+    for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
-    _htJoysticks.clear();
+    _htJoysticks = std::unordered_map<uint8_t, Joystick*>{};
 
-    for (std::vector<Player*>::iterator i = _vectorPlayers.begin(); i != _vectorPlayers.end(); ++i) 
+    for (std::vector<Player*>::iterator i = _vectorPlayers.begin(); i != _vectorPlayers.end(); ++i)
         delete *i;
-    _vectorPlayers.clear();
+    _vectorPlayers = std::vector<Player*>();
 
     WiiController* pJoystickWii = new WiiController(0);
     _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
@@ -83,5 +83,5 @@ void App::Reset() noexcept
 
     Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
     pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-    _vectorPlayers.push_back(pPlayerMain);*/
+    _vectorPlayers.push_back(pPlayerMain);
 }

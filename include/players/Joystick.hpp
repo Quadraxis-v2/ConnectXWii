@@ -7,21 +7,21 @@
 
 class Joystick
 {
-    public:
-        explicit Joystick(int32_t yIndex);
-        virtual ~Joystick() noexcept;
+public:
+    explicit Joystick(int32_t yIndex);
+    virtual ~Joystick() noexcept;
 
-        int32_t GetIndex() const noexcept;
-        int16_t GetLeftStickHorizontal() const noexcept;
-        int16_t GetLeftStickVertical() const noexcept;
-        int16_t GetRightStickHorizontal() const noexcept;
-        int16_t GetRightStickVertical() const noexcept;
-        uint8_t GetDPadState() const noexcept;
-        bool GetButtonA() const noexcept;
-        bool GetButtonB() const noexcept;
+    int32_t GetIndex() const noexcept;
+    int16_t GetLeftStickHorizontal() const noexcept;
+    int16_t GetLeftStickVertical() const noexcept;
+    int16_t GetRightStickHorizontal() const noexcept;
+    int16_t GetRightStickVertical() const noexcept;
+    uint8_t GetDPadState() const noexcept;
+    bool GetButtonA() const noexcept;
+    bool GetButtonB() const noexcept;
 
-    protected:
-        SDL_Joystick* __pSdlJoystick;
+protected:
+    SDL_Joystick* __pSdlJoystick;
 
 };
 

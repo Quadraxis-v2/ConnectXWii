@@ -13,79 +13,79 @@
  */
 class Grid
 {
-    public:
-        /**< Types of player markers */
-        enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = INT_MIN, GRID_TYPE_YELLOW = INT_MAX};
+public:
+    /**< Types of player markers */
+    enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = INT_MIN, GRID_TYPE_YELLOW = INT_MAX};
 
-        /* Getters */
-        uint8_t GetWidth() const noexcept;
-        uint8_t GetHeight() const noexcept;
-        uint8_t GetNumberToMatch() const noexcept;
-        const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
-        int8_t GetNextCell(uint8_t uyColumn) const noexcept;
+    /* Getters */
+    uint8_t GetWidth() const noexcept;
+    uint8_t GetHeight() const noexcept;
+    uint8_t GetNumberToMatch() const noexcept;
+    const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
+    int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
-        explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4);   /**< Default constructor */
+    explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4);   /**< Default constructor */
 
-        /**
-         * @brief Gets the mark of the next player
-         * 
-         * @param CePlayerMark the mark of the current player
-         * @return EPlayerMark the mark of the next player
-         */
-        static EPlayerMark NextPlayer(const EPlayerMark& CePlayerMark) noexcept;
+    /**
+     * @brief Gets the mark of the next player
+     * 
+     * @param CePlayerMark the mark of the current player
+     * @return EPlayerMark the mark of the next player
+     */
+    static EPlayerMark NextPlayer(const EPlayerMark& CePlayerMark) noexcept;
 
-        const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
+    const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
 
-        /**
-         * @brief Makes a move in the grid
-         * 
-         * @param CePlayerMark the mark of the player that makes the move
-         * @param uyPlayColumn the chosen column for the move
-         */
-        void MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn);
+    /**
+     * @brief Makes a move in the grid
+     * 
+     * @param CePlayerMark the mark of the player that makes the move
+     * @param uyPlayColumn the chosen column for the move
+     */
+    void MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn);
 
-        /**
-         * @brief Checks if a move would be valid
-         * 
-         * @param uyPlayColumn the chosen column for the move
-         * @return true if the move is valid
-         * @return false if the move is invalid
-         */
-        bool IsValidMove(uint8_t uyPlayColumn) const noexcept;
+    /**
+     * @brief Checks if a move would be valid
+     * 
+     * @param uyPlayColumn the chosen column for the move
+     * @return true if the move is valid
+     * @return false if the move is invalid
+     */
+    bool IsValidMove(uint8_t uyPlayColumn) const noexcept;
 
-        /**
-         * @brief Checks if the grid is full
-         * 
-         * @return true if the grid is full
-         * @return false if the grid is not full
-         */
-        bool IsFull() const noexcept;
+    /**
+     * @brief Checks if the grid is full
+     * 
+     * @return true if the grid is full
+     * @return false if the grid is not full
+     */
+    bool IsFull() const noexcept;
 
-        /**
-         * @brief Checks if the game has been won
-         * 
-         * @return EPlayerMark the mark of the player that won
-         */
-        EPlayerMark CheckWinner() const noexcept;
+    /**
+     * @brief Checks if the game has been won
+     * 
+     * @return EPlayerMark the mark of the player that won
+     */
+    EPlayerMark CheckWinner() const noexcept;
 
-    private:
-        uint8_t _uyWidth;            /**< Width of the grid */
-        uint8_t _uyHeight;           /**< Height of the grid */
-        uint8_t _uyNumberToMatch;    /**< Number of markers in a row that must be achieved */
-        std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
-        std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
-        uint8_t _uyEmptyCells;                  /**< Indicates if the number of empty cells remaining */
-        EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game */
+private:
+    uint8_t _uyWidth;            /**< Width of the grid */
+    uint8_t _uyHeight;           /**< Height of the grid */
+    uint8_t _uyNumberToMatch;    /**< Number of markers in a row that must be achieved */
+    std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
+    std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
+    uint8_t _uyEmptyCells;                  /**< Indicates if the number of empty cells remaining */
+    EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game */
 
-        /**
-         * @brief Checks if a given move has won the game
-         * 
-         * @param CePlayerMark the mark of the player that made the previous move
-         * @param yPlayColumn the chosen column for the move
-         * @return true if the move won the game
-         * @return false if the move did not win the game
-         */
-        bool IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept;
+    /**
+     * @brief Checks if a given move has won the game
+     * 
+     * @param CePlayerMark the mark of the player that made the previous move
+     * @param yPlayColumn the chosen column for the move
+     * @return true if the move won the game
+     * @return false if the move did not win the game
+     */
+    bool IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept;
 
 };
 

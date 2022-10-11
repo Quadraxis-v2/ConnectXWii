@@ -9,35 +9,35 @@
 
 class WiiController : public Joystick
 {
-    public:
-        explicit WiiController(uint8_t uyIndex);
-        WiiController(const WiiController& CwiiController) = delete;
+public:
+    explicit WiiController(uint8_t uyIndex);
+    WiiController(const WiiController& CwiiController) = delete;
 
-        WiiController& operator =(const WiiController& CwiiController) = delete;
+    WiiController& operator =(const WiiController& CwiiController) = delete;
 
-        int16_t GetRightTriggerClassic() const noexcept;
-        int16_t GetLeftTriggerClassic() const noexcept;
-        int16_t GetPitch() const noexcept;
-        int16_t GetRoll() const noexcept;
-        int16_t GetYaw() const noexcept;
-        bool GetButton1() const noexcept;
-        bool GetButton2() const noexcept;
-        bool GetButtonMinus() const noexcept;
-        bool GetButtonPlus() const noexcept;
-        bool GetButtonHOME() const noexcept;
-        bool GetButtonZ() const noexcept;
-        bool GetButtonC() const noexcept;
-        bool GetButtonAClassic() const noexcept;
-        bool GetButtonBClassic() const noexcept;
-        bool GetButtonXClassic() const noexcept;
-        bool GetButtonYClassic() const noexcept;
-        bool GetButtonLClassic() const noexcept;
-        bool GetButtonRClassic() const noexcept;
-        bool GetButtonZLClassic() const noexcept;
-        bool GetButtonZRClassic() const noexcept;
-        bool GetButtonMinusClassic() const noexcept;
-        bool GetButtonPlusClassic() const noexcept;
-        bool GetButtonHOMEClassic() const noexcept;
+    int16_t GetRightTriggerClassic() const noexcept;
+    int16_t GetLeftTriggerClassic() const noexcept;
+    int16_t GetPitch() const noexcept;
+    int16_t GetRoll() const noexcept;
+    int16_t GetYaw() const noexcept;
+    bool GetButton1() const noexcept;
+    bool GetButton2() const noexcept;
+    bool GetButtonMinus() const noexcept;
+    bool GetButtonPlus() const noexcept;
+    bool GetButtonHOME() const noexcept;
+    bool GetButtonZ() const noexcept;
+    bool GetButtonC() const noexcept;
+    bool GetButtonAClassic() const noexcept;
+    bool GetButtonBClassic() const noexcept;
+    bool GetButtonXClassic() const noexcept;
+    bool GetButtonYClassic() const noexcept;
+    bool GetButtonLClassic() const noexcept;
+    bool GetButtonRClassic() const noexcept;
+    bool GetButtonZLClassic() const noexcept;
+    bool GetButtonZRClassic() const noexcept;
+    bool GetButtonMinusClassic() const noexcept;
+    bool GetButtonPlusClassic() const noexcept;
+    bool GetButtonHOMEClassic() const noexcept;
 
 };
 

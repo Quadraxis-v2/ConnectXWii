@@ -63,8 +63,12 @@ void AI::ChooseMove(Grid& grid) const noexcept
 int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth,
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || Cgrid.IsFull())
-        return Cgrid.CheckWinner();
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE)
+    {
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
+        else return std::numeric_limits<int32_t>::min();
+    }
+    else if (Cgrid.IsFull()) return 0;
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
@@ -96,8 +100,12 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth,
     int32_t iAlpha, int32_t iBeta) const noexcept
 {
-    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || Cgrid.IsFull())
-        return Cgrid.CheckWinner();
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE)
+    {
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
+        else return std::numeric_limits<int32_t>::min();
+    }
+    else if (Cgrid.IsFull()) return 0;
     else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
@@ -238,6 +246,20 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 }
 
 
+/**
+ * @brief Keeps track of free sectors, where there is only one type of player marker and where such 
+ * player still has the chance to win
+ * 
+ * @param Cgrid the main game board
+ * @param uyRow the row of the next cell to be added to the sector
+ * @param uyColumn the column of the next cell to be added to the sector
+ * @param quPlayerMarks the queue of cells that form the sector
+ * @param ePlayerMarkLast the type of the last  non-empty cell that was found
+ * @param uySamePlayerMarkCount the number of player marks of the same type that have been found in the
+ *  current sector
+ * @param uyEmptyCellCount the number of empty cells that have been found since the last non-empty cell
+ * @return int32_t the heuristic evaluation for the current sector
+ */
 int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
     std::queue<Grid::EPlayerMark>& quPlayerMarks, Grid::EPlayerMark& ePlayerMarkLast,
     uint8_t& uySamePlayerMarkCount, uint8_t& uyEmptyCellCount) const noexcept
@@ -269,16 +291,23 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
                 ePlayerMarkLast = Cgrid[uyRow][uyColumn];
         }
 
-        if (quPlayerMarks.size() > Cgrid.GetNumberToMatch())
+        if (quPlayerMarks.size() - 1 > Cgrid.GetNumberToMatch())
         {
             if (quPlayerMarks.front() == ePlayerMarkLast &&
                 ePlayerMarkLast != Grid::EPlayerMark::GRID_TYPE_NONE) uySamePlayerMarkCount--;
             quPlayerMarks.pop();
         }
 
-        if (quPlayerMarks.size() == Cgrid.GetNumberToMatch())
-            return std::pow(uySamePlayerMarkCount, uySamePlayerMarkCount) * 
+        if (quPlayerMarks.size() >= Cgrid.GetNumberToMatch())
+        {
+            if (uySamePlayerMarkCount >= Cgrid.GetNumberToMatch() || 
+                (uySamePlayerMarkCount == Cgrid.GetNumberToMatch() - 1 && 
+                quPlayerMarks.front() == Grid::EPlayerMark::GRID_TYPE_NONE && 
+                quPlayerMarks.back() == Grid::EPlayerMark::GRID_TYPE_NONE)) 
+                return 1000000 * PlayerMark2Heuristic(ePlayerMarkLast);
+            else return std::pow(uySamePlayerMarkCount, uySamePlayerMarkCount) * 
                 PlayerMark2Heuristic(ePlayerMarkLast);
+        }
     }
 
     return 0;

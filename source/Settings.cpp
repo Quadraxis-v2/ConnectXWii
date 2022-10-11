@@ -8,9 +8,9 @@
 				
 */
 
-#include <filesystem>
-#include <ios>
+
 #include <string>
+#include <ios>
 #include <jansson.h>
 #include "../include/Settings.hpp"
 
@@ -19,11 +19,11 @@
 const char* Settings::SCsDefaultPath = "/apps/Connect4Wii/settings.json";
 
 
-Settings& Settings::GetInstance()
-{
-    static Settings settingsInstance = Settings{};
-    return settingsInstance;
-}
+/**
+ * @brief Creates an object with the default settings
+ */
+Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
+	_yAIDifficulty{4}, _sCustomPath{"/apps/Connect4Wii/gfx/custom"} {}
 
 
 /**
@@ -32,21 +32,20 @@ Settings& Settings::GetInstance()
  * @param CsFilePath the path to the JSON file holding the settings
  */
 Settings::Settings(std::string CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
-	_yAIDifficulty{4}, _sCustomPath{"/apps/Connect4Wii/gfx/custom/"}
+	_yAIDifficulty{4}, _sCustomPath{"/apps/Connect4Wii/gfx/custom"}
 {
     json_t* jsonRoot = nullptr;			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
     json_t* jsonSettings = nullptr;		// "Settings" JSON object
     json_t* jsonField = nullptr;		// Every JSON field inside the "Settings" object
 
-	if((jsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr) 
+	if((jsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
         throw std::ios_base::failure(jsonError.text);
 
 	/* Retrieve the root and the "Settings" object first */
 	if(!json_is_object(jsonRoot))
 	{
 		json_decref(jsonRoot);
-        std::filesystem::remove(CsFilePath);
 		throw std::ios_base::failure("Error: Root is not an object");
 	}
 
@@ -54,7 +53,6 @@ Settings::Settings(std::string CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, 
 	if(!json_is_object(jsonSettings))
 	{
 		json_decref(jsonRoot);
-        std::filesystem::remove(CsFilePath);
 		throw std::ios_base::failure("Error: Settings is not an object");
 	}
 	

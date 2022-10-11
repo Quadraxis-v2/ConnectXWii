@@ -5,18 +5,18 @@
 
 class GameCubeController : public Joystick
 {
-    public:
-        explicit GameCubeController(uint8_t uyIndex);
-        GameCubeController(const GameCubeController& CgameCubeController) = delete;
+public:
+    explicit GameCubeController(uint8_t uyIndex);
+    GameCubeController(const GameCubeController& CgameCubeController) = delete;
 
-        GameCubeController& operator =(const GameCubeController& CgameCubeController) = delete;
+    GameCubeController& operator =(const GameCubeController& CgameCubeController) = delete;
 
-        bool GetButtonX() const noexcept;
-        bool GetButtonY() const noexcept;
-        bool GetButtonZ() const noexcept;
-        bool GetButtonR() const noexcept;
-        bool GetButtonL() const noexcept;
-        bool GetButtonStart() const noexcept;
+    bool GetButtonX() const noexcept;
+    bool GetButtonY() const noexcept;
+    bool GetButtonZ() const noexcept;
+    bool GetButtonR() const noexcept;
+    bool GetButtonL() const noexcept;
+    bool GetButtonStart() const noexcept;
         
 };
 

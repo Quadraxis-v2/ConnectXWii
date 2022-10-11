@@ -37,18 +37,24 @@ public:
     std::string GetCustomPath() const noexcept;
     void SetCustomPath(std::string sCustomPath) noexcept;
 
-    static Settings& GetInstance();
 
-    Settings(const Settings& CsettingsOther) = delete;             /**< Copy constructor */
-    Settings(Settings&& settingsOther) = default;                  /**< Move constructor */
-    Settings& operator =(const Settings& CsettingsOther) = delete; /**< Copy assignment operator */
-    Settings& operator =(Settings&& settingsOther) = default;      /**< Move assignment operator */
+    /**
+     * @brief Creates an object with the default settings
+     */
+    Settings() noexcept;
+
+    /**
+     * @brief Constructs a new object by reading a settings file
+     * @param CsFilePath the path to the JSON file holding the settings
+     */
+    explicit Settings(std::string CsFilePath);
+
 
     /**
      * @brief Saves the settings on disk
      * @param CsPath the path where the settings are to be stored
      */
-    void Save(std::string CsPath = SCsDefaultPath) const;
+    void Save(std::string CsPath) const;
 
 private:
     uint8_t _yBoardWidth;
@@ -56,13 +62,6 @@ private:
     uint8_t _yCellsToWin;
     uint8_t _yAIDifficulty;
     std::string _sCustomPath;
-
-
-    /**
-     * @brief Constructs a new object by reading a settings file
-     * @param CsFilePath the path to the JSON file holding the settings
-     */
-    explicit Settings(std::string CsFilePath = SCsDefaultPath);
     
 };
 

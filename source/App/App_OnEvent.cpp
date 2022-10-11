@@ -276,7 +276,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
                 // Create an AI player
-                _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 4));
+                _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 8));
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
                 iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
@@ -309,14 +309,15 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 {
                     _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
                     _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-
+_bAITurn = true;
                     // If the game is won or there is a draw go to the corresponding state
                     if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
                         _eStateCurrent = EState::STATE_END;
                 }
                 break;
             }
-            case 6: _bRunning = false; break;   // HOME button closes the game
+            case 1: Reset();            break;
+            case 6: _bRunning = false;  break;   // HOME button closes the game
             }
         }
         break;

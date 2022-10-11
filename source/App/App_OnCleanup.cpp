@@ -16,6 +16,9 @@
  */
 void App::OnCleanup() noexcept 
 {
+    try { _settingsGlobal.Save(Settings::SCsDefaultPath); }     // Save settings
+    catch (const std::ios_base::failure& CiosBaseFailure) {}
+
     #ifdef __wii__
         fatUnmount(nullptr);
     #endif
