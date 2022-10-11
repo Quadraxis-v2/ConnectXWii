@@ -28,7 +28,7 @@ void App::OnCleanup() noexcept
         i != _htJoysticks.end(); ++i) delete i->second;
 
     // Delete players
-    for (std::vector<Player*>::iterator i = _vectorPlayers.begin(); i != _vectorPlayers.end(); ++i) 
+    for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i) 
         delete *i;
 
     // The display surface must be freed by SDL_Quit

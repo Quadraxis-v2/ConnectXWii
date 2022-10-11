@@ -23,10 +23,9 @@ App& App::GetInstance()
  * @brief Default constructor
  */
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START},
-    _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceRed{},
-    _surfaceYellow{}, _surfaceWinRed{}, _surfaceWinYellow{}, _surfaceDraw{}, _grid{},
-    _ePlayerMarkCurrent{Grid::EPlayerMark::GRID_TYPE_NONE}, _bAITurn{false}, _htJoysticks{},
-    _vectorPlayers{}, _yPlayColumn{0}
+    _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
+    _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{},
+    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _yPlayColumn{0}
 {}
 
 
@@ -63,17 +62,17 @@ void App::OnExecute()
 void App::Reset() noexcept
 {
     _eStateCurrent = STATE_START;
-    _grid = Grid{};
-    _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_NONE;
-    _bAITurn = false;
+    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), 
+        _settingsGlobal.GetCellsToWin());
+    _uyCurrentPlayer = 0;
 
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
-    _htJoysticks = std::unordered_map<uint8_t, Joystick*>{};
+    _htJoysticks = std::unordered_map<uint8_t, Joystick*>();
 
-    for (std::vector<Player*>::iterator i = _vectorPlayers.begin(); i != _vectorPlayers.end(); ++i)
+    for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
         delete *i;
-    _vectorPlayers = std::vector<Player*>();
+    _vectorpPlayers = std::vector<Player*>();
 
     WiiController* pJoystickWii = new WiiController(0);
     _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
@@ -83,5 +82,5 @@ void App::Reset() noexcept
 
     Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
     pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-    _vectorPlayers.push_back(pPlayerMain);
+    _vectorpPlayers.push_back(pPlayerMain);
 }

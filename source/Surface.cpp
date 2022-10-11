@@ -23,7 +23,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
     SDL_Surface* pSdlSurfaceTemp = nullptr;
 
     if((pSdlSurfaceTemp = SDL_LoadBMP(CsFilePath.c_str())) == nullptr)
-        throw std::ios_base::failure("Loading error");
+        throw std::ios_base::failure(SDL_GetError());
 
     _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp); // Convert the loaded surface to the same format as the display
     SDL_FreeSurface(pSdlSurfaceTemp);
@@ -40,7 +40,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
 Surface::Surface(const Surface& CsurfaceOther) : _pSdlSurface{nullptr}
 {
     if ((_pSdlSurface = SDL_ConvertSurface(CsurfaceOther._pSdlSurface,
-        CsurfaceOther._pSdlSurface->format, SDL_HWSURFACE)) == nullptr)
+        CsurfaceOther._pSdlSurface->format, CsurfaceOther._pSdlSurface->flags)) == nullptr)
         throw std::runtime_error(SDL_GetError());
 }
 
@@ -76,7 +76,7 @@ Surface& Surface::operator =(const Surface& CsurfaceOther)
     {
         SDL_FreeSurface(_pSdlSurface);
         if ((_pSdlSurface = SDL_ConvertSurface(CsurfaceOther._pSdlSurface,
-            CsurfaceOther._pSdlSurface->format, SDL_HWSURFACE)) == nullptr)
+            CsurfaceOther._pSdlSurface->format, CsurfaceOther._pSdlSurface->flags)) == nullptr)
             throw std::runtime_error(SDL_GetError());
     }
     return *this;

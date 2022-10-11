@@ -1,18 +1,12 @@
 #include <cstdint>
-#include "SDL_thread.h"
+#include <SDL_thread.h>
 #include "../../include/App.hpp"
 #include "../../include/players/AI.hpp"
 #include "../../include/Grid.hpp"
 
 static Grid* Spgrid;
 
-int32_t SDLCALL test(void* data)
-{
-    AI* pAI = (AI*)data;
-    pAI->ChooseMove(*Spgrid);
-
-    return 0;
-}
+int32_t SDLCALL RunAI(void* pData);
 
 
 /**
@@ -25,16 +19,13 @@ void App::OnLoop() noexcept
     case STATE_INGAME:
     {
         // AIs' turn
-        if (_bAITurn)
+        if (!_bAIRunning && typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
         {
-            _bAITurn = false;
+            _bAIRunning = true;
             Spgrid = &_grid;
-            AI* pAI = dynamic_cast<AI*>(_vectorPlayers.at(1));
+            SDL_CreateThread(RunAI, dynamic_cast<AI*>(_vectorpPlayers[_uyCurrentPlayer]));
 
-            SDL_CreateThread(test, pAI);
-            
-
-            _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
+            //++_uyCurrentPlayer %= _vectorpPlayers.size();
 
             // If the game is won or there is a draw go to the corresponding state
             if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
@@ -46,4 +37,10 @@ void App::OnLoop() noexcept
     }
 }
 
+
+int32_t SDLCALL RunAI(void* pData)
+{
+    static_cast<AI*>(pData)->ChooseMove(*Spgrid);
+    return 0;
+}
 

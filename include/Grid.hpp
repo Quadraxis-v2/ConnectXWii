@@ -2,10 +2,9 @@
 #define _GRID_HPP_
 
 
+#include <cstdint>
 #include <vector>
 #include <ostream>
-#include <cstdint>
-#include <climits>
 
 
 /**
@@ -15,12 +14,12 @@ class Grid
 {
 public:
     /**< Types of player markers */
-    enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = INT_MIN, GRID_TYPE_YELLOW = INT_MAX};
+    enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = 1, GRID_TYPE_YELLOW = 2};
 
     /* Getters */
     uint8_t GetWidth() const noexcept;
     uint8_t GetHeight() const noexcept;
-    uint8_t GetNumberToMatch() const noexcept;
+    uint8_t GetCellsToWin() const noexcept;
     const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
     int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
@@ -69,9 +68,9 @@ public:
     EPlayerMark CheckWinner() const noexcept;
 
 private:
-    uint8_t _uyWidth;            /**< Width of the grid */
-    uint8_t _uyHeight;           /**< Height of the grid */
-    uint8_t _uyNumberToMatch;    /**< Number of markers in a row that must be achieved */
+    uint8_t _uyWidth;         /**< Width of the grid */
+    uint8_t _uyHeight;        /**< Height of the grid */
+    uint8_t _uyCellsToWin;    /**< Number of markers in a row that must be achieved */
     std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
     std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
     uint8_t _uyEmptyCells;                  /**< Indicates if the number of empty cells remaining */
@@ -92,7 +91,7 @@ private:
 
 inline uint8_t Grid::GetWidth() const noexcept { return _uyWidth; }
 inline uint8_t Grid::GetHeight() const noexcept { return _uyHeight; }
-inline uint8_t Grid::GetNumberToMatch() const noexcept { return _uyNumberToMatch; }
+inline uint8_t Grid::GetCellsToWin() const noexcept { return _uyCellsToWin; }
 inline const std::vector<std::vector<Grid::EPlayerMark> >& Grid::GetCells() const noexcept 
 { return _a2playerMarkCells; }
 inline int8_t Grid::GetNextCell(uint8_t uyColumn) const noexcept { return _ayNextCell[uyColumn]; }

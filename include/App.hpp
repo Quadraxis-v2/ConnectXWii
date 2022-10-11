@@ -49,17 +49,17 @@ private:
     Surface _surfaceDisplay;    /**< The main display surface */
     Surface _surfaceStart;      /**< Picture for the start screen */
     Surface _surfaceGrid;       /**< Picture of the grid */
-    Surface _surfaceRed;        /**< Picture of the red marker for the grid */
-    Surface _surfaceYellow;     /**< Picture of the yellow marker for the grid */
-    Surface _surfaceWinRed;     /**< Picture for the end screen when red wins */
-    Surface _surfaceWinYellow;  /**< Picture for the end screen when yellow wins */
+    Surface _surfaceMarker1;    /**< Picture of the red marker for the grid */
+    Surface _surfaceMarker2;    /**< Picture of the yellow marker for the grid */
+    Surface _surfaceWinPlayer1; /**< Picture for the end screen when red wins */
+    Surface _surfaceWinPlayer2; /**< Picture for the end screen when yellow wins */
     Surface _surfaceDraw;       /**< Picture for the end screen when there is a draw */
 
     Grid _grid;                             /**< Main playing grid */
-    Grid::EPlayerMark _ePlayerMarkCurrent;  /**< The current player that has to make a play */
-    bool _bAITurn;                          /**< An AI player has the turn */
-    std::unordered_map<uint8_t, Joystick*>  _htJoysticks;         /**< The joysticks in use */
-    std::vector<Player*> _vectorPlayers;    /**< The current players in the game */
+    std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
+    std::vector<Player*> _vectorpPlayers;   /**< The current players in the game */
+    uint8_t _uyCurrentPlayer;               /** The index for the current player */
+    bool _bAIRunning;                       /**< An AI is running */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 

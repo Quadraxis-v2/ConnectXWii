@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
+#include <SDL_mouse.h>
 #include <SDL_joystick.h>
 
 #ifdef __wii__
@@ -46,6 +47,9 @@ void App::OnInit()
         16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr) 
         throw std::runtime_error(SDL_GetError());
 
+    SDL_JoystickEventState(SDL_ENABLE);
+    SDL_ShowCursor(SDL_DISABLE);
+
     #ifdef __wii__
 		// Initialise console
         if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface)) SDL_LockSurface(_surfaceDisplay._pSdlSurface);
@@ -64,10 +68,8 @@ void App::OnInit()
         Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
 
-        _vectorPlayers.push_back(new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED));
+        _vectorpPlayers.push_back(new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED));
 	#endif
-
-    SDL_JoystickEventState(SDL_ENABLE);
 
     EventManager::GetInstance().AttachListener(this);   // Receive events
     try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
@@ -86,28 +88,28 @@ void App::OnInit()
         _settingsGlobal.GetCustomPath() + "/grid.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/grid.bmp"); }
-    try { _surfaceRed = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/red.bmp").lexically_normal()); }
+    try { _surfaceMarker1 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceRed = Surface("/apps/Connect4Wii/gfx/red.bmp"); }
-    try { _surfaceYellow = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/yellow.bmp").lexically_normal()); }
+    { _surfaceMarker1 = Surface("/apps/Connect4Wii/gfx/player1.bmp"); }
+    try { _surfaceMarker2 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceYellow = Surface("/apps/Connect4Wii/gfx/yellow.bmp"); }
-    try { _surfaceWinRed = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winRed.bmp").lexically_normal()); }
+    { _surfaceMarker2 = Surface("/apps/Connect4Wii/gfx/player2.bmp"); }
+    try { _surfaceWinPlayer1 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer1.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinRed = Surface("/apps/Connect4Wii/gfx/winRed.bmp"); }
-    try { _surfaceWinYellow = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winYellow.bmp").lexically_normal()); }
+    { _surfaceWinPlayer1 = Surface("/apps/Connect4Wii/gfx/winPlayer1.bmp"); }
+    try { _surfaceWinPlayer2 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer2.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinYellow = Surface("/apps/Connect4Wii/gfx/winYellow.bmp"); }
+    { _surfaceWinPlayer2 = Surface("/apps/Connect4Wii/gfx/winPlayer2.bmp"); }
     try { _surfaceDraw = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/draw.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/draw.bmp"); }
 
     // Take the background out of the marker pictures
-    _surfaceRed.Transparent(255, 0, 255);
-    _surfaceYellow.Transparent(255, 0, 255);
+    _surfaceMarker1.Transparent(255, 0, 255);
+    _surfaceMarker2.Transparent(255, 0, 255);
 }

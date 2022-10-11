@@ -146,17 +146,14 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
             urMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
         {
             _eStateCurrent = EState::STATE_INGAME; // Start the game
-            _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
             // Create an AI player
-            _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 4));
+            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                _settingsGlobal.GetAIDifficulty()));
         }
         else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
             urMouseY >= 0 && urMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
-        {
             _eStateCurrent = EState::STATE_INGAME; // Start the game
-            _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
-        }
 
         break;
     }
@@ -164,9 +161,9 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
     {
         if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
         {
-            _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
-            _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-_bAITurn = true;
+            _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
+            ++_uyCurrentPlayer %= _vectorpPlayers.size();
+            
             // If the game is won or there is a draw go to the corresponding state
             if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
                 _eStateCurrent = EState::STATE_END;
@@ -273,21 +270,20 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 iMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
-                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
                 // Create an AI player
-                _vectorPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 8));
+                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                    _settingsGlobal.GetAIDifficulty()));
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
                 iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
-                _ePlayerMarkCurrent = Grid::EPlayerMark::GRID_TYPE_RED;
 
                 // Create another human player
                 Joystick* pJoystickMain = new WiiController(1);
                 _htJoysticks.insert(std::make_pair(1, pJoystickMain));
-                _vectorPlayers.push_back(new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW));
+                _vectorpPlayers.push_back(new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW));
             }
 
             break;
@@ -307,9 +303,9 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
             {
                 if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                 {
-                    _grid.MakeMove(_ePlayerMarkCurrent, _yPlayColumn);
-                    _ePlayerMarkCurrent = Grid::NextPlayer(_ePlayerMarkCurrent);
-_bAITurn = true;
+                    _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
+                    ++_uyCurrentPlayer %= _vectorpPlayers.size();
+
                     // If the game is won or there is a draw go to the corresponding state
                     if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
                         _eStateCurrent = EState::STATE_END;

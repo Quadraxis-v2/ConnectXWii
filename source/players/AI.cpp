@@ -140,7 +140,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
     std::queue<Grid::EPlayerMark> quPlayerMarks{};
 
     // Upwards check
-    if (Cgrid.GetHeight() >= Cgrid.GetNumberToMatch())
+    if (Cgrid.GetHeight() >= Cgrid.GetCellsToWin())
     {
         for (uint8_t i = 0; i < Cgrid.GetWidth(); i++)
         {
@@ -153,7 +153,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
                 quPlayerMarks.push(ePlayerMarkLast);
 
                 for (int8_t j = Cgrid.GetHeight() - 2;
-                    j >= std::max(0, Cgrid.GetNextCell(i) - Cgrid.GetNumberToMatch() + 2); j--)
+                    j >= std::max(0, Cgrid.GetNextCell(i) - Cgrid.GetCellsToWin() + 2); j--)
                     iHeuristic += EvaluateSector(Cgrid, j, i, quPlayerMarks, ePlayerMarkLast,
                         uySamePlayerMarkCount, uyEmptyCellCount);
             }
@@ -166,7 +166,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
         if (Cgrid.GetNextCell(i) < yMaxColumnHeight) yMaxColumnHeight = Cgrid.GetNextCell(i);
     yMaxColumnHeight++;
 
-    if (Cgrid.GetWidth() >= Cgrid.GetNumberToMatch())
+    if (Cgrid.GetWidth() >= Cgrid.GetCellsToWin())
     {
         for (uint8_t i = yMaxColumnHeight; i < Cgrid.GetHeight(); i++)
         {
@@ -181,10 +181,10 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
         }
     }
 
-    if (Cgrid.GetHeight() >= Cgrid.GetNumberToMatch() && Cgrid.GetWidth() >= Cgrid.GetNumberToMatch())
+    if (Cgrid.GetHeight() >= Cgrid.GetCellsToWin() && Cgrid.GetWidth() >= Cgrid.GetCellsToWin())
     {
         // Diagonal up right check
-        for (uint8_t i = std::max(static_cast<int8_t>(Cgrid.GetNumberToMatch() - 1), yMaxColumnHeight);
+        for (uint8_t i = std::max(static_cast<int8_t>(Cgrid.GetCellsToWin() - 1), yMaxColumnHeight);
             i < Cgrid.GetHeight(); i++)
         {
             ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
@@ -193,12 +193,12 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < std::min(Cgrid.GetWidth(), static_cast<uint8_t>(i - std::max(0,
-                yMaxColumnHeight - Cgrid.GetNumberToMatch()))); j++)
+                yMaxColumnHeight - Cgrid.GetCellsToWin()))); j++)
                 iHeuristic += EvaluateSector(Cgrid, i - j, j, quPlayerMarks, ePlayerMarkLast,
                     uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
-        for (uint8_t i = 1; i <= Cgrid.GetWidth() - Cgrid.GetNumberToMatch(); i++)
+        for (uint8_t i = 1; i <= Cgrid.GetWidth() - Cgrid.GetCellsToWin(); i++)
         {
             ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
             uySamePlayerMarkCount = 0;
@@ -208,13 +208,13 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             for (uint8_t j = 0;
                 j < std::min(static_cast<uint8_t>(Cgrid.GetWidth() - i), std::min(Cgrid.GetHeight(),
                     static_cast<uint8_t>(Cgrid.GetHeight() -
-                    yMaxColumnHeight + Cgrid.GetNumberToMatch() - 1))); j++)
+                    yMaxColumnHeight + Cgrid.GetCellsToWin() - 1))); j++)
                 iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i + j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
         // Diagonal up left check
-        for (uint8_t i = Cgrid.GetNumberToMatch() - 1; i < Cgrid.GetWidth(); i++)
+        for (uint8_t i = Cgrid.GetCellsToWin() - 1; i < Cgrid.GetWidth(); i++)
         {
             ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
             uySamePlayerMarkCount = 0;
@@ -223,13 +223,13 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 
             for (uint8_t j = 0; j < std::min(static_cast<uint8_t>(i + 1), std::min(Cgrid.GetHeight(),
                     static_cast<uint8_t>(Cgrid.GetHeight() -
-                    yMaxColumnHeight + Cgrid.GetNumberToMatch() - 1))); j++)
+                    yMaxColumnHeight + Cgrid.GetCellsToWin() - 1))); j++)
                 iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i - j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
         for (uint8_t i = Cgrid.GetHeight() - 2;
-            i >= std::max(static_cast<int8_t>(Cgrid.GetNumberToMatch() - 1), yMaxColumnHeight); i--)
+            i >= std::max(static_cast<int8_t>(Cgrid.GetCellsToWin() - 1), yMaxColumnHeight); i--)
         {
             ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
             uySamePlayerMarkCount = 0;
@@ -291,17 +291,17 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
                 ePlayerMarkLast = Cgrid[uyRow][uyColumn];
         }
 
-        if (quPlayerMarks.size() - 1 > Cgrid.GetNumberToMatch())
+        if (quPlayerMarks.size() - 1 > Cgrid.GetCellsToWin())
         {
             if (quPlayerMarks.front() == ePlayerMarkLast &&
                 ePlayerMarkLast != Grid::EPlayerMark::GRID_TYPE_NONE) uySamePlayerMarkCount--;
             quPlayerMarks.pop();
         }
 
-        if (quPlayerMarks.size() >= Cgrid.GetNumberToMatch())
+        if (quPlayerMarks.size() >= Cgrid.GetCellsToWin())
         {
-            if (uySamePlayerMarkCount >= Cgrid.GetNumberToMatch() || 
-                (uySamePlayerMarkCount == Cgrid.GetNumberToMatch() - 1 && 
+            if (uySamePlayerMarkCount >= Cgrid.GetCellsToWin() || 
+                (uySamePlayerMarkCount == Cgrid.GetCellsToWin() - 1 && 
                 quPlayerMarks.front() == Grid::EPlayerMark::GRID_TYPE_NONE && 
                 quPlayerMarks.back() == Grid::EPlayerMark::GRID_TYPE_NONE)) 
                 return 1000000 * PlayerMark2Heuristic(ePlayerMarkLast);

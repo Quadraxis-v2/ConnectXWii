@@ -10,14 +10,14 @@
  * @brief Construct a new empty Grid
  */
 Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) : _uyWidth{uyWidth},
-    _uyHeight{uyHeight}, _uyNumberToMatch{uyNumberToMatch}, 
+    _uyHeight{uyHeight}, _uyCellsToWin{uyNumberToMatch}, 
     _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
     std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
     _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
     _ePlayerMarkWinner{EPlayerMark::GRID_TYPE_NONE}
 { 
-    if (_uyNumberToMatch > _uyWidth && _uyNumberToMatch > _uyHeight) 
+    if (_uyCellsToWin > _uyWidth && _uyCellsToWin > _uyHeight) 
         throw std::length_error("Number to match is too big"); 
 }
 
@@ -85,12 +85,12 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 
     // Downwards check
     uint8_t uyCounter = 1;
-    if (yPlayRow <= _uyHeight - _uyNumberToMatch)
+    if (yPlayRow <= _uyHeight - _uyCellsToWin)
     {
-        for (uint8_t i = 1; i < _uyNumberToMatch && yPlayRow + i < _uyHeight &&
+        for (uint8_t i = 1; i < _uyCellsToWin && yPlayRow + i < _uyHeight &&
             _a2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; i++) uyCounter++;
 
-        if (uyCounter == _uyNumberToMatch) return true;
+        if (uyCounter == _uyCellsToWin) return true;
     }
 
     // Check the remaining directions except upwards
@@ -103,22 +103,22 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 
         // Check one way
         uyCounter = 1;
-        for (int8_t i = 1; i < _uyNumberToMatch &&
+        for (int8_t i = 1; i < _uyCellsToWin &&
             yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < _uyHeight &&
             yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < _uyWidth &&
             _a2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == CePlayerMark;
             i++) uyCounter++;
 
-        if (uyCounter == _uyNumberToMatch) return true;
+        if (uyCounter == _uyCellsToWin) return true;
 
         // Check the opposite way
-        for (int8_t i = 1; i < _uyNumberToMatch &&
+        for (int8_t i = 1; i < _uyCellsToWin &&
             yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < _uyHeight &&
             yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < _uyWidth &&
             _a2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == CePlayerMark;
             i++) uyCounter++;
 
-        if (uyCounter == _uyNumberToMatch) return true;
+        if (uyCounter == _uyCellsToWin) return true;
     }
 
     return false;

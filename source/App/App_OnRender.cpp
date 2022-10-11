@@ -32,14 +32,11 @@ void App::OnRender()
                 int32_t iX = j * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
 
                 if(_grid[i][j] == Grid::EPlayerMark::GRID_TYPE_RED)
-                    _surfaceDisplay.OnDraw(_surfaceRed, iX, iY);
+                    _surfaceDisplay.OnDraw(_surfaceMarker1, iX, iY);
                 else if(_grid[i][j] == Grid::EPlayerMark::GRID_TYPE_YELLOW)
-                    _surfaceDisplay.OnDraw(_surfaceYellow, iX, iY);
+                    _surfaceDisplay.OnDraw(_surfaceMarker2, iX, iY);
             }
         }
-
-        /*if (typeid(*(_vectorPlayers.at(0))) == typeid(AI))
-            _bAITurn = true;*/
 
         break;
     }
@@ -47,8 +44,8 @@ void App::OnRender()
     {
         switch (_grid.CheckWinner())
         {
-        case Grid::EPlayerMark::GRID_TYPE_RED:      _surfaceDisplay.OnDraw(_surfaceWinRed);     break;
-        case Grid::EPlayerMark::GRID_TYPE_YELLOW:   _surfaceDisplay.OnDraw(_surfaceWinYellow);  break;
+        case Grid::EPlayerMark::GRID_TYPE_RED:      _surfaceDisplay.OnDraw(_surfaceWinPlayer1); break;
+        case Grid::EPlayerMark::GRID_TYPE_YELLOW:   _surfaceDisplay.OnDraw(_surfaceWinPlayer2); break;
         case Grid::EPlayerMark::GRID_TYPE_NONE:     _surfaceDisplay.OnDraw(_surfaceDraw);       break;
         }
 
