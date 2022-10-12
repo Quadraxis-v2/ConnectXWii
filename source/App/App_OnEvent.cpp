@@ -281,9 +281,16 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
                 // Create another human player
-                Joystick* pJoystickMain = new WiiController(1);
-                _htJoysticks.insert(std::make_pair(1, pJoystickMain));
-                _vectorpPlayers.push_back(new Human(*pJoystickMain, Grid::EPlayerMark::GRID_TYPE_YELLOW));
+                /*WiiController* pJoystickWii = new WiiController(1);
+                _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));*/
+
+                GameCubeController* pJoystickGameCube = new GameCubeController(1);
+                _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
+
+                Human* pSecondPlayer = new Human(*_htJoysticks.at(0), Grid::EPlayerMark::GRID_TYPE_YELLOW);
+                pSecondPlayer->AssociateJoystick(*pJoystickGameCube);
+
+                _vectorpPlayers.push_back(pSecondPlayer);
             }
 
             break;
@@ -295,25 +302,28 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
     case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
     {
         // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
-        //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
+        if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
         {
-            switch (uyButton)
+            if (pHuman->GetJoysticks().contains(uyWhich))
             {
-            case 0: // Button A
-            {
-                if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+                switch (uyButton)
                 {
-                    _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
-                    ++_uyCurrentPlayer %= _vectorpPlayers.size();
+                case 0: // Button A
+                {
+                    if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+                    {
+                        _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
+                        ++_uyCurrentPlayer %= _vectorpPlayers.size();
 
-                    // If the game is won or there is a draw go to the corresponding state
-                    if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
-                        _eStateCurrent = EState::STATE_END;
+                        // If the game is won or there is a draw go to the corresponding state
+                        if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
+                            _eStateCurrent = EState::STATE_END;
+                    }
+                    break;
                 }
-                break;
-            }
-            case 1: Reset();            break;
-            case 6: _bRunning = false;  break;   // HOME button closes the game
+                case 1: Reset();            break;
+                case 6: _bRunning = false;  break;   // HOME button closes the game
+                }
             }
         }
         break;

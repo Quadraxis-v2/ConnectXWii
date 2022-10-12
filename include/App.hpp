@@ -63,12 +63,15 @@ private:
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
+    friend int32_t SDLCALL RunAI(void* pData);
+
+
     App() noexcept;    /**< Default constructor */
 
     /**
      * @brief Handles the initial loading of data
      */
-    void OnInit();
+    void OnInitialise();
 
     /**
      * @brief Handles all the data updates between frames

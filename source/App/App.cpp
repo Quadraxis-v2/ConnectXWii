@@ -1,4 +1,3 @@
-#include <exception>
 #include <unordered_map>
 #include <SDL_events.h>
 #include <SDL_joystick.h>
@@ -6,8 +5,10 @@
 #include "../../include/App.hpp"
 #include "../../include/EventListener.hpp"
 #include "../../include/EventManager.hpp"
-#include "../../include/Surface.hpp"
 #include "../../include/Grid.hpp"
+#include "../../include/players/Joystick.hpp"
+#include "../../include/players/WiiController.hpp"
+#include "../../include/players/GameCubeController.hpp"
 #include "../../include/players/Player.hpp"
 #include "../../include/players/Human.hpp"
 
@@ -36,7 +37,7 @@ void App::OnExecute()
 {
     try
     {
-        OnInit();
+        OnInitialise();
 
         SDL_Event sdlEvent{};
         EventManager& eventManager = EventManager::GetInstance();
@@ -50,7 +51,7 @@ void App::OnExecute()
             SDL_Delay(10);
         }
     }
-    catch (const std::exception& Cexception) {}
+    catch (...) {}
 
     OnCleanup();
 }

@@ -29,7 +29,7 @@
 /**
  * @brief Handles the initial loading of data
  */
-void App::OnInit()
+void App::OnInitialise()
 {
     #ifdef __wii__
         fatInitDefault();   // SDL-wii needs to initialise libFAT first
@@ -48,7 +48,7 @@ void App::OnInit()
         throw std::runtime_error(SDL_GetError());
 
     SDL_JoystickEventState(SDL_ENABLE);
-    SDL_ShowCursor(SDL_DISABLE);
+    //SDL_ShowCursor(SDL_DISABLE);
 
     #ifdef __wii__
 		// Initialise console
@@ -60,7 +60,7 @@ void App::OnInit()
 
         // Create the main human player
         WiiController* pJoystickWii = new WiiController(0);
-        _htJoysticks.insert(std::make_pair(0, pJoystickWii));
+        _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
         GameCubeController* pJoystickGameCube = new GameCubeController(0);
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));

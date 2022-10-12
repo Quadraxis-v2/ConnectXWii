@@ -4,7 +4,6 @@
 #include "../../include/players/AI.hpp"
 #include "../../include/Grid.hpp"
 
-static Grid* Spgrid;
 
 int32_t SDLCALL RunAI(void* pData);
 
@@ -19,17 +18,10 @@ void App::OnLoop() noexcept
     case STATE_INGAME:
     {
         // AIs' turn
-        if (!_bAIRunning && typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
+        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI) && !_bAIRunning)
         {
             _bAIRunning = true;
-            Spgrid = &_grid;
-            SDL_CreateThread(RunAI, dynamic_cast<AI*>(_vectorpPlayers[_uyCurrentPlayer]));
-
-            //++_uyCurrentPlayer %= _vectorpPlayers.size();
-
-            // If the game is won or there is a draw go to the corresponding state
-            if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
-                _eStateCurrent = EState::STATE_END;
+            SDL_CreateThread(RunAI, this);
         }
         break;
     }
@@ -38,9 +30,25 @@ void App::OnLoop() noexcept
 }
 
 
+/**
+ * @brief 
+ * 
+ * @param pData 
+ * @return int32_t 
+ */
 int32_t SDLCALL RunAI(void* pData)
 {
-    static_cast<AI*>(pData)->ChooseMove(*Spgrid);
+    App* pApp = static_cast<App*>(pData);
+
+    dynamic_cast<AI*>(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer])->ChooseMove(pApp->_grid);
+
+    ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size();
+
+    // If the game is won or there is a draw go to the corresponding state
+    if (pApp->_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || pApp->_grid.IsFull())
+        pApp->_eStateCurrent = App::EState::STATE_END;
+
+    pApp->_bAIRunning = false;
+
     return 0;
 }
-

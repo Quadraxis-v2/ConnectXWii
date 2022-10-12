@@ -1,3 +1,6 @@
+#ifndef _GAMECUBE_CONTROLLER_HPP_
+#define _GAMECUBE_CONTROLLER_HPP_
+
 #include <cstdint>
 #include <SDL_joystick.h>
 #include "Joystick.hpp"
@@ -35,3 +38,5 @@ inline bool GameCubeController::GetButtonL() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 6); }
 inline bool GameCubeController::GetButtonStart() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 7); }
+
+#endif
