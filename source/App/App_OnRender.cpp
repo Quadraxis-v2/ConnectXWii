@@ -31,9 +31,9 @@ void App::OnRender()
                 // Surface coordinate of the j'th column of the grid
                 int32_t iX = j * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
 
-                if(_grid[i][j] == Grid::EPlayerMark::GRID_TYPE_RED)
+                if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
                     _surfaceDisplay.OnDraw(_surfaceMarker1, iX, iY);
-                else if(_grid[i][j] == Grid::EPlayerMark::GRID_TYPE_YELLOW)
+                else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
                     _surfaceDisplay.OnDraw(_surfaceMarker2, iX, iY);
             }
         }
@@ -44,9 +44,9 @@ void App::OnRender()
     {
         switch (_grid.CheckWinner())
         {
-        case Grid::EPlayerMark::GRID_TYPE_RED:      _surfaceDisplay.OnDraw(_surfaceWinPlayer1); break;
-        case Grid::EPlayerMark::GRID_TYPE_YELLOW:   _surfaceDisplay.OnDraw(_surfaceWinPlayer2); break;
-        case Grid::EPlayerMark::GRID_TYPE_NONE:     _surfaceDisplay.OnDraw(_surfaceDraw);       break;
+        case Grid::EPlayerMark::PLAYER1:   _surfaceDisplay.OnDraw(_surfaceWinPlayer1); break;
+        case Grid::EPlayerMark::PLAYER2:   _surfaceDisplay.OnDraw(_surfaceWinPlayer2); break;
+        case Grid::EPlayerMark::EMPTY:     _surfaceDisplay.OnDraw(_surfaceDraw);       break;
         }
 
         break;

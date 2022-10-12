@@ -26,7 +26,8 @@ App& App::GetInstance()
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START},
     _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
     _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{},
-    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _yPlayColumn{0}
+    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true}, 
+    _bIsAIRunning{false}, _yPlayColumn{0}
 {}
 
 
@@ -81,7 +82,7 @@ void App::Reset() noexcept
     GameCubeController* pJoystickGameCube = new GameCubeController(0);
     _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-    Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
+    Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
     pPlayerMain->AssociateJoystick(*pJoystickGameCube);
     _vectorpPlayers.push_back(pPlayerMain);
 }

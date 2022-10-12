@@ -1,3 +1,6 @@
+#ifndef _SETTINGS_HPP_
+#define _SETTINGS_HPP_
+
 /**
 	@file		Settings.hpp
 	@author		Juan de la Cruz Caravaca Guerrero
@@ -7,10 +10,6 @@
                 Class for managing application settings
 				
 */
-
-#ifndef _SETTINGS_HPP_
-#define _SETTINGS_HPP_
-
 
 #include <cstdint>
 #include <string>

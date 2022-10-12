@@ -18,7 +18,7 @@ public:
     const Joysticks& GetJoysticks() const noexcept;
 
     explicit Human(Joystick& joystick,
-        const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
+        const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::EMPTY) noexcept;
 
     void AssociateJoystick(Joystick& joystick) noexcept;
     void DisassociateJoystick(Joystick& joystick) noexcept;

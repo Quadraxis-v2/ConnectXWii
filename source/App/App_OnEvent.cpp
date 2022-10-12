@@ -148,7 +148,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
             _eStateCurrent = EState::STATE_INGAME; // Start the game
 
             // Create an AI player
-            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2, 
                 _settingsGlobal.GetAIDifficulty()));
         }
         else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
@@ -165,7 +165,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
             ++_uyCurrentPlayer %= _vectorpPlayers.size();
             
             // If the game is won or there is a draw go to the corresponding state
-            if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
+            if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                 _eStateCurrent = EState::STATE_END;
         }
         break;
@@ -272,7 +272,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
                 // Create an AI player
-                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::GRID_TYPE_YELLOW, 
+                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2, 
                     _settingsGlobal.GetAIDifficulty()));
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
@@ -287,7 +287,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 GameCubeController* pJoystickGameCube = new GameCubeController(1);
                 _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-                Human* pSecondPlayer = new Human(*_htJoysticks.at(0), Grid::EPlayerMark::GRID_TYPE_YELLOW);
+                Human* pSecondPlayer = new Human(*_htJoysticks.at(0), Grid::EPlayerMark::PLAYER2);
                 pSecondPlayer->AssociateJoystick(*pJoystickGameCube);
 
                 _vectorpPlayers.push_back(pSecondPlayer);
@@ -304,7 +304,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
         if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
         {
-            if (pHuman->GetJoysticks().contains(uyWhich))
+            if (pHuman->GetJoysticks().contains(uyWhich) || (uyWhich == 0 && _bSingleController))
             {
                 switch (uyButton)
                 {
@@ -316,7 +316,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         ++_uyCurrentPlayer %= _vectorpPlayers.size();
 
                         // If the game is won or there is a draw go to the corresponding state
-                        if (_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || _grid.IsFull())
+                        if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                             _eStateCurrent = EState::STATE_END;
                     }
                     break;

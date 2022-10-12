@@ -59,7 +59,8 @@ private:
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
     std::vector<Player*> _vectorpPlayers;   /**< The current players in the game */
     uint8_t _uyCurrentPlayer;               /** The index for the current player */
-    bool _bAIRunning;                       /**< An AI is running */
+    bool _bSingleController;                /** The main controller can be used for all players */
+    bool _bIsAIRunning;                     /**< An AI is running */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
@@ -284,6 +285,9 @@ private:
     virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept;
 
 };
+
+
+int32_t SDLCALL RunAI(void* pData);
 
 
 #endif

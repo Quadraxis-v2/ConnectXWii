@@ -21,7 +21,7 @@ public:
 protected:
     Grid::EPlayerMark __ePlayerMark;
 
-    explicit Player(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::GRID_TYPE_NONE) noexcept;
+    explicit Player(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::EMPTY) noexcept;
 
 };
 

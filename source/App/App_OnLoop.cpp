@@ -5,9 +5,6 @@
 #include "../../include/Grid.hpp"
 
 
-int32_t SDLCALL RunAI(void* pData);
-
-
 /**
  * @brief Handles all the data updates between frames
  */
@@ -18,9 +15,9 @@ void App::OnLoop() noexcept
     case STATE_INGAME:
     {
         // AIs' turn
-        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI) && !_bAIRunning)
+        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI) && !_bIsAIRunning)
         {
-            _bAIRunning = true;
+            _bIsAIRunning = true;
             SDL_CreateThread(RunAI, this);
         }
         break;
@@ -45,10 +42,10 @@ int32_t SDLCALL RunAI(void* pData)
     ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size();
 
     // If the game is won or there is a draw go to the corresponding state
-    if (pApp->_grid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE || pApp->_grid.IsFull())
+    if (pApp->_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || pApp->_grid.IsFull())
         pApp->_eStateCurrent = App::EState::STATE_END;
 
-    pApp->_bAIRunning = false;
+    pApp->_bIsAIRunning = false;
 
     return 0;
 }

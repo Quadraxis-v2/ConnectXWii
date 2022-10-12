@@ -65,10 +65,10 @@ void App::OnInitialise()
         GameCubeController* pJoystickGameCube = new GameCubeController(0);
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED);
+        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
 
-        _vectorpPlayers.push_back(new Human(*pJoystickWii, Grid::EPlayerMark::GRID_TYPE_RED));
+        _vectorpPlayers.push_back(new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1));
 	#endif
 
     EventManager::GetInstance().AttachListener(this);   // Receive events

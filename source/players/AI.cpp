@@ -1,3 +1,13 @@
+/**
+	@file		AI.cpp
+	@author		Juan de la Cruz Caravaca Guerrero
+	@date		12/10/2022
+    @brief		AI class
+    @par		Description
+                AI for playing ConnectX
+				
+*/
+
 #include <cstdint>
 #include <limits>
 #include <algorithm>
@@ -26,8 +36,9 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : 
  */
 void AI::ChooseMove(Grid& grid) const noexcept
 {
-    int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max(),
-        iDepth = 1, iBestPlay = 0, iMinimaxValue = 0;
+    int64_t lAlpha = std::numeric_limits<int64_t>::min(), lBeta = std::numeric_limits<int64_t>::max(),
+        iMinimaxValue = 0;
+    uint8_t uyDepth = 1, uyBestPlay = 0;
 
     for (uint8_t i = 0; i < grid.GetWidth(); i++)
     {
@@ -35,18 +46,18 @@ void AI::ChooseMove(Grid& grid) const noexcept
         {
             Grid gridAttempt = grid;
             gridAttempt.MakeMove(__ePlayerMark, i);
-            iMinimaxValue = AB_MinValue(gridAttempt, Grid::NextPlayer(__ePlayerMark), iDepth + 1,
-                iAlpha, iBeta);
+            iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, lAlpha, 
+                lBeta);
 
-            if (iMinimaxValue > iAlpha)
+            if (iMinimaxValue > lAlpha)
             {
-                iAlpha = iMinimaxValue;
-                iBestPlay = i;
+                lAlpha = iMinimaxValue;
+                uyBestPlay = i;
             }
         }
     }
 
-    if (grid.IsValidMove(iBestPlay)) grid.MakeMove(__ePlayerMark, iBestPlay);
+    if (grid.IsValidMove(uyBestPlay)) grid.MakeMove(__ePlayerMark, uyBestPlay);
 }
 
 
@@ -55,34 +66,34 @@ void AI::ChooseMove(Grid& grid) const noexcept
  *
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the min player
- * @param iDepth the depth level of exploration
- * @param iAlpha alpha value for the AB-Pruning algorithm
- * @param iBeta beta value for the AB-Pruning algorithm
- * @return int32_t the revised value of beta
+ * @param uyDepth the depth level of exploration
+ * @param lAlpha alpha value for the AB-Pruning algorithm
+ * @param lBeta beta value for the AB-Pruning algorithm
+ * @return int64_t the revised value of beta
  */
-int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth,
-    int32_t iAlpha, int32_t iBeta) const noexcept
+int64_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
+    int64_t lAlpha, int64_t lBeta) const noexcept
 {
-    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE)
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
         if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
         else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
-    else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
+    else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && lAlpha < lBeta; i++)
         {
             if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, Grid::NextPlayer(CePlayerMark),
-                    iDepth + 1, iAlpha, iBeta));
+                lBeta = std::min(lBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark),
+                    uyDepth + 1, lAlpha, lBeta));
             }
         }
-        return iBeta;
+        return lBeta;
     }
 }
 
@@ -92,34 +103,34 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
  *
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the max player
- * @param iDepth the depth level of exploration
- * @param iAlpha alpha value for the AB-Pruning algorithm
- * @param iBeta beta value for the AB-Pruning algorithm
- * @return int32_t the revised value of alpha
+ * @param uyDepth the depth level of exploration
+ * @param lAlpha alpha value for the AB-Pruning algorithm
+ * @param lBeta beta value for the AB-Pruning algorithm
+ * @return int64_t the revised value of alpha
  */
-int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, int32_t iDepth,
-    int32_t iAlpha, int32_t iBeta) const noexcept
+int64_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
+    int64_t lAlpha, int64_t lBeta) const noexcept
 {
-    if (Cgrid.CheckWinner() != Grid::EPlayerMark::GRID_TYPE_NONE)
+    if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
         if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
         else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
-    else if (iDepth == _uySearchLimit) return Heuristic(Cgrid);
+    else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && lAlpha < lBeta; i++)
         {
             if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, Grid::NextPlayer(CePlayerMark),
-                    iDepth + 1, iAlpha, iBeta));
+                lAlpha = std::max(lAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark),
+                    uyDepth + 1, lAlpha, lBeta));
             }
         }
-        return iAlpha;
+        return lAlpha;
     }
 }
 
@@ -130,13 +141,12 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
  * @param Cgrid the main game board
  * @return int32_t a numeric evaluation of the board
  */
-int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
+int64_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
-    int32_t iHeuristic = 0;
+    int64_t lHeuristic = 0;
 
-    Grid::EPlayerMark ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
-    uint8_t uySamePlayerMarkCount = 1;
-    uint8_t uyEmptyCellCount = 0;
+    Grid::EPlayerMark ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
+    uint8_t uySamePlayerMarkCount = 1, uyEmptyCellCount = 0;
     std::queue<Grid::EPlayerMark> quPlayerMarks{};
 
     // Upwards check
@@ -154,7 +164,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 
                 for (int8_t j = Cgrid.GetHeight() - 2;
                     j >= std::max(0, Cgrid.GetNextCell(i) - Cgrid.GetCellsToWin() + 2); j--)
-                    iHeuristic += EvaluateSector(Cgrid, j, i, quPlayerMarks, ePlayerMarkLast,
+                    lHeuristic += EvaluateSector(Cgrid, j, i, quPlayerMarks, ePlayerMarkLast,
                         uySamePlayerMarkCount, uyEmptyCellCount);
             }
         }
@@ -170,13 +180,13 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
     {
         for (uint8_t i = yMaxColumnHeight; i < Cgrid.GetHeight(); i++)
         {
-            ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
+            ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
             uySamePlayerMarkCount = 0;
             uyEmptyCellCount = 0;
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < Cgrid.GetWidth(); j++)
-                iHeuristic += EvaluateSector(Cgrid, i, j, quPlayerMarks, ePlayerMarkLast,
+                lHeuristic += EvaluateSector(Cgrid, i, j, quPlayerMarks, ePlayerMarkLast,
                     uySamePlayerMarkCount, uyEmptyCellCount);
         }
     }
@@ -187,36 +197,36 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
         for (uint8_t i = std::max(static_cast<int8_t>(Cgrid.GetCellsToWin() - 1), yMaxColumnHeight);
             i < Cgrid.GetHeight(); i++)
         {
-            ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
+            ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
             uySamePlayerMarkCount = 0;
             uyEmptyCellCount = 0;
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < std::min(Cgrid.GetWidth(), static_cast<uint8_t>(i - std::max(0,
                 yMaxColumnHeight - Cgrid.GetCellsToWin()))); j++)
-                iHeuristic += EvaluateSector(Cgrid, i - j, j, quPlayerMarks, ePlayerMarkLast,
+                lHeuristic += EvaluateSector(Cgrid, i - j, j, quPlayerMarks, ePlayerMarkLast,
                     uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
         for (uint8_t i = 1; i <= Cgrid.GetWidth() - Cgrid.GetCellsToWin(); i++)
         {
-            ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
+            ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
             uySamePlayerMarkCount = 0;
             uyEmptyCellCount = 0;
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0;
                 j < std::min(static_cast<uint8_t>(Cgrid.GetWidth() - i), std::min(Cgrid.GetHeight(),
-                    static_cast<uint8_t>(Cgrid.GetHeight() -
-                    yMaxColumnHeight + Cgrid.GetCellsToWin() - 1))); j++)
-                iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i + j, quPlayerMarks,
+                    static_cast<uint8_t>(Cgrid.GetHeight() - yMaxColumnHeight + 
+                    Cgrid.GetCellsToWin() - 1))); j++)
+                lHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i + j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
         // Diagonal up left check
         for (uint8_t i = Cgrid.GetCellsToWin() - 1; i < Cgrid.GetWidth(); i++)
         {
-            ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
+            ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
             uySamePlayerMarkCount = 0;
             uyEmptyCellCount = 0;
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
@@ -224,31 +234,31 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             for (uint8_t j = 0; j < std::min(static_cast<uint8_t>(i + 1), std::min(Cgrid.GetHeight(),
                     static_cast<uint8_t>(Cgrid.GetHeight() -
                     yMaxColumnHeight + Cgrid.GetCellsToWin() - 1))); j++)
-                iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i - j, quPlayerMarks,
+                lHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i - j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
         for (uint8_t i = Cgrid.GetHeight() - 2;
             i >= std::max(static_cast<int8_t>(Cgrid.GetCellsToWin() - 1), yMaxColumnHeight); i--)
         {
-            ePlayerMarkLast = Grid::EPlayerMark::GRID_TYPE_NONE;
+            ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
             uySamePlayerMarkCount = 0;
             uyEmptyCellCount = 0;
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < std::min(i, Cgrid.GetWidth()); j++)
-                iHeuristic += EvaluateSector(Cgrid, i - j, Cgrid.GetWidth() - 1 - j, quPlayerMarks,
+                lHeuristic += EvaluateSector(Cgrid, i - j, Cgrid.GetWidth() - 1 - j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
     }
 
-    return iHeuristic;
+    return lHeuristic;
 }
 
 
 /**
- * @brief Keeps track of free sectors, where there is only one type of player marker and where such 
- * player still has the chance to win
+ * @brief Helper function for the heuristic function. Used to build adn keep track of free sectors, 
+ * where there is only one type of player marker and where such player still has the chance to win
  * 
  * @param Cgrid the main game board
  * @param uyRow the row of the next cell to be added to the sector
@@ -260,12 +270,12 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
  * @param uyEmptyCellCount the number of empty cells that have been found since the last non-empty cell
  * @return int32_t the heuristic evaluation for the current sector
  */
-int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
+int64_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
     std::queue<Grid::EPlayerMark>& quPlayerMarks, Grid::EPlayerMark& ePlayerMarkLast,
     uint8_t& uySamePlayerMarkCount, uint8_t& uyEmptyCellCount) const noexcept
 {
-    if (Cgrid[uyRow][uyColumn] != Grid::EPlayerMark::GRID_TYPE_NONE &&
-        ePlayerMarkLast != Grid::EPlayerMark::GRID_TYPE_NONE &&
+    if (Cgrid[uyRow][uyColumn] != Grid::EPlayerMark::EMPTY &&
+        ePlayerMarkLast != Grid::EPlayerMark::EMPTY &&
         Cgrid[uyRow][uyColumn] != ePlayerMarkLast)
     {
         quPlayerMarks = std::queue<Grid::EPlayerMark>{};
@@ -273,7 +283,7 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
         uySamePlayerMarkCount = 1;
 
         for (uint8_t i = 0; i < uyEmptyCellCount; i++)
-            quPlayerMarks.push(Grid::EPlayerMark::GRID_TYPE_NONE);
+            quPlayerMarks.push(Grid::EPlayerMark::EMPTY);
 
         quPlayerMarks.push(ePlayerMarkLast);
         uyEmptyCellCount = 0;
@@ -282,19 +292,19 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
     {
         quPlayerMarks.push(Cgrid[uyRow][uyColumn]);
 
-        if (Cgrid[uyRow][uyColumn] == Grid::EPlayerMark::GRID_TYPE_NONE) uyEmptyCellCount++;
+        if (Cgrid[uyRow][uyColumn] == Grid::EPlayerMark::EMPTY) uyEmptyCellCount++;
         else
         {
             uyEmptyCellCount = 0;
             uySamePlayerMarkCount++;
-            if (ePlayerMarkLast == Grid::EPlayerMark::GRID_TYPE_NONE)
+            if (ePlayerMarkLast == Grid::EPlayerMark::EMPTY)
                 ePlayerMarkLast = Cgrid[uyRow][uyColumn];
         }
 
         if (quPlayerMarks.size() - 1 > Cgrid.GetCellsToWin())
         {
             if (quPlayerMarks.front() == ePlayerMarkLast &&
-                ePlayerMarkLast != Grid::EPlayerMark::GRID_TYPE_NONE) uySamePlayerMarkCount--;
+                ePlayerMarkLast != Grid::EPlayerMark::EMPTY) uySamePlayerMarkCount--;
             quPlayerMarks.pop();
         }
 
@@ -302,8 +312,8 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
         {
             if (uySamePlayerMarkCount >= Cgrid.GetCellsToWin() || 
                 (uySamePlayerMarkCount == Cgrid.GetCellsToWin() - 1 && 
-                quPlayerMarks.front() == Grid::EPlayerMark::GRID_TYPE_NONE && 
-                quPlayerMarks.back() == Grid::EPlayerMark::GRID_TYPE_NONE)) 
+                quPlayerMarks.front() == Grid::EPlayerMark::EMPTY && 
+                quPlayerMarks.back() == Grid::EPlayerMark::EMPTY)) 
                 return 1000000 * PlayerMark2Heuristic(ePlayerMarkLast);
             else return std::pow(uySamePlayerMarkCount, uySamePlayerMarkCount) * 
                 PlayerMark2Heuristic(ePlayerMarkLast);
@@ -313,6 +323,19 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
     return 0;
 }
 
+
+/**
+ * @brief Gets the mark of the next player
+ *
+ * @param CePlayerMark the mark of the current player
+ * @return EPlayerMark the mark of the next player
+ */
+Grid::EPlayerMark AI::NextPlayer(const Grid::EPlayerMark& CePlayerMark) const noexcept
+{
+    if (CePlayerMark != __ePlayerMark) return __ePlayerMark;
+    else if (CePlayerMark == Grid::EPlayerMark::EMPTY) return Grid::EPlayerMark::EMPTY;
+    else return Grid::EPlayerMark::PLAYER1;
+}
 
 
 /**
@@ -324,6 +347,6 @@ int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
 int8_t AI::PlayerMark2Heuristic(const Grid::EPlayerMark& CePlayerMark) const noexcept
 {
     if (CePlayerMark == __ePlayerMark) return 1;
-    else if (CePlayerMark == Grid::EPlayerMark::GRID_TYPE_NONE) return 0;
+    else if (CePlayerMark == Grid::EPlayerMark::EMPTY) return 0;
     else return -1;
 }

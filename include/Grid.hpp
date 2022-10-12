@@ -14,7 +14,7 @@ class Grid
 {
 public:
     /**< Types of player markers */
-    enum EPlayerMark {GRID_TYPE_NONE = 0, GRID_TYPE_RED = 1, GRID_TYPE_YELLOW = 2};
+    enum EPlayerMark {EMPTY = 0, PLAYER1 = 1, PLAYER2 = 2};
 
     /* Getters */
     uint8_t GetWidth() const noexcept;
@@ -24,14 +24,7 @@ public:
     int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
     explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4);   /**< Default constructor */
-
-    /**
-     * @brief Gets the mark of the next player
-     * 
-     * @param CePlayerMark the mark of the current player
-     * @return EPlayerMark the mark of the next player
-     */
-    static EPlayerMark NextPlayer(const EPlayerMark& CePlayerMark) noexcept;
+    
 
     const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
 

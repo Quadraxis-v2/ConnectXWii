@@ -12,30 +12,13 @@
 Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) : _uyWidth{uyWidth},
     _uyHeight{uyHeight}, _uyCellsToWin{uyNumberToMatch}, 
     _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
-    std::vector<EPlayerMark>(_uyWidth, GRID_TYPE_NONE))}, 
+    std::vector<EPlayerMark>(_uyWidth, EMPTY))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
     _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
-    _ePlayerMarkWinner{EPlayerMark::GRID_TYPE_NONE}
+    _ePlayerMarkWinner{EPlayerMark::EMPTY}
 { 
     if (_uyCellsToWin > _uyWidth && _uyCellsToWin > _uyHeight) 
-        throw std::length_error("Number to match is too big"); 
-}
-
-
-/**
- * @brief Gets the mark of the next player
- *
- * @param CePlayerMark the mark of the current player
- * @return EPlayerMark the mark of the next player
- */
-Grid::EPlayerMark Grid::NextPlayer(const EPlayerMark& CePlayerMark) noexcept
-{
-    switch(CePlayerMark)
-    {
-        case EPlayerMark::GRID_TYPE_YELLOW: return EPlayerMark::GRID_TYPE_RED;       break;
-        case EPlayerMark::GRID_TYPE_RED:    return EPlayerMark::GRID_TYPE_YELLOW;    break;
-        default:                            return EPlayerMark::GRID_TYPE_NONE;      break;
-    }
+        throw std::length_error("Number of cells to win is too big"); 
 }
 
 
@@ -67,7 +50,7 @@ void Grid::MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
 bool Grid::IsValidMove(uint8_t uyPlayColumn) const noexcept
 {
     return (uyPlayColumn < _uyWidth && _ayNextCell[uyPlayColumn] >= 0 &&
-        _ePlayerMarkWinner == EPlayerMark::GRID_TYPE_NONE);
+        _ePlayerMarkWinner == EPlayerMark::EMPTY);
 }
 
 
@@ -132,10 +115,10 @@ std::ostream& operator <<(std::ostream& ostream, const Grid::EPlayerMark& CePlay
 {
     switch(CePlayerMark)
     {
-        case Grid::EPlayerMark::GRID_TYPE_NONE:     return ostream << ' ';      break;
-        case Grid::EPlayerMark::GRID_TYPE_YELLOW:   return ostream << 'Y';      break;
-        case Grid::EPlayerMark::GRID_TYPE_RED:      return ostream << 'R';      break;
-        default:                                    return ostream << ' ';      break;
+        case Grid::EPlayerMark::EMPTY:     return ostream << ' ';      break;
+        case Grid::EPlayerMark::PLAYER2:   return ostream << 'Y';      break;
+        case Grid::EPlayerMark::PLAYER1:   return ostream << 'R';      break;
+        default:                           return ostream << ' ';      break;
     }
 }
 
