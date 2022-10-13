@@ -1,6 +1,7 @@
 /*
 Settings.hpp --- App settings
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -52,7 +53,7 @@ public:
     uint8_t GetAIDifficulty() const noexcept;
     void SetAIDifficulty(uint8_t yAIDifficulty) noexcept;
     std::string GetCustomPath() const noexcept;
-    void SetCustomPath(std::string sCustomPath) noexcept;
+    void SetCustomPath(const std::string& CsCustomPath) noexcept;
 
 
     /**
@@ -64,14 +65,14 @@ public:
      * @brief Constructs a new object by reading a settings file
      * @param CsFilePath the path to the JSON file holding the settings
      */
-    explicit Settings(std::string CsFilePath);
+    explicit Settings(const std::string& CsFilePath);
 
 
     /**
      * @brief Saves the settings on disk
      * @param CsPath the path where the settings are to be stored
      */
-    void Save(std::string CsPath) const;
+    void Save(const std::string& CsPath) const;
 
 private:
     uint8_t _yBoardWidth;
@@ -92,6 +93,7 @@ inline void Settings::SetCellsToWin(uint8_t yCellsToWin) noexcept { _yCellsToWin
 inline uint8_t Settings::GetAIDifficulty() const noexcept { return _yAIDifficulty; }
 inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _yAIDifficulty = yAIDifficulty; }
 inline std::string Settings::GetCustomPath() const noexcept { return _sCustomPath; }
-inline void Settings::SetCustomPath(std::string sCustomPath) noexcept { _sCustomPath = sCustomPath; }
+inline void Settings::SetCustomPath(const std::string& CsCustomPath) noexcept 
+{ _sCustomPath = CsCustomPath; }
 
 #endif

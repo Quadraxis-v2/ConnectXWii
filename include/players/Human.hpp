@@ -1,6 +1,7 @@
 /*
 Human.hpp --- Human player for ConnectX
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -54,11 +55,11 @@ public:
     void AssociateJoystick(Joystick& joystick) noexcept;
 
     /**
-     * @brief Disassociates a joystick from the player
+     * @brief Disassociates a Cjoystick from the player
      * 
-     * @param joystick the joystick to disassociate
+     * @param Cjoystick the Cjoystick to disassociate
      */
-    void DisassociateJoystick(Joystick& joystick) noexcept;
+    void DisassociateJoystick(const Joystick& Cjoystick) noexcept;
 
 private:
     Joysticks _htJoysticks;     /**< A dictionary of the joysticks the player uses and their indexes */

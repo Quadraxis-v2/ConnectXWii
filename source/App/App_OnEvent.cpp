@@ -1,6 +1,7 @@
 /*
 App_OnEvent.cpp --- App events
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -166,7 +167,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
             _eStateCurrent = EState::STATE_INGAME; // Start the game
 
             // Create an AI player
-            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2, 
+            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
                 _settingsGlobal.GetAIDifficulty()));
         }
         else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
@@ -181,7 +182,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
         {
             _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
             ++_uyCurrentPlayer %= _vectorpPlayers.size();
-            
+
             // If the game is won or there is a draw go to the corresponding state
             if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                 _eStateCurrent = EState::STATE_END;
@@ -290,7 +291,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
                 // Create an AI player
-                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2, 
+                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
                     _settingsGlobal.GetAIDifficulty()));
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
@@ -320,13 +321,13 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
     case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
     {
         // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
-        if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
+        switch (uyButton)
         {
-            if (pHuman->GetJoysticks().contains(uyWhich) || (uyWhich == 0 && _bSingleController))
+        case 0: // Button A
+        {
+            if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
             {
-                switch (uyButton)
-                {
-                case 0: // Button A
+                if (pHuman->GetJoysticks().contains(uyWhich) || (uyWhich == 0 && _bSingleController))
                 {
                     if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                     {
@@ -337,12 +338,12 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                             _eStateCurrent = EState::STATE_END;
                     }
-                    break;
-                }
-                case 1: Reset();            break;
-                case 6: _bRunning = false;  break;   // HOME button closes the game
                 }
             }
+            break;
+        }
+        case 1: Reset();            break;
+        case 6: _bRunning = false;  break;   // HOME button closes the game
         }
         break;
     }

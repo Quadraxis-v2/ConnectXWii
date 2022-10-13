@@ -112,7 +112,7 @@ run:
 	wiiload $(TARGET).dol "sd:/apps/$(TARGET)/$(TARGET).dol"
 
 #---------------------------------------------------------------------------------
-dolphin:
+test:
 	dolphin -d -b -e $(TARGET).dol
 
 

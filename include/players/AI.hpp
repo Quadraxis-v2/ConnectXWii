@@ -1,6 +1,7 @@
 /*
 AI.hpp --- Artificial Intelligence for ConnectX
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published

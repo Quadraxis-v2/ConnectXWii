@@ -1,6 +1,7 @@
 /*
 App_OnCleanup.cpp --- App cleanup
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -32,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Cleans up any resources loaded before the end of the execution
  */
-void App::OnCleanup() noexcept 
+void App::OnCleanup() noexcept
 {
     try { _settingsGlobal.Save(Settings::SCsDefaultPath); }     // Save settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
@@ -42,11 +43,11 @@ void App::OnCleanup() noexcept
     #endif
 
     // Delete joysticks
-    for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin(); 
+    for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
 
     // Delete players
-    for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i) 
+    for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
         delete *i;
 
     // The display surface must be freed by SDL_Quit

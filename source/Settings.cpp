@@ -1,6 +1,7 @@
 /*
 Settings.cpp --- App settings
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -24,14 +25,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 /** Default path for storing the application's settings */
-const char* Settings::SCsDefaultPath = "/apps/Connect4Wii/settings.json";
+const char* Settings::SCsDefaultPath = "/apps/ConnectXWii/settings.json";
 
 
 /**
  * @brief Creates an object with the default settings
  */
 Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
-	_yAIDifficulty{4}, _sCustomPath{"/apps/Connect4Wii/gfx/custom"} {}
+	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"} {}
 
 
 /**
@@ -39,8 +40,8 @@ Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{
  * 
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(std::string CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
-	_yAIDifficulty{4}, _sCustomPath{"/apps/Connect4Wii/gfx/custom"}
+Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
+	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}
 {
     json_t* jsonRoot = nullptr;			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
@@ -86,7 +87,7 @@ Settings::Settings(std::string CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, 
  * 
  * @param CsPath the path where the settings are to be stored
  */
-void Settings::Save(std::string CsPath) const
+void Settings::Save(const std::string& CsPath) const
 {
     json_t* jsonRoot = json_object();		// Root object of the JSON file
     json_t* jsonSettings = json_object();	// "Settings" JSON object

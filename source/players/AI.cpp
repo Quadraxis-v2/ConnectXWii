@@ -1,16 +1,7 @@
-/**
-	@file		AI.cpp
-	@author		Juan de la Cruz Caravaca Guerrero
-	@date		12/10/2022
-    @brief		AI class
-    @par		Description
-                AI for playing ConnectX
-				
-*/
-
 /*
 AI.cpp --- Artificial Intelligence for ConnectX
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -54,9 +45,8 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{Ce
  */
 void AI::ChooseMove(Grid& grid) const noexcept
 {
-    int64_t lAlpha = std::numeric_limits<int64_t>::min(), lBeta = std::numeric_limits<int64_t>::max(),
-        iMinimaxValue = 0;
-    uint8_t uyDepth = 1, uyBestPlay = 0;
+    int64_t lAlpha = std::numeric_limits<int64_t>::min(), lBeta = std::numeric_limits<int64_t>::max();
+    uint8_t uyDepth = 0, uyBestPlay = 0;
 
     for (uint8_t i = 0; i < grid.GetWidth(); i++)
     {
@@ -64,8 +54,8 @@ void AI::ChooseMove(Grid& grid) const noexcept
         {
             Grid gridAttempt = grid;
             gridAttempt.MakeMove(__ePlayerMark, i);
-            iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, lAlpha, 
-                lBeta);
+            int64_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, 
+                lAlpha, lBeta);
 
             if (iMinimaxValue > lAlpha)
             {
@@ -94,8 +84,8 @@ int64_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
-        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
-        else return std::numeric_limits<int32_t>::min();
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int64_t>::max();
+        else return std::numeric_limits<int64_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
     else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
@@ -107,8 +97,8 @@ int64_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                lBeta = std::min(lBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark),
-                    uyDepth + 1, lAlpha, lBeta));
+                lBeta = std::min(lBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1, 
+                    lAlpha, lBeta));
             }
         }
         return lBeta;
@@ -131,8 +121,8 @@ int64_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
-        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
-        else return std::numeric_limits<int32_t>::min();
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int64_t>::max();
+        else return std::numeric_limits<int64_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
     else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
@@ -144,8 +134,8 @@ int64_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                lAlpha = std::max(lAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark),
-                    uyDepth + 1, lAlpha, lBeta));
+                lAlpha = std::max(lAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1,
+                    lAlpha, lBeta));
             }
         }
         return lAlpha;
@@ -163,8 +153,8 @@ int64_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
     int64_t lHeuristic = 0;
 
-    Grid::EPlayerMark ePlayerMarkLast = Grid::EPlayerMark::EMPTY;
-    uint8_t uySamePlayerMarkCount = 1, uyEmptyCellCount = 0;
+    Grid::EPlayerMark ePlayerMarkLast{};
+    uint8_t uySamePlayerMarkCount{}, uyEmptyCellCount{};
     std::queue<Grid::EPlayerMark> quPlayerMarks{};
 
     // Upwards check

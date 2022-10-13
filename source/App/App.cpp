@@ -1,6 +1,7 @@
 /*
 App.cpp --- App main class
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -44,7 +45,7 @@ App& App::GetInstance()
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START},
     _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
     _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{},
-    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true}, 
+    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true},
     _bIsAIRunning{false}, _yPlayColumn{0}
 {}
 
@@ -82,7 +83,7 @@ void App::OnExecute()
 void App::Reset() noexcept
 {
     _eStateCurrent = STATE_START;
-    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), 
+    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),
         _settingsGlobal.GetCellsToWin());
     _uyCurrentPlayer = 0;
 

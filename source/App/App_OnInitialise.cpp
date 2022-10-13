@@ -1,6 +1,7 @@
 /*
 App_OnInitialise.hpp --- App initialisation
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -62,7 +63,7 @@ void App::OnInitialise()
     if(SDL_Init(uiInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
     if ((_surfaceDisplay._pSdlSurface = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
-        16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr) 
+        16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr)
         throw std::runtime_error(SDL_GetError());
 
     SDL_JoystickEventState(SDL_ENABLE);
@@ -97,35 +98,35 @@ void App::OnInitialise()
         _settingsGlobal.GetCellsToWin());
 
     // Retrieve resources from the filesystem
-    try 
+    try
     { _surfaceStart = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/start.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface("/apps/Connect4Wii/gfx/start.bmp"); }
+    { _surfaceStart = Surface("/apps/ConnectXWii/gfx/start.bmp"); }
     try { _surfaceGrid = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/grid.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface("/apps/Connect4Wii/gfx/grid.bmp"); }
+    { _surfaceGrid = Surface("/apps/ConnectXWii/gfx/grid.bmp"); }
     try { _surfaceMarker1 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker1 = Surface("/apps/Connect4Wii/gfx/player1.bmp"); }
+    { _surfaceMarker1 = Surface("/apps/ConnectXWii/gfx/player1.bmp"); }
     try { _surfaceMarker2 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker2 = Surface("/apps/Connect4Wii/gfx/player2.bmp"); }
+    { _surfaceMarker2 = Surface("/apps/ConnectXWii/gfx/player2.bmp"); }
     try { _surfaceWinPlayer1 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/winPlayer1.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface("/apps/Connect4Wii/gfx/winPlayer1.bmp"); }
+    { _surfaceWinPlayer1 = Surface("/apps/ConnectXWii/gfx/winPlayer1.bmp"); }
     try { _surfaceWinPlayer2 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/winPlayer2.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface("/apps/Connect4Wii/gfx/winPlayer2.bmp"); }
+    { _surfaceWinPlayer2 = Surface("/apps/ConnectXWii/gfx/winPlayer2.bmp"); }
     try { _surfaceDraw = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/draw.bmp").lexically_normal()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface("/apps/Connect4Wii/gfx/draw.bmp"); }
+    { _surfaceDraw = Surface("/apps/ConnectXWii/gfx/draw.bmp"); }
 
     // Take the background out of the marker pictures
     _surfaceMarker1.Transparent(255, 0, 255);

@@ -1,6 +1,7 @@
 /*
 App.hpp --- App main class
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -114,32 +115,32 @@ private:
     /**
      * @brief Handles events where the mouse enters the application window
      */
-    virtual void OnMouseFocus();
+    virtual void OnMouseFocus() override;
 
     /**
      * @brief Handles events where the mouse exits the application window
      */
-    virtual void OnMouseBlur();
+    virtual void OnMouseBlur() override;
 
     /**
      * @brief Handles events where the application gains keyboard focus
      */
-    virtual void OnInputFocus();
+    virtual void OnInputFocus() override;
 
     /**
      * @brief Handles events where the application loses keyboard focus
      */
-    virtual void OnInputBlur();
+    virtual void OnInputBlur() override;
 
     /**
      * @brief Handles events where the window is restored to its size
      */
-    virtual void OnRestore();
+    virtual void OnRestore() override;
 
     /**
      * @brief Handles events where the window is minimized
      */
-    virtual void OnMinimize();
+    virtual void OnMinimize() override;
 
     /**
      * @brief Handles keyboard press events
@@ -148,7 +149,7 @@ private:
      * @param sdlMod the current state of keyboard modifiers
      * @param urUnicode the Unicode value of the pressed key
      */
-    virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
+    virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) override;
 
     /**
      * @brief Handles keyboard release events
@@ -157,7 +158,7 @@ private:
      * @param sdlMod the current state of keyboard modifiers
      * @param urUnicode the Unicode value of the released key
      */
-    virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode);
+    virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) override;
 
     /**
      * @brief Handles mouse/IR movement events
@@ -171,7 +172,7 @@ private:
      * @param bMiddle the current state of the middle mouse button
      */
     virtual void OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
-        bool bLeft, bool bRight, bool bMiddle) noexcept;
+        bool bLeft, bool bRight, bool bMiddle) noexcept override;
 
     /**
      * @brief Handles mouse wheel movement events
@@ -179,7 +180,7 @@ private:
      * @param bUp true if the mouse wheel is moving upwards
      * @param bDown true if the mouse wheel is moving downwards
      */
-    virtual void OnMouseWheel(bool bUp, bool bDown);
+    virtual void OnMouseWheel(bool bUp, bool bDown) override;
 
     /**
      * @brief Handles mouse left button press events
@@ -187,7 +188,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles mouse right button press events
@@ -195,7 +196,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles mouse middle button press events
@@ -203,7 +204,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnMButtonDown(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles mouse left button release events
@@ -211,7 +212,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnLButtonUp(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles mouse right button release events
@@ -219,7 +220,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnRButtonUp(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles mouse middle button release events
@@ -227,7 +228,7 @@ private:
      * @param urMouseX the X coordinate of the mouse
      * @param urMouseY the Y coordinate of the mouse
      */
-    virtual void OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY);
+    virtual void OnMButtonUp(uint16_t urMouseX, uint16_t urMouseY) override;
 
     /**
      * @brief Handles joystick axis events
@@ -236,7 +237,7 @@ private:
      * @param uyAxis the joystick axis index
      * @param rValue the axis value
      */
-    virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept;
+    virtual void OnJoyAxis(uint8_t uyWhich, uint8_t uyAxis, int16_t rValue) noexcept override;
 
     /**
      * @brief Handles joystick trackball motion events
@@ -246,7 +247,7 @@ private:
      * @param rRelativeX the relative motion in the X direction
      * @param rRelativeY the relative motion in the Y direction
      */
-    virtual void OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t rRelativeY);
+    virtual void OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t rRelativeY) override;
 
     /**
      * @brief Handles joystick button press events
@@ -254,7 +255,7 @@ private:
      * @param uyWhich the joystick device index
      * @param uyButton the joystick button index
      */
-    virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept;
+    virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept override;
 
     /**
      * @brief Handles joystick button release events
@@ -262,7 +263,7 @@ private:
      * @param uyWhich the joystick device index
      * @param uyButton the joystick button index
      */
-    virtual void OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) noexcept;
+    virtual void OnJoyButtonUp(uint8_t uyWhich, uint8_t uyButton) noexcept override;
 
     /**
      * @brief Handles joystick hat position events
@@ -271,12 +272,12 @@ private:
      * @param uyHat the joystick hat index
      * @param uyValue the hat value
      */
-    virtual void OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept;
+    virtual void OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept override;
 
     /**
      * @brief Handles user-requested quits
      */
-    virtual void OnExit() noexcept;
+    virtual void OnExit() noexcept override;
 
     /**
      * @brief Handles window resize events
@@ -284,12 +285,12 @@ private:
      * @param iWidth the new width of the window
      * @param iHeight the new height of the window
      */
-    virtual void OnResize(int32_t iWidth, int32_t iHeight);
+    virtual void OnResize(int32_t iWidth, int32_t iHeight) override;
 
     /**
      * @brief Handles window redraw events
      */
-    virtual void OnExpose();
+    virtual void OnExpose() override;
 
     /**
      * @brief Handles user-defined events
@@ -299,14 +300,14 @@ private:
      * @param pData1 a user-defined data pointer
      * @param pData2 a user-defined data pointer
      */
-    virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept;
+    virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept override;
 
 };
 
 
 /**
  * @brief Callback for running the AI algorithm in a separate thread
- * 
+ *
  * @param pData pointer to the globaL App object
  * @return int32_t error code of the thread
  */
