@@ -1,3 +1,21 @@
+/*
+App.hpp --- App main class
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #ifndef _APP_HPP_
 #define _APP_HPP_
 
@@ -17,7 +35,6 @@
 
 /**
  * @brief Main application class
- * Uses the singleton pattern
  */
 class App : public EventListener    // Receive events in this class
 {
@@ -44,7 +61,7 @@ public:
 private:
     bool _bRunning;             /**< Marks whether the application should continue running */
     EState _eStateCurrent;      /**< The current state of the application for the state machine */
-    Settings _settingsGlobal;   /** The global settings of the application */
+    Settings _settingsGlobal;   /**< The global settings of the application */
 
     Surface _surfaceDisplay;    /**< The main display surface */
     Surface _surfaceStart;      /**< Picture for the start screen */
@@ -287,6 +304,12 @@ private:
 };
 
 
+/**
+ * @brief Callback for running the AI algorithm in a separate thread
+ * 
+ * @param pData pointer to the globaL App object
+ * @return int32_t error code of the thread
+ */
 int32_t SDLCALL RunAI(void* pData);
 
 

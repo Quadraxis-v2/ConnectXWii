@@ -1,15 +1,23 @@
+/*
+AI.hpp --- Artificial Intelligence for ConnectX
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #ifndef _AI_HPP_
 #define _AI_HPP_
-
-/**
-	@file		AI.hpp
-	@author		Juan de la Cruz Caravaca Guerrero
-	@date		12/10/2022
-    @brief		AI class
-    @par		Description
-                AI for playing ConnectX
-				
-*/
 
 #include <cstdint>
 #include <limits>
@@ -32,11 +40,11 @@ public:
      * @param CePlayerMark the mark assigned to this player
      * @param uySearchLimit the depth of levels that the AI will explore
      */
-    explicit AI(const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::EMPTY, 
-        uint8_t uySearchLimit = std::numeric_limits<uint8_t>::max()) noexcept;
+    explicit AI(const Grid::EPlayerMark& CePlayerMark, 
+        uint8_t uySearchLimit = std::numeric_limits<uint8_t>::max());
 
     /**
-     * @brief Makes the AI choose a play on the board
+     * @brief Makes the AI choose a play on the board using and Alpha-Beta pruning algorithm
      * 
      * @param grid the main game board
      */
@@ -47,7 +55,7 @@ private:
 
 
     /**
-     * @brief Min function of the AB-Pruning algorithm
+     * @brief Min function of the A-B Pruning algorithm
      * 
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the min player
@@ -60,7 +68,7 @@ private:
         int64_t lAlpha, int64_t lBeta) const noexcept;
 
     /**
-     * @brief Max function of the AB-Pruning algorithm
+     * @brief Max function of the A-B Pruning algorithm
      * 
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the max player
@@ -81,7 +89,7 @@ private:
     int64_t Heuristic(const Grid& Cgrid) const noexcept;
 
     /**
-     * @brief Helper function for the heuristic function. Used to build adn keep track of free sectors, 
+     * @brief Helper function for the heuristic function. Used to build and keep track of free sectors, 
      * where there is only one type of player marker and where such player still has the chance to win
      * 
      * @param Cgrid the main game board

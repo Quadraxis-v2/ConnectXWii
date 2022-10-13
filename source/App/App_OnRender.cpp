@@ -1,3 +1,21 @@
+/*
+App_OnRender.cpp --- App rendering
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <cstdint>
 #include <SDL_video.h>
 #include "../../include/App.hpp"
@@ -52,6 +70,10 @@ void App::OnRender()
         break;
     }
     }
+
+    // We need to draw the cursor because SDL-wii draws directly to video memory
+    int32_t iMouseX = 0, iMouseY = 0;
+    SDL_GetMouseState(&iMouseX, &iMouseY);
 
     SDL_Flip(_surfaceDisplay._pSdlSurface);  // Refreshes the screen
 }

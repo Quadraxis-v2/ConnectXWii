@@ -1,3 +1,21 @@
+/*
+Human.hpp --- Human player for ConnectX
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #ifndef _HUMAN_HPP_
 #define _HUMAN_HPP_
 
@@ -10,6 +28,9 @@
 #include "../Grid.hpp"
 
 
+/**
+ * @brief Human class
+ */
 class Human : public Player
 {
 public:
@@ -17,14 +38,30 @@ public:
 
     const Joysticks& GetJoysticks() const noexcept;
 
-    explicit Human(Joystick& joystick,
-        const Grid::EPlayerMark& CePlayerMark = Grid::EPlayerMark::EMPTY) noexcept;
+    /**
+     * @brief Construct a new Human object
+     * 
+     * @param joystick the joystick associated with the player
+     * @param CePlayerMark the mark that the player will use
+     */
+    explicit Human(Joystick& joystick, const Grid::EPlayerMark& CePlayerMark);
 
+    /**
+     * @brief Associates a new joystick with the player
+     * 
+     * @param joystick the joystick to associate
+     */
     void AssociateJoystick(Joystick& joystick) noexcept;
+
+    /**
+     * @brief Disassociates a joystick from the player
+     * 
+     * @param joystick the joystick to disassociate
+     */
     void DisassociateJoystick(Joystick& joystick) noexcept;
 
 private:
-    Joysticks _htJoysticks;
+    Joysticks _htJoysticks;     /**< A dictionary of the joysticks the player uses and their indexes */
 
 };
 

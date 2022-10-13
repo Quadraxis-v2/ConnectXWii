@@ -1,5 +1,5 @@
 /*
-main.hpp --- main function
+WiiController.cpp --- Wii controller wrapper
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 
 This program is free software: you can redistribute it and/or modify
@@ -16,12 +16,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../include/App.hpp"
+#include <stdexcept>
+#include "../../include/players/WiiController.hpp"
+#include "../../include/players/Player.hpp"
 
 
-int main(int argc, char** argv)
-{
-	App::GetInstance().OnExecute();
-
-	return 0;
+/**
+ * @brief Construct a new Wii Controller
+ * 
+ * @param uyIndex the index fot the new controller
+ */
+WiiController::WiiController(uint8_t uyIndex) : Joystick{uyIndex} 
+{ 
+    if (uyIndex > WiiController::SCuyMaxWiiControllers - 1) 
+        throw std::out_of_range("Controller not available"); 
 }

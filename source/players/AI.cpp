@@ -8,6 +8,24 @@
 				
 */
 
+/*
+AI.cpp --- Artificial Intelligence for ConnectX
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <cstdint>
 #include <limits>
 #include <algorithm>
@@ -25,7 +43,7 @@
  * @param CePlayerMark the mark assigned to this player
  * @param uySearchLimit the depth of levels that the AI will explore
  */
-AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) noexcept : Player{CePlayerMark},
+AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{CePlayerMark},
     _uySearchLimit{uySearchLimit} {}
 
 
@@ -257,7 +275,7 @@ int64_t AI::Heuristic(const Grid& Cgrid) const noexcept
 
 
 /**
- * @brief Helper function for the heuristic function. Used to build adn keep track of free sectors, 
+ * @brief Helper function for the heuristic function. Used to build and keep track of free sectors, 
  * where there is only one type of player marker and where such player still has the chance to win
  * 
  * @param Cgrid the main game board

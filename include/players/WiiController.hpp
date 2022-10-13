@@ -1,3 +1,21 @@
+/*
+WiiController.hpp --- Wii controller wrapper
+Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #ifndef _WIICONTROLLER_HPP_
 #define _WIICONTROLLER_HPP_
 
@@ -7,13 +25,13 @@
 #include "Joystick.hpp"
 
 
+/**
+ * @brief WiiController class
+ */
 class WiiController : public Joystick
 {
 public:
-    explicit WiiController(uint8_t uyIndex);
-    WiiController(const WiiController& CwiiController) = delete;
-
-    WiiController& operator =(const WiiController& CwiiController) = delete;
+    static const uint8_t SCuyMaxWiiControllers = 4; /**< Maximum number of Wii controller supported by SDL-wii */
 
     int16_t GetRightTriggerClassic() const noexcept;
     int16_t GetLeftTriggerClassic() const noexcept;
@@ -39,11 +57,21 @@ public:
     bool GetButtonPlusClassic() const noexcept;
     bool GetButtonHOMEClassic() const noexcept;
 
+    /**
+     * @brief Construct a new Wii Controller
+     * 
+     * @param uyIndex the index fot the new controller
+     */
+    explicit WiiController(uint8_t uyIndex);
+    WiiController(const WiiController& CwiiControllerOther) = delete;   /**< Copy constructor */
+    WiiController(WiiController&& wiiControllerOther) = default;        /**< Move constructor */
+
+    WiiController& operator =(const WiiController& CwiiControllerOther) = delete;   /**< Copy assignment operator */
+    WiiController& operator =(WiiController&& wiiControllerOther) = default;        /**< Move assignment operator */
+
 };
 
 
-inline WiiController::WiiController(uint8_t uyIndex) : Joystick{uyIndex} 
-{}
 inline int16_t WiiController::GetRightTriggerClassic() const noexcept
 { return SDL_JoystickGetAxis(__pSdlJoystick, 4); }
 inline int16_t WiiController::GetLeftTriggerClassic() const noexcept
