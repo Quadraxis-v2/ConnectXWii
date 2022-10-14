@@ -308,24 +308,24 @@ int64_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
             if (ePlayerMarkLast == Grid::EPlayerMark::EMPTY)
                 ePlayerMarkLast = Cgrid[uyRow][uyColumn];
         }
+    }
 
-        if (quPlayerMarks.size() - 1 > Cgrid.GetCellsToWin())
-        {
-            if (quPlayerMarks.front() == ePlayerMarkLast &&
-                ePlayerMarkLast != Grid::EPlayerMark::EMPTY) uySamePlayerMarkCount--;
-            quPlayerMarks.pop();
-        }
+    if (quPlayerMarks.size() - 1 > Cgrid.GetCellsToWin())
+    {
+        if (quPlayerMarks.front() == ePlayerMarkLast &&
+            ePlayerMarkLast != Grid::EPlayerMark::EMPTY) uySamePlayerMarkCount--;
+        quPlayerMarks.pop();
+    }
 
-        if (quPlayerMarks.size() >= Cgrid.GetCellsToWin())
-        {
-            if (uySamePlayerMarkCount >= Cgrid.GetCellsToWin() || 
-                (uySamePlayerMarkCount == Cgrid.GetCellsToWin() - 1 && 
-                quPlayerMarks.front() == Grid::EPlayerMark::EMPTY && 
-                quPlayerMarks.back() == Grid::EPlayerMark::EMPTY)) 
-                return 1000000 * PlayerMark2Heuristic(ePlayerMarkLast);
-            else return std::pow(uySamePlayerMarkCount, uySamePlayerMarkCount) * 
-                PlayerMark2Heuristic(ePlayerMarkLast);
-        }
+    if (quPlayerMarks.size() >= Cgrid.GetCellsToWin())
+    {
+        if (uySamePlayerMarkCount >= Cgrid.GetCellsToWin() || 
+            (uySamePlayerMarkCount == Cgrid.GetCellsToWin() - 1 && 
+            quPlayerMarks.front() == Grid::EPlayerMark::EMPTY && 
+            quPlayerMarks.back() == Grid::EPlayerMark::EMPTY)) 
+            return 1000000 * PlayerMark2Heuristic(ePlayerMarkLast);
+        else return std::pow(uySamePlayerMarkCount, uySamePlayerMarkCount) * 
+            PlayerMark2Heuristic(ePlayerMarkLast);
     }
 
     return 0;

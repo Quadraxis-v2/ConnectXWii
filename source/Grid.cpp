@@ -28,8 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Construct a new empty Grid
  */
-Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyNumberToMatch) : _uyWidth{uyWidth},
-    _uyHeight{uyHeight}, _uyCellsToWin{uyNumberToMatch}, 
+Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyCellsToWin) : _uyWidth{uyWidth},
+    _uyHeight{uyHeight}, _uyCellsToWin{uyCellsToWin}, 
     _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
     std::vector<EPlayerMark>(_uyWidth, EMPTY))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 

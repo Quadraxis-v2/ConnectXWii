@@ -42,7 +42,7 @@ public:
     const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
     int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
-    explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyNumberToMatch = 4);   /**< Default constructor */
+    explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyCellsToWin = 4);   /**< Default constructor */
     
 
     const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
@@ -85,8 +85,8 @@ private:
     uint8_t _uyCellsToWin;    /**< Number of markers in a row that must be achieved */
     std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
     std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
-    uint8_t _uyEmptyCells;                  /**< Indicates if the number of empty cells remaining */
-    EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game */
+    uint8_t _uyEmptyCells;                  /**< Indicates the number of empty cells remaining */
+    EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game, or empty */
 
     /**
      * @brief Checks if a given move has won the game
