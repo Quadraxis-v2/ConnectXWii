@@ -35,7 +35,7 @@ jobs:
                     <wchar_t>4</wchar_t>
                   </sizeof>
                 </platform>" > wii
-          cppcheck --enable=all --verbose -D__wii__ --platform=wii --cppcheck-build-dir=build --suppress=unusedFunction
+          cppcheck source/ --enable=all --verbose -D__wii__ --platform=wii --cppcheck-build-dir=build --suppress=unusedFunction
 
       - name: Build
         run: make
