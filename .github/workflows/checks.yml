@@ -1,0 +1,42 @@
+name: Run checks
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitppc
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+          
+      - name: Checkout code
+      - uses: actions/checkout@v3
+      
+      - name: Run static checks
+        run: |
+          echo "<?xml version="1"?>
+                <platform>
+                  <char_bit>8</char_bit>
+                  <default-sign>unsigned</default-sign>
+                  <sizeof>
+                    <short>2</short>
+                    <int>4</int>
+                    <long>4</long>
+                    <long-long>8</long-long>
+                    <float>4</float>
+                    <double>8</double>
+                    <long-double>8</long-double>
+                    <pointer>4</pointer>
+                    <size_t>4</size_t>
+                    <wchar_t>4</wchar_t>
+                  </sizeof>
+                </platform>" > wii
+                
+          cppcheck --enable=all --verbose -D__wii__ --platform=wii --cppcheck-build-dir=build --suppress=unusedFunction
+
+      - name: Build
+        run: make
