@@ -39,27 +39,27 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{Ce
 
 
 /**
- * @brief Makes the AI choose a play on the board
+ * @brief Makes the AI choose a play on the board using an Alpha-Beta pruning algorithm
  *
  * @param grid the main game board
  */
 void AI::ChooseMove(Grid& grid) const noexcept
 {
-    int64_t lAlpha = std::numeric_limits<int64_t>::min(), lBeta = std::numeric_limits<int64_t>::max();
+    int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max();
     uint8_t uyDepth = 0, uyBestPlay = 0;
 
-    for (uint8_t i = 0; i < grid.GetWidth(); i++)
+    for (uint8_t i = 0; i < grid.GetWidth() && iAlpha < iBeta; i++)
     {
         if (grid.IsValidMove(i))
         {
             Grid gridAttempt = grid;
             gridAttempt.MakeMove(__ePlayerMark, i);
-            int64_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, 
-                lAlpha, lBeta);
+            int32_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, 
+                iAlpha, iBeta);
 
-            if (iMinimaxValue > lAlpha)
+            if (iMinimaxValue > iAlpha)
             {
-                lAlpha = iMinimaxValue;
+                iAlpha = iMinimaxValue;
                 uyBestPlay = i;
             }
         }
@@ -75,33 +75,33 @@ void AI::ChooseMove(Grid& grid) const noexcept
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the min player
  * @param uyDepth the depth level of exploration
- * @param lAlpha alpha value for the AB-Pruning algorithm
- * @param lBeta beta value for the AB-Pruning algorithm
- * @return int64_t the revised value of beta
+ * @param iAlpha alpha value for the AB-Pruning algorithm
+ * @param iBeta beta value for the AB-Pruning algorithm
+ * @return int32_t the value of the best move for Min
  */
-int64_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
-    int64_t lAlpha, int64_t lBeta) const noexcept
+int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
+    int32_t iAlpha, int32_t iBeta) const noexcept
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
-        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int64_t>::max();
-        else return std::numeric_limits<int64_t>::min();
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
+        else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
     else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Cgrid.GetWidth() && lAlpha < lBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
             if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                lBeta = std::min(lBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1, 
-                    lAlpha, lBeta));
+                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1, 
+                    iAlpha, iBeta));
             }
         }
-        return lBeta;
+        return iBeta;
     }
 }
 
@@ -112,33 +112,33 @@ int64_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the max player
  * @param uyDepth the depth level of exploration
- * @param lAlpha alpha value for the AB-Pruning algorithm
- * @param lBeta beta value for the AB-Pruning algorithm
- * @return int64_t the revised value of alpha
+ * @param iAlpha alpha value for the AB-Pruning algorithm
+ * @param iBeta beta value for the AB-Pruning algorithm
+ * @return int32_t the value of the best move for Max
  */
-int64_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
-    int64_t lAlpha, int64_t lBeta) const noexcept
+int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
+    int32_t iAlpha, int32_t iBeta) const noexcept
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
-        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int64_t>::max();
-        else return std::numeric_limits<int64_t>::min();
+        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
+        else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
     else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
     else
     {
-        for (uint8_t i = 0; i < Cgrid.GetWidth() && lAlpha < lBeta; i++)
+        for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
             if (Cgrid.IsValidMove(i))
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                lAlpha = std::max(lAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1,
-                    lAlpha, lBeta));
+                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1,
+                    iAlpha, iBeta));
             }
         }
-        return lAlpha;
+        return iAlpha;
     }
 }
 
@@ -149,9 +149,9 @@ int64_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
  * @param Cgrid the main game board
  * @return int32_t a numeric evaluation of the board
  */
-int64_t AI::Heuristic(const Grid& Cgrid) const noexcept
+int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
-    int64_t lHeuristic = 0;
+    int32_t lHeuristic = 0;
 
     Grid::EPlayerMark ePlayerMarkLast{};
     uint8_t uySamePlayerMarkCount{}, uyEmptyCellCount{};
@@ -278,7 +278,7 @@ int64_t AI::Heuristic(const Grid& Cgrid) const noexcept
  * @param uyEmptyCellCount the number of empty cells that have been found since the last non-empty cell
  * @return int32_t the heuristic evaluation for the current sector
  */
-int64_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
+int32_t AI::EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn,
     std::queue<Grid::EPlayerMark>& quPlayerMarks, Grid::EPlayerMark& ePlayerMarkLast,
     uint8_t& uySamePlayerMarkCount, uint8_t& uyEmptyCellCount) const noexcept
 {

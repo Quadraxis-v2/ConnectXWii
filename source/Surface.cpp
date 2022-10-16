@@ -74,6 +74,15 @@ Surface::Surface(Surface&& surfaceOther) noexcept : _pSdlSurface{surfaceOther._p
 
 
 /**
+ * @brief Conversion constructor from raw SDL Surface
+ * 
+ * @param pSdlSurface the raw surface
+ */
+Surface::Surface(SDL_Surface* pSdlSurface) noexcept : _pSdlSurface{pSdlSurface}
+{}
+
+
+/**
  * @brief Destructor
  */
 Surface::~Surface() noexcept
@@ -116,6 +125,19 @@ Surface& Surface::operator =(Surface&& surfaceOther) noexcept
         _pSdlSurface = surfaceOther._pSdlSurface;
         surfaceOther._pSdlSurface = nullptr;
     }
+    return *this;
+}
+
+
+/**
+ * @brief Assignment and conversion from raw SDL Surface
+ * 
+ * @param pSdlSurface the raw surface
+ * @return Surface& the converted surface
+ */
+Surface& Surface::operator =(SDL_Surface* pSdlSurface) noexcept
+{
+    _pSdlSurface = pSdlSurface;
     return *this;
 }
 

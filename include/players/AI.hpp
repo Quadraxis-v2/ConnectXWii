@@ -45,7 +45,7 @@ public:
         uint8_t uySearchLimit = std::numeric_limits<uint8_t>::max());
 
     /**
-     * @brief Makes the AI choose a play on the board using and Alpha-Beta pruning algorithm
+     * @brief Makes the AI choose a play on the board using an Alpha-Beta pruning algorithm
      * 
      * @param grid the main game board
      */
@@ -61,12 +61,12 @@ private:
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the min player
      * @param uyDepth the depth level of exploration
-     * @param lAlpha alpha value for the AB-Pruning algorithm
-     * @param lBeta beta value for the AB-Pruning algorithm
-     * @return int64_t the revised value of beta
+     * @param iAlpha alpha value for the AB-Pruning algorithm
+     * @param iBeta beta value for the AB-Pruning algorithm
+     * @return int32_t the revised value of beta
      */
-    int64_t AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
-        int64_t lAlpha, int64_t lBeta) const noexcept;
+    int32_t AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
+        int32_t iAlpha, int32_t iBeta) const noexcept;
 
     /**
      * @brief Max function of the A-B Pruning algorithm
@@ -74,20 +74,20 @@ private:
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the max player
      * @param uyDepth the depth level of exploration
-     * @param lAlpha alpha value for the AB-Pruning algorithm
-     * @param lBeta beta value for the AB-Pruning algorithm
-     * @return int64_t the revised value of alpha
+     * @param iAlpha alpha value for the AB-Pruning algorithm
+     * @param iBeta beta value for the AB-Pruning algorithm
+     * @return int32_t the revised value of alpha
      */
-    int64_t AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
-        int64_t lAlpha, int64_t lBeta) const noexcept;
+    int32_t AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
+        int32_t iAlpha, int32_t iBeta) const noexcept;
 
     /**
      * @brief Evaluation function
      * 
      * @param Cgrid the main game board
-     * @return int64_t a numeric evaluation of the board
+     * @return int32_t a numeric evaluation of the board
      */
-    int64_t Heuristic(const Grid& Cgrid) const noexcept;
+    int32_t Heuristic(const Grid& Cgrid) const noexcept;
 
     /**
      * @brief Helper function for the heuristic function. Used to build and keep track of free sectors, 
@@ -101,9 +101,9 @@ private:
      * @param uySamePlayerMarkCount the number of player marks of the same type that have been found in the
      *  current sector
      * @param uyEmptyCellCount the number of empty cells that have been found since the last non-empty cell
-     * @return int64_t the heuristic evaluation for the current sector
+     * @return int32_t the heuristic evaluation for the current sector
      */
-    int64_t EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn, 
+    int32_t EvaluateSector(const Grid& Cgrid, uint8_t uyRow, uint8_t uyColumn, 
         std::queue<Grid::EPlayerMark>& quPlayerMarks, Grid::EPlayerMark& ePlayerMarkLast,
         uint8_t& uySamePlayerMarkCount, uint8_t& uyEmptyCellCount) const noexcept;
 

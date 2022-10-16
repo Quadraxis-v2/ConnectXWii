@@ -18,7 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <cstdint>
-#include <SDL_thread.h>
+
+#ifdef __wii__
+    #include <stdexcept>
+    #include <gccore.h>
+#else
+    #include <SDL_thread.h>
+#endif
+
 #include "../../include/App.hpp"
 #include "../../include/players/AI.hpp"
 #include "../../include/Grid.hpp"
@@ -27,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Handles all the data updates between frames
  */
-void App::OnLoop() noexcept
+void App::OnLoop()
 {
     switch (_eStateCurrent)
     {
@@ -37,7 +44,14 @@ void App::OnLoop() noexcept
         if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI) && !_bIsAIRunning)
         {
             _bIsAIRunning = true;
-            SDL_CreateThread(RunAI, this);
+
+            #ifdef __wii__
+                lwp_t lwpThreadAI{};
+                if (LWP_CreateThread(&lwpThreadAI, RunAI, this, nullptr, 0, 63) < 0)
+                    throw std::runtime_error("Error in the creation of thread");
+            #else
+                SDL_CreateThread(RunAI, this);
+            #endif
         }
         break;
     }
@@ -48,11 +62,15 @@ void App::OnLoop() noexcept
 
 /**
  * @brief Callback for running the AI algorithm in a separate thread
- * 
+ *
  * @param pData pointer to the globaL App object
  * @return int32_t error code of the thread
  */
-int32_t SDLCALL RunAI(void* pData)
+#ifdef __wii__
+    void* RunAI(void* pData)
+#else
+    int32_t SDLCALL RunAI(void* pData)
+#endif
 {
     App* pApp = static_cast<App*>(pData);
 
@@ -66,5 +84,9 @@ int32_t SDLCALL RunAI(void* pData)
 
     pApp->_bIsAIRunning = false;
 
-    return 0;
+    #ifdef __wii__
+        return pData;
+    #else
+        return 0;
+    #endif
 }

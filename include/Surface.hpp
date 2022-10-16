@@ -39,8 +39,6 @@ public:
     int32_t GetHeight() const noexcept;
     uint16_t GetPitch() const noexcept;
 
-    Surface(const Surface& CsurfaceOther);  /**< Copy constructor */
-    Surface(Surface&& surfaceOther) noexcept;   /**< Movement constructor */
 
     /**
      * @brief Constructor from a bitmap image in the filesystem
@@ -49,10 +47,23 @@ public:
      */
     explicit Surface(const std::string& CsFilePath);
 
+    /**
+     * @brief Conversion constructor from raw SDL Surface
+     * 
+     * @param pSdlSurface the raw surface
+     */
+    explicit Surface(SDL_Surface* pSdlSurface) noexcept;
+
+    Surface(const Surface& CsurfaceOther);  /**< Copy constructor */
+    Surface(Surface&& surfaceOther) noexcept;   /**< Movement constructor */
+
     ~Surface() noexcept;    /**< Destructor */
+
 
     Surface& operator =(const Surface& CsurfaceOther);      /**< Copy assignment operator */
     Surface& operator =(Surface&& surfaceOther) noexcept;   /**< Move assignment operator */
+    Surface& operator =(SDL_Surface* pSdlSurface) noexcept; /**< Conversion and assignment from raw surface */
+    operator SDL_Surface*() const noexcept;                 /**< Conversion operator to raw surface */
 
     /**
      * @brief Blits part of a surface into this surface
@@ -84,7 +95,10 @@ private:
 
     friend class App;   /**< Needed for accessing the raw surface */
 
-    Surface() noexcept; /**< Constructs a void surface */
+    /**
+     * @brief Construct a new void Surface
+     */
+    Surface() noexcept;
 
 };
 
@@ -92,6 +106,8 @@ private:
 inline int32_t Surface::GetWidth() const noexcept { return _pSdlSurface->w; }
 inline int32_t Surface::GetHeight() const noexcept { return _pSdlSurface->h; }
 inline uint16_t Surface::GetPitch() const noexcept { return _pSdlSurface->pitch; }
+
+inline Surface::operator SDL_Surface *() const noexcept { return _pSdlSurface; }
 
 
 #endif

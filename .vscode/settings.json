@@ -65,6 +65,8 @@
         "climits": "cpp",
         "codecvt": "cpp",
         "ratio": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     }
 }

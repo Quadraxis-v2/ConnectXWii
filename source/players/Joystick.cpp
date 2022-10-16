@@ -42,22 +42,31 @@ Joystick::Joystick(int32_t yIndex) : __pSdlJoystick{nullptr}
 
 
 /**
+ * @brief Conversion constructor from raw SDL Joystick
+ * 
+ * @param pSdlJoystick the raw joystick
+ */
+Joystick::Joystick(SDL_Joystick* pSdlJoystick) noexcept : __pSdlJoystick{pSdlJoystick}
+{}
+
+
+/**
+ * @brief Move constructor
+ */
+Joystick::Joystick(Joystick&& joystickOther) noexcept : __pSdlJoystick{joystickOther.__pSdlJoystick}
+{ joystickOther.__pSdlJoystick = nullptr; }
+
+
+/**
  * @brief Destructor
  */
 Joystick::~Joystick() noexcept { SDL_JoystickClose(__pSdlJoystick); }
 
 
 /**
- * @brief Move constructor
- */
-Joystick::Joystick(Joystick&& joystickOther) : __pSdlJoystick{joystickOther.__pSdlJoystick}
-{ joystickOther.__pSdlJoystick = nullptr; }
-
-
-/**
  * @brief Move assignment operator
  */
-Joystick& Joystick::operator =(Joystick&& joystickOther)
+Joystick& Joystick::operator =(Joystick&& joystickOther) noexcept
 {
     if (this != &joystickOther)
     {
@@ -66,5 +75,18 @@ Joystick& Joystick::operator =(Joystick&& joystickOther)
         joystickOther.__pSdlJoystick = nullptr;
     }
 
+    return *this;
+}
+
+
+/**
+ * @brief Assignment and conversion from raw SDL Joystick
+ * 
+ * @param pSdlJoystick the raw joystick
+ * @return Joystick& the converted joystick
+ */
+Joystick& Joystick::operator =(SDL_Joystick* pSdlJoystick) noexcept
+{
+    __pSdlJoystick = pSdlJoystick;
     return *this;
 }

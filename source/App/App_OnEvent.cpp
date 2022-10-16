@@ -161,7 +161,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
     {
     case EState::STATE_START:
     {
-        if (urMouseX >= 0 && urMouseX < (App::SCurWindowWidth >> 1) && urMouseY >= 0 &&
+        if (/*urMouseX >= 0 && */urMouseX < (App::SCurWindowWidth >> 1) &&/* urMouseY >= 0 &&*/
             urMouseY < App::SCurWindowHeight)   // If the controller is pointing at the left half of the screen
         {
             _eStateCurrent = EState::STATE_INGAME; // Start the game
@@ -171,7 +171,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
                 _settingsGlobal.GetAIDifficulty()));
         }
         else if (urMouseX >= (App::SCurWindowWidth >> 1) && urMouseX < App::SCurWindowWidth &&
-            urMouseY >= 0 && urMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
+            /*urMouseY >= 0 && */urMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
             _eStateCurrent = EState::STATE_INGAME; // Start the game
 
         break;
@@ -180,8 +180,8 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
     {
         if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
         {
-            _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
-            ++_uyCurrentPlayer %= _vectorpPlayers.size();
+            _grid.MakeMove(Grid::EPlayerMark::PLAYER1, _yPlayColumn);
+            //++_uyCurrentPlayer %= _vectorpPlayers.size();
 
             // If the game is won or there is a draw go to the corresponding state
             if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
@@ -205,7 +205,7 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
  * @param urMouseX the X coordinate of the mouse
  * @param urMouseY the Y coordinate of the mouse
  */
-void App::OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) { _bRunning = false; }
+void App::OnRButtonDown(uint16_t urMouseX, uint16_t urMouseY) { Reset(); }
 
 
 /**

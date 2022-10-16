@@ -82,7 +82,11 @@ private:
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
-    friend int32_t SDLCALL RunAI(void* pData);
+    #ifdef __wii__
+        friend void* RunAI(void* pData);
+    #else
+        friend int32_t SDLCALL RunAI(void* pData);
+    #endif
 
 
     App() noexcept;    /**< Default constructor */
@@ -95,7 +99,7 @@ private:
     /**
      * @brief Handles all the data updates between frames
      */
-    void OnLoop() noexcept;
+    void OnLoop();
 
     /**
      * @brief Handles all the rendering for each frame
@@ -309,9 +313,13 @@ private:
  * @brief Callback for running the AI algorithm in a separate thread
  *
  * @param pData pointer to the globaL App object
- * @return int32_t error code of the thread
+ * @return void* error code of the thread
  */
-int32_t SDLCALL RunAI(void* pData);
+ #ifdef __wii__
+    void* RunAI(void* pData);
+#else
+    int32_t SDLCALL RunAI(void* pData);
+#endif
 
 
 #endif

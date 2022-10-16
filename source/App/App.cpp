@@ -95,13 +95,15 @@ void App::Reset() noexcept
         delete *i;
     _vectorpPlayers = std::vector<Player*>();
 
-    WiiController* pJoystickWii = new WiiController(0);
-    _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
+    #ifdef __wii__
+        WiiController* pJoystickWii = new WiiController(0);
+        _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-    GameCubeController* pJoystickGameCube = new GameCubeController(0);
-    _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
+        GameCubeController* pJoystickGameCube = new GameCubeController(0);
+        _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-    Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
-    pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-    _vectorpPlayers.push_back(pPlayerMain);
+        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
+        pPlayerMain->AssociateJoystick(*pJoystickGameCube);
+        _vectorpPlayers.push_back(pPlayerMain);
+    #endif
 }

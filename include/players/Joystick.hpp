@@ -46,12 +46,23 @@ public:
      */
     explicit Joystick(int32_t yIndex);
 
-    virtual ~Joystick() noexcept;
+    /**
+     * @brief Conversion constructor from raw SDL Joystick
+     * 
+     * @param pSdlJoystick the raw joystick
+     */
+    explicit Joystick(SDL_Joystick* pSdlJoystick) noexcept;
 
     Joystick(const Joystick& CjoystickOther) = delete;              /**< Copy constructor */
-    Joystick(Joystick&& joystickOther);                             /**< Move constructor */
+    Joystick(Joystick&& joystickOther) noexcept;                    /**< Move constructor */
+
+    virtual ~Joystick() noexcept;
+
+
     Joystick& operator =(const Joystick& CjoystickOther) = delete;  /**< Copy assignment operator */
-    Joystick& operator =(Joystick&& joystickOther);                 /**< Move assignment operator */
+    Joystick& operator =(Joystick&& joystickOther) noexcept;       /**< Move assignment operator */
+    Joystick& operator =(SDL_Joystick* pSdlJoystick) noexcept;      /**< Conversion and assignment from raw joystick */
+    operator SDL_Joystick*() const noexcept;                        /**< Conversion operator to raw joystick */
 
 protected:
     SDL_Joystick* __pSdlJoystick;   /**< The raw joystick */
@@ -75,6 +86,8 @@ inline bool Joystick::GetButtonA() const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, 0); }
 inline bool Joystick::GetButtonB() const noexcept 
 { return SDL_JoystickGetButton(__pSdlJoystick, 1); }
+
+inline Joystick::operator SDL_Joystick*() const noexcept { return __pSdlJoystick; }
 
 
 #endif

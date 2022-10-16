@@ -20,27 +20,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string>
 #include <ios>
+#include <algorithm>
 #include <jansson.h>
 #include "../include/Settings.hpp"
 
 
 /** Default path for storing the application's settings */
-const char* Settings::SCsDefaultPath = "/apps/ConnectXWii/settings.json";
+const char* Settings::SCsDefaultPath = "apps/ConnectXWii/settings.json";
 
 
 /**
  * @brief Creates an object with the default settings
  */
-Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
+Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4},
 	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"} {}
 
 
 /**
  * @brief Constructs a new object by reading a settings file
- * 
+ *
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4}, 
+Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4},
 	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}
 {
     json_t* jsonRoot = nullptr;			// Root object of the JSON file
@@ -64,7 +65,7 @@ Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeig
 		json_decref(jsonRoot);
 		throw std::ios_base::failure("Error: Settings is not an object");
 	}
-	
+
 	/* New fields that are added to the class must be retrieved from here */
 	jsonField = json_object_get(jsonSettings, "Board width");
 	if(json_is_integer(jsonField)) _yBoardWidth = json_integer_value(jsonField);
@@ -77,6 +78,10 @@ Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeig
 	jsonField = json_object_get(jsonSettings, "Custom path for sprites");
 	if(json_is_string(jsonField)) _sCustomPath = json_string_value(jsonField);
 
+	/* Validation */
+	if (_yCellsToWin > _yBoardWidth && _yCellsToWin > _yBoardHeight)
+		_yCellsToWin = std::max(_yBoardWidth, _yBoardHeight);
+
 	// Free the objects from memory
     json_decref(jsonRoot);
 }
@@ -84,7 +89,7 @@ Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeig
 
 /**
  * @brief Saves the settings on disk
- * 
+ *
  * @param CsPath the path where the settings are to be stored
  */
 void Settings::Save(const std::string& CsPath) const
@@ -98,7 +103,7 @@ void Settings::Save(const std::string& CsPath) const
     json_object_set_new(jsonSettings, "Number of cells to win", json_integer(_yCellsToWin));
     json_object_set_new(jsonSettings, "AI Difficulty", json_integer(_yAIDifficulty));
 	json_object_set_new(jsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
-	
+
 	// Attach the settings to the root
     json_object_set_new(jsonRoot, "Settings", jsonSettings);
 
