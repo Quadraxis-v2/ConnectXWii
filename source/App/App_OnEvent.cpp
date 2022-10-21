@@ -182,7 +182,8 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
         {
             _grid.MakeMove(Grid::EPlayerMark::PLAYER1, _yPlayColumn);
             //++_uyCurrentPlayer %= _vectorpPlayers.size();
-
+            //_bAITurn = true;
+            
             // If the game is won or there is a draw go to the corresponding state
             if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                 _eStateCurrent = EState::STATE_END;

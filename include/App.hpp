@@ -82,11 +82,7 @@ private:
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
-    #ifdef __wii__
-        friend void* RunAI(void* pData);
-    #else
-        friend int32_t SDLCALL RunAI(void* pData);
-    #endif
+    friend int32_t SDLCALL RunAI(void* pData);
 
 
     App() noexcept;    /**< Default constructor */
@@ -312,14 +308,10 @@ private:
 /**
  * @brief Callback for running the AI algorithm in a separate thread
  *
- * @param pData pointer to the globaL App object
- * @return void* error code of the thread
+ * @param pData pointer to the global App object
+ * @return int32_t error code of the thread
  */
- #ifdef __wii__
-    void* RunAI(void* pData);
-#else
-    int32_t SDLCALL RunAI(void* pData);
-#endif
+int32_t SDLCALL RunAI(void* pData);
 
 
 #endif

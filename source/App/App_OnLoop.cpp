@@ -19,12 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 
-#ifdef __wii__
-    #include <stdexcept>
-    #include <gccore.h>
-#else
-    #include <SDL_thread.h>
-#endif
+#include <SDL_thread.h>
 
 #include "../../include/App.hpp"
 #include "../../include/players/AI.hpp"
@@ -45,13 +40,7 @@ void App::OnLoop()
         {
             _bIsAIRunning = true;
 
-            #ifdef __wii__
-                lwp_t lwpThreadAI{};
-                if (LWP_CreateThread(&lwpThreadAI, RunAI, this, nullptr, 0, 63) < 0)
-                    throw std::runtime_error("Error in the creation of thread");
-            #else
-                SDL_CreateThread(RunAI, this);
-            #endif
+            SDL_CreateThread(RunAI, this);
         }
         break;
     }
@@ -66,11 +55,7 @@ void App::OnLoop()
  * @param pData pointer to the globaL App object
  * @return int32_t error code of the thread
  */
-#ifdef __wii__
-    void* RunAI(void* pData)
-#else
-    int32_t SDLCALL RunAI(void* pData)
-#endif
+int32_t SDLCALL RunAI(void* pData)
 {
     App* pApp = static_cast<App*>(pData);
 
@@ -84,9 +69,5 @@ void App::OnLoop()
 
     pApp->_bIsAIRunning = false;
 
-    #ifdef __wii__
-        return pData;
-    #else
-        return 0;
-    #endif
+    return 0;
 }

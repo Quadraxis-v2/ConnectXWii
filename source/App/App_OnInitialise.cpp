@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     #include <iostream>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
+    #include <ogc/lwp.h>
 	#include <fat.h>
     #include "../../include/players/Player.hpp"
     #include "../../include/players/Human.hpp"
@@ -67,15 +68,30 @@ void App::OnInitialise()
         throw std::runtime_error(SDL_GetError());
 
     SDL_JoystickEventState(SDL_ENABLE);
+    EventManager::GetInstance().AttachListener(this);   // Receive events
     //SDL_ShowCursor(SDL_DISABLE);
 
     #ifdef __wii__
 		// Initialise console
-        if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface)) SDL_LockSurface(_surfaceDisplay._pSdlSurface);
-        CON_Init(_surfaceDisplay._pSdlSurface->pixels, 20, 20, _surfaceDisplay._pSdlSurface->w,
-            _surfaceDisplay._pSdlSurface->h, _surfaceDisplay._pSdlSurface->w * VI_DISPLAY_PIX_SZ);
-        std::cout << "\x1b[2;0H";
-        if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface)) SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
+        if (SDL_MUSTLOCK(_surfaceDisplay._pSdlSurface))
+        {
+            if (SDL_LockSurface(_surfaceDisplay._pSdlSurface) != -1)
+            {
+                CON_Init(_surfaceDisplay._pSdlSurface->pixels, 20, 20, _surfaceDisplay._pSdlSurface->w,
+                    _surfaceDisplay._pSdlSurface->h, _surfaceDisplay._pSdlSurface->w * VI_DISPLAY_PIX_SZ);
+                std::cout << "\x1b[2;0H";
+                SDL_UnlockSurface(_surfaceDisplay._pSdlSurface);
+            }
+        }
+        else
+        {
+            CON_Init(_surfaceDisplay._pSdlSurface->pixels, 20, 20, _surfaceDisplay._pSdlSurface->w,
+                _surfaceDisplay._pSdlSurface->h, _surfaceDisplay._pSdlSurface->w * VI_DISPLAY_PIX_SZ);
+            std::cout << "\x1b[2;0H";
+        }
+
+        // Correct main thread's priority
+        LWP_SetThreadPriority(LWP_THREAD_NULL, 65);
 
         // Create the main human player
         WiiController* pJoystickWii = new WiiController(0);
@@ -90,7 +106,6 @@ void App::OnInitialise()
         _vectorpPlayers.push_back(pPlayerMain);
 	#endif
 
-    EventManager::GetInstance().AttachListener(this);   // Receive events
     try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
