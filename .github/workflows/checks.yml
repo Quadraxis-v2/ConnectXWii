@@ -15,9 +15,18 @@ jobs:
           
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Run static checks
+        
+      - name: Cache Cppcheck build folder
+        id: cache-build
+        uses: actions/cache@v3.0.11
+        with:
+          path: cppcheckFolder
+          key: checks
+        
+      - name: Prepare environment
+        if: ${{ steps.cache-build.outputs.cache-hit != 'true' }}  # Only if the cache is not found
         run: |
+          mkdir cppcheckFolder
           echo "<?xml version="1"?>
                 <platform>
                   <char_bit>8</char_bit>
@@ -34,8 +43,10 @@ jobs:
                     <size_t>4</size_t>
                     <wchar_t>4</wchar_t>
                   </sizeof>
-                </platform>" > wii
-          cppcheck source/ --enable=all --verbose -D__wii__ --platform=wii --cppcheck-build-dir=build --suppress=unusedFunction
+                </platform>" > cppcheckFolder/wii
+      
+      - name: Run static checks
+        run: cppcheck source/ --enable=all --verbose -D__wii__ --platform=cppcheckFolder/wii --cppcheck-build-dir=cppcheckFolder --suppress=unusedFunction --error-exitcode=1
 
       - name: Build
-        run: make
+        run: make build
