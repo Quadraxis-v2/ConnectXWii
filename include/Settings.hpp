@@ -52,7 +52,7 @@ public:
     void SetCellsToWin(uint8_t yCellsToWin) noexcept;
     uint8_t GetAIDifficulty() const noexcept;
     void SetAIDifficulty(uint8_t yAIDifficulty) noexcept;
-    std::string GetCustomPath() const noexcept;
+    const std::string& GetCustomPath() const noexcept;
     void SetCustomPath(const std::string& CsCustomPath) noexcept;
 
 
@@ -92,7 +92,7 @@ inline uint8_t Settings::GetCellsToWin() const noexcept { return _yCellsToWin; }
 inline void Settings::SetCellsToWin(uint8_t yCellsToWin) noexcept { _yCellsToWin = yCellsToWin; }
 inline uint8_t Settings::GetAIDifficulty() const noexcept { return _yAIDifficulty; }
 inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _yAIDifficulty = yAIDifficulty; }
-inline std::string Settings::GetCustomPath() const noexcept { return _sCustomPath; }
+inline const std::string& Settings::GetCustomPath() const noexcept { return _sCustomPath; }
 inline void Settings::SetCustomPath(const std::string& CsCustomPath) noexcept 
 { _sCustomPath = CsCustomPath; }
 

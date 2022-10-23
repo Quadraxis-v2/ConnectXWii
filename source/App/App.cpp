@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_events.h>
 #include <SDL_joystick.h>
 #include <SDL_timer.h>
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #include "../../include/App.hpp"
 #include "../../include/EventListener.hpp"
 #include "../../include/EventManager.hpp"
@@ -43,10 +45,10 @@ App& App::GetInstance()
  * @brief Default constructor
  */
 App::App() noexcept : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START},
-    _settingsGlobal{}, _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
-    _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{},
-    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true},
-    _bIsAIRunning{false}, _yPlayColumn{0}
+    _settingsGlobal{}, _vectorpSdlThreads{}, _pSdlSemaphoreAI{nullptr}, _bStopThreads{false},
+    _surfaceDisplay{}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{}, _surfaceMarker2{}, 
+    _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{}, _htJoysticks{}, 
+    _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
 {}
 
 
@@ -80,22 +82,38 @@ void App::OnExecute()
 /**
  * @brief Resets the application to the initial values
  */
-void App::Reset() noexcept
+void App::Reset()
 {
     _eStateCurrent = STATE_START;
-    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),
-        _settingsGlobal.GetCellsToWin());
     _uyCurrentPlayer = 0;
 
+    /* Terminate threads */
+    _bStopThreads = true;
+
+    while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+    for (std::vector<SDL_Thread*>::iterator i = _vectorpSdlThreads.begin(); 
+        i != _vectorpSdlThreads.end(); ++i) SDL_WaitThread(*i, nullptr);
+    _vectorpSdlThreads = std::vector<SDL_Thread*>();
+
+    SDL_DestroySemaphore(_pSdlSemaphoreAI);
+    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
+
+    // Delete joysticks
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
     _htJoysticks = std::unordered_map<uint8_t, Joystick*>();
 
+    // Delete players
     for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
         delete *i;
     _vectorpPlayers = std::vector<Player*>();
 
+    // Clear grid
+    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),
+        _settingsGlobal.GetCellsToWin());
+
     #ifdef __wii__
+        /* Create a new main player */
         WiiController* pJoystickWii = new WiiController(0);
         _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 

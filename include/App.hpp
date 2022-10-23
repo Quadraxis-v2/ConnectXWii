@@ -26,6 +26,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #include "EventListener.hpp"
 #include "Settings.hpp"
 #include "Surface.hpp"
@@ -48,6 +50,9 @@ public:
 
     static App& GetInstance();
 
+    bool GetStopThreads() const noexcept;
+
+
     App(const App& CappOther) = delete;             /**< Copy constructor */
     App(App&& appOther) = default;                  /**< Move constructor */
     App& operator =(const App& CappOther) = delete; /**< Copy assignment operator */
@@ -63,6 +68,9 @@ private:
     bool _bRunning;             /**< Marks whether the application should continue running */
     EState _eStateCurrent;      /**< The current state of the application for the state machine */
     Settings _settingsGlobal;   /**< The global settings of the application */
+    std::vector<SDL_Thread*> _vectorpSdlThreads;    /**< Background threads of the application */
+    SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
+    bool _bStopThreads;         /**< Signal threads to stop */
 
     Surface _surfaceDisplay;    /**< The main display surface */
     Surface _surfaceStart;      /**< Picture for the start screen */
@@ -78,7 +86,6 @@ private:
     std::vector<Player*> _vectorpPlayers;   /**< The current players in the game */
     uint8_t _uyCurrentPlayer;               /** The index for the current player */
     bool _bSingleController;                /** The main controller can be used for all players */
-    bool _bIsAIRunning;                     /**< An AI is running */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
@@ -95,7 +102,7 @@ private:
     /**
      * @brief Handles all the data updates between frames
      */
-    void OnLoop();
+    void OnLoop() const noexcept;
 
     /**
      * @brief Handles all the rendering for each frame
@@ -110,7 +117,7 @@ private:
     /**
      * @brief Resets the application to the initial values
      */
-    void Reset() noexcept;
+    void Reset();
 
     /**
      * @brief Handles events where the mouse enters the application window
@@ -305,13 +312,7 @@ private:
 };
 
 
-/**
- * @brief Callback for running the AI algorithm in a separate thread
- *
- * @param pData pointer to the global App object
- * @return int32_t error code of the thread
- */
-int32_t SDLCALL RunAI(void* pData);
+inline bool App::GetStopThreads() const noexcept { return _bStopThreads; }
 
 
 #endif

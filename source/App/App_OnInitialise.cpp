@@ -29,13 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 #include <SDL_joystick.h>
+#include <SDL_mutex.h>
 
 #ifdef __wii__
     #include <iostream>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
     #include <ogc/lwp.h>
-	#include <fat.h>
     #include "../../include/players/Player.hpp"
     #include "../../include/players/Human.hpp"
 #endif
@@ -51,10 +51,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 void App::OnInitialise()
 {
-    #ifdef __wii__
-        fatInitDefault();   // SDL-wii needs to initialise libFAT first
-    #endif
-
     uint32_t uiInitFlags = SDL_INIT_EVERYTHING;
 
     #ifdef SDL_CDROM_DISABLED
@@ -68,6 +64,8 @@ void App::OnInitialise()
         throw std::runtime_error(SDL_GetError());
 
     SDL_JoystickEventState(SDL_ENABLE);
+    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
+
     EventManager::GetInstance().AttachListener(this);   // Receive events
     //SDL_ShowCursor(SDL_DISABLE);
 

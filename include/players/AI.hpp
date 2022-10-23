@@ -130,4 +130,13 @@ private:
 inline uint8_t AI::GetSearchLimit() const noexcept { return _uySearchLimit; }
 
 
+/**
+ * @brief Callback for running the AI algorithm in a separate thread
+ *
+ * @param pData pointer to the global App object
+ * @return int32_t error code of the thread
+ */
+int32_t SDLCALL RunAI(void* pData);
+
+
 #endif

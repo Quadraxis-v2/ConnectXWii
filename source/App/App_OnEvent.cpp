@@ -294,6 +294,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 // Create an AI player
                 _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
                     _settingsGlobal.GetAIDifficulty()));
+                _vectorpSdlThreads.push_back(SDL_CreateThread(RunAI, this));
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
                 iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
@@ -338,6 +339,8 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                         // If the game is won or there is a draw go to the corresponding state
                         if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
                             _eStateCurrent = EState::STATE_END;
+                        else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI)) 
+                            while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
                     }
                 }
             }

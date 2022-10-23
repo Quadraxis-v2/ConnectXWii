@@ -23,9 +23,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <queue>
 #include <cmath>
+
+#include <SDL_mutex.h>
+
 #include "../../include/players/AI.hpp"
 #include "../../include/players/Player.hpp"
 #include "../../include/Grid.hpp"
+#include "../../include/App.hpp"
 
 
 /**
@@ -357,4 +361,40 @@ int8_t AI::PlayerMark2Heuristic(const Grid::EPlayerMark& CePlayerMark) const noe
     if (CePlayerMark == __ePlayerMark) return 1;
     else if (CePlayerMark == Grid::EPlayerMark::EMPTY) return 0;
     else return -1;
+}
+
+
+/**
+ * @brief Callback for running the AI algorithm in a separate thread
+ *
+ * @param pData pointer to the global App object
+ * @return int32_t error code of the thread
+ */
+int32_t SDLCALL RunAI(void* pData)
+{
+    App* pApp = static_cast<App*>(pData);
+
+    while (!(pApp->_bStopThreads))
+    {
+        while(SDL_SemWait(pApp->_pSdlSemaphoreAI) == -1);
+
+        if (!(pApp->_bStopThreads))
+        {
+            if (AI* pAI = dynamic_cast<AI*>(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer]))
+                pAI->ChooseMove(pApp->_grid);
+
+            // If the game is won or there is a draw go to the corresponding state
+            if (pApp->_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || pApp->_grid.IsFull())
+                pApp->_eStateCurrent = App::EState::STATE_END;
+            else
+            {
+                ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size();
+
+                if (typeid(*(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer])) == typeid(AI))
+                    while (SDL_SemPost(pApp->_pSdlSemaphoreAI) == -1);
+            }
+        }
+    }
+
+    return 0;
 }

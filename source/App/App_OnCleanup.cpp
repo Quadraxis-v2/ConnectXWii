@@ -21,10 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 #include <SDL.h>
 #include <SDL_video.h>
-
-#ifdef __wii__
-    #include <fat.h>
-#endif
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 
 #include "../../include/App.hpp"
 #include "../../include/players/Player.hpp"
@@ -38,9 +36,15 @@ void App::OnCleanup() noexcept
     try { _settingsGlobal.Save(Settings::SCsDefaultPath); }     // Save settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
-    #ifdef __wii__
-        fatUnmount(nullptr);
-    #endif
+    /* Signal threads to stop */
+    _bStopThreads = true;
+
+    while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+    for (std::vector<SDL_Thread*>::iterator i = _vectorpSdlThreads.begin(); 
+        i != _vectorpSdlThreads.end(); ++i) SDL_WaitThread(*i, nullptr);
+
+    SDL_DestroySemaphore(_pSdlSemaphoreAI);
+    _pSdlSemaphoreAI = nullptr;
 
     // Delete joysticks
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
