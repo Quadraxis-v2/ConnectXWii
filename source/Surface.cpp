@@ -21,8 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ios>
 #include <stdexcept>
 #include <cstdint>
+
 #include <SDL_video.h>
 #include <SDL_error.h>
+#include <SDL_image.h>
+
 #include "../include/Surface.hpp"
 
 
@@ -41,7 +44,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
 {
     SDL_Surface* pSdlSurfaceTemp = nullptr;
 
-    if((pSdlSurfaceTemp = SDL_LoadBMP(CsFilePath.c_str())) == nullptr)
+    if((pSdlSurfaceTemp = IMG_Load(CsFilePath.c_str())) == nullptr)
         throw std::ios_base::failure(SDL_GetError());
 
     _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp); // Convert the loaded surface to the same format as the display
@@ -176,7 +179,7 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, in
     sdlRectSource.h = (urSourceHeight > 0) ? urSourceHeight : CsdlSurfaceSource._pSdlSurface->h;
 
     if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, &sdlRectSource,
-        _pSdlSurface, &sdlRectDestination) == -1)) throw std::runtime_error(SDL_GetError());
+        _pSdlSurface, &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
 }
 
 
@@ -188,7 +191,7 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, in
  * @param iGreen the green RGB component of the color that will be turned transparent
  * @param iBlue the blue RGB component of the color that will be turned transparent
  */
-void Surface::Transparent(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue)
+void Surface::SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue)
 {
     if((SDL_SetColorKey(_pSdlSurface, SDL_SRCCOLORKEY | SDL_RLEACCEL,
         SDL_MapRGB(_pSdlSurface->format, uyRed, uyGreen, uyBlue))) == -1)

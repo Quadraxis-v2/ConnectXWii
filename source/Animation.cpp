@@ -17,34 +17,41 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
 #include <cstdint>
+#include <stdexcept>
 #include <SDL_timer.h>
 #include "../include/Animation.hpp"
 
 
-Animation::Animation(int32_t iMaxFrames, int32_t iFrameRate, bool bOscillate) noexcept : 
-    _iMaxFrames{iMaxFrames}, _iFrameRate{iFrameRate}, _bOscillate{bOscillate}, _iCurrentFrame{0}, 
-    _iFrameInc{1}, _lOldTime{0}
+Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate, int8_t yCurrentFrame, 
+    int8_t yFrameIncrement ) noexcept : _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, 
+    _bOscillate{bOscillate}, _yCurrentFrame{yCurrentFrame}, _yFrameIncrement{yFrameIncrement}, 
+    _uiOldTime{0}
 {}
 
 
-void Animation::OnAnimate() 
+void Animation::OnAnimate() noexcept
 {
-    if(_lOldTime + _iFrameRate > SDL_GetTicks()) return;
+    if(_uiOldTime + _urFrameRate > SDL_GetTicks()) return;
  
-    _lOldTime = SDL_GetTicks();
+    _uiOldTime = SDL_GetTicks();
  
-    _iCurrentFrame += _iFrameInc;
+    _yCurrentFrame += _yFrameIncrement;
  
-    if(_bOscillate) 
-        if((_iFrameInc > 0 && _iCurrentFrame >= _iMaxFrames - 1) || 
-            (_iFrameInc <= 0 && _iCurrentFrame <= 0)) _iFrameInc *= -1;
-    else _iCurrentFrame % _iMaxFrames;
+    if(_bOscillate)
+    {
+        if((_yFrameIncrement > 0 && _yCurrentFrame >= _uyMaxFrames - 1) || 
+            (_yFrameIncrement <= 0 && _yCurrentFrame <= 0)) _yFrameIncrement *= -1;
+    }
+    
+    _yCurrentFrame %= _uyMaxFrames;
 }
  
 
-void Animation::SetCurrentFrame(int32_t iFrame) 
+void Animation::SetCurrentFrame(int8_t yCurrentFrame) 
 {
-    if (iFrame < 0 || iFrame >= _iMaxFrames) return;
-    _iCurrentFrame = iFrame;
+    if (yCurrentFrame >= _uyMaxFrames) 
+        throw std::out_of_range("Max frames: " + static_cast<int32_t>(_uyMaxFrames));
+    _yCurrentFrame = yCurrentFrame;
 }

@@ -44,8 +44,12 @@ class App : public EventListener    // Receive events in this class
 public:
     enum EState {STATE_START, STATE_INGAME, STATE_END};    /**< Application states for the state machine */
 
+
     static const uint16_t SCurWindowWidth = 640;    /**< Fixed width of the application */
     static const uint16_t SCurWindowHeight = 480;   /**< Fixed height of the application */
+
+
+    friend int32_t SDLCALL RunAI(void* pData);
 
 
     static App& GetInstance();
@@ -68,7 +72,7 @@ private:
     bool _bRunning;             /**< Marks whether the application should continue running */
     EState _eStateCurrent;      /**< The current state of the application for the state machine */
     Settings _settingsGlobal;   /**< The global settings of the application */
-    std::vector<SDL_Thread*> _vectorpSdlThreads;    /**< Background threads of the application */
+    SDL_Thread* _pSdlThreadAI;  /**< Background AI thread */
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
 
@@ -89,15 +93,10 @@ private:
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
 
-    friend int32_t SDLCALL RunAI(void* pData);
+    App();    /**< Default constructor */
 
+    virtual ~App() noexcept;    /**< Destructor */
 
-    App() noexcept;    /**< Default constructor */
-
-    /**
-     * @brief Handles the initial loading of data
-     */
-    void OnInitialise();
 
     /**
      * @brief Handles all the data updates between frames
@@ -108,11 +107,6 @@ private:
      * @brief Handles all the rendering for each frame
      */
     void OnRender();
-
-    /**
-     * @brief Cleans up any resources loaded before the end of the execution
-     */
-    void OnCleanup() noexcept;
 
     /**
      * @brief Resets the application to the initial values

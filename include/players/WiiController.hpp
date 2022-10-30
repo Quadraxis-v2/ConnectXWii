@@ -23,16 +23,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <SDL_joystick.h>
 #include <SDL_mouse.h>
-#include "Joystick.hpp"
+#include "SDL_Wii_Joystick.hpp"
 
 
 /**
  * @brief WiiController class
  */
-class WiiController : public Joystick
+class WiiController : public SDL_Wii_Joystick
 {
 public:
     static const uint8_t SCuyMaxWiiControllers = 4; /**< Maximum number of Wii controller supported by SDL-wii */
+
 
     int16_t GetRightTriggerClassic() const noexcept;
     int16_t GetLeftTriggerClassic() const noexcept;
@@ -58,6 +59,7 @@ public:
     bool GetButtonPlusClassic() const noexcept;
     bool GetButtonHOMEClassic() const noexcept;
 
+
     /**
      * @brief Construct a new Wii Controller
      * 
@@ -66,6 +68,7 @@ public:
     explicit WiiController(uint8_t uyIndex);
     WiiController(const WiiController& CwiiControllerOther) = delete;   /**< Copy constructor */
     WiiController(WiiController&& wiiControllerOther) = default;        /**< Move constructor */
+
 
     WiiController& operator =(const WiiController& CwiiControllerOther) = delete;   /**< Copy assignment operator */
     WiiController& operator =(WiiController&& wiiControllerOther) = default;        /**< Move assignment operator */

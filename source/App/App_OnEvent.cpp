@@ -85,16 +85,16 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
             case SDLK_LEFT:
                 _yPlayColumn--;
                 if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             case SDLK_RIGHT:
                 _yPlayColumn++;
                 if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             default: break;
             }
@@ -133,7 +133,7 @@ void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16
     switch (_eStateCurrent)
     {
     case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
-        _yPlayColumn = urMouseX / (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
+        _yPlayColumn = urMouseX / (_surfaceDisplay.GetWidth() / _grid.GetWidth());
         break;
     default: break;
     }
@@ -294,7 +294,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 // Create an AI player
                 _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
                     _settingsGlobal.GetAIDifficulty()));
-                _vectorpSdlThreads.push_back(SDL_CreateThread(RunAI, this));
+                _pSdlThreadAI = SDL_CreateThread(RunAI, this);
             }
             else if (iMouseX >= (App::SCurWindowWidth >> 1) && iMouseX < App::SCurWindowWidth &&
                 iMouseY >= 0 && iMouseY < App::SCurWindowHeight) // If the controller is pointing at the right half of the screen
@@ -329,7 +329,8 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         {
             if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
             {
-                if (pHuman->GetJoysticks().contains(uyWhich) || (uyWhich == 0 && _bSingleController))
+                if (pHuman->GetJoysticks().contains(uyWhich) || 
+                    ((uyWhich == 0 || uyWhich == 4) && _bSingleController))
                 {
                     if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                     {
@@ -403,16 +404,16 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
             case SDL_HAT_LEFT:
                 _yPlayColumn--;
                 if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             case SDL_HAT_RIGHT:
                 _yPlayColumn++;
                 if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight()));
+                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             default: break;
             }

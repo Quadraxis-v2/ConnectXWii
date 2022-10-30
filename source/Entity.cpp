@@ -1,5 +1,5 @@
 /*
-GameCubeController.cpp --- GameCube controller wrapper
+Entity.cpp --- Entity class
 Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
@@ -17,18 +17,29 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdexcept>
-#include "../../include/players/GameCubeController.hpp"
-#include "../../include/players/SDL_Wii_Joystick.hpp"
+
+#include <string>
+#include <cstdint>
+
+#include "../include/Entity.hpp"
+ 
+
+Entity::Entity(const std::string& CsFilePath, const Animation& Canimation) : __surfaceEntity{CsFilePath}, 
+    __animationController{Canimation}, _fX{0}, _fY{0}, _iAnimationState{0}
+{}
 
 
-/**
- * @brief Construct a new GameCube Controller object
- * 
- * @param uyIndex the index for the new controller
- */
-GameCubeController::GameCubeController(uint8_t uyIndex) : SDL_Wii_Joystick{uyIndex + 4}
+Entity::~Entity() noexcept
+{}
+
+
+void Entity::OnLoop() noexcept 
+{ __animationController.OnAnimate(); }
+
+
+void Entity::OnRender(Surface& surfaceDisplay) 
 {
-    if (uyIndex > GameCubeController::SCuyMaxGameCubeControllers - 1) 
-        throw std::out_of_range("Controller not available"); 
+    surfaceDisplay.OnDraw(__surfaceEntity, _fX, _fY, _iAnimationState * __surfaceEntity.GetWidth(), 
+        __animationController.GetCurrentFrame() * __surfaceEntity.GetHeight(), 
+        __surfaceEntity.GetWidth(), __surfaceEntity.GetHeight());
 }

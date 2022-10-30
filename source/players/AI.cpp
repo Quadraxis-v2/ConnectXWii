@@ -374,9 +374,9 @@ int32_t SDLCALL RunAI(void* pData)
 {
     App* pApp = static_cast<App*>(pData);
 
-    while (!(pApp->_bStopThreads))
+    while (!(pApp->_bStopThreads))  // Thread termination
     {
-        while(SDL_SemWait(pApp->_pSdlSemaphoreAI) == -1);
+        while(SDL_SemWait(pApp->_pSdlSemaphoreAI) == -1); // Wait until AI's turn
 
         if (!(pApp->_bStopThreads))
         {
@@ -388,8 +388,9 @@ int32_t SDLCALL RunAI(void* pData)
                 pApp->_eStateCurrent = App::EState::STATE_END;
             else
             {
-                ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size();
+                ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size(); // Move turn
 
+                // Check if next player is another AI
                 if (typeid(*(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer])) == typeid(AI))
                     while (SDL_SemPost(pApp->_pSdlSemaphoreAI) == -1);
             }

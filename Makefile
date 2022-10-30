@@ -26,7 +26,7 @@ INCLUDES	:=	include include/players
 #---------------------------------------------------------------------------------
 
 CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `sdl-config --cflags` \
-			`$(PREFIX)pkg-config --cflags jansson`
+			`$(PREFIX)pkg-config --cflags SDL_image jansson`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -34,7 +34,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`sdl-config --libs` `$(PREFIX)pkg-config jansson --libs` \
+LIBS	:=	`$(PREFIX)pkg-config --libs SDL_image jansson` `sdl-config --libs` \
 			-lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------

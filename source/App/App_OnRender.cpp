@@ -17,8 +17,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
 #include <cstdint>
+
 #include <SDL_video.h>
+
 #include "../../include/App.hpp"
 #include "../../include/Surface.hpp"
 #include "../../include/players/AI.hpp"
@@ -29,6 +32,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 void App::OnRender()
 {
+    // Clear framebuffer
+    SDL_FillRect(_surfaceDisplay, nullptr, SDL_MapRGB(_surfaceDisplay.GetPixelFormat(), 0, 0, 0));
+
     switch (_eStateCurrent)
     {
     case EState::STATE_START:  // In the starting state we just draw the starting surface
@@ -43,12 +49,12 @@ void App::OnRender()
         for(int32_t i = 0; i < _grid.GetHeight(); i++)  // Search for markers and draw them
         {
             // Surface coordinate of the i'th row of the grid
-            int32_t iY = i * (_surfaceDisplay._pSdlSurface->h / _grid.GetHeight());
+            int32_t iY = i * (_surfaceDisplay.GetHeight() / _grid.GetHeight());
 
             for (int32_t j = 0; j < _grid.GetWidth(); j++)
             {
                 // Surface coordinate of the j'th column of the grid
-                int32_t iX = j * (_surfaceDisplay._pSdlSurface->w / _grid.GetWidth());
+                int32_t iX = j * (_surfaceDisplay.GetWidth() / _grid.GetWidth());
 
                 if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
                     _surfaceDisplay.OnDraw(_surfaceMarker1, iX, iY);
@@ -76,5 +82,5 @@ void App::OnRender()
     int32_t iMouseX = 0, iMouseY = 0;
     SDL_GetMouseState(&iMouseX, &iMouseY);
 
-    SDL_Flip(_surfaceDisplay._pSdlSurface);  // Refreshes the screen
+    SDL_Flip(_surfaceDisplay);  // Refreshes the screen
 }

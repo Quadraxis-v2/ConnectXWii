@@ -17,12 +17,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <cstdint>
 #include "../include/App.hpp"
 
 
-int main(int argc, char** argv)
+int32_t main(int32_t argc, char** argv)
 {
-	App::GetInstance().OnExecute();
+	try { App::GetInstance().OnExecute(); }
+	catch (...) {}
 
 	return 0;
 }

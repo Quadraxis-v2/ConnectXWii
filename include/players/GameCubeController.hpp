@@ -22,13 +22,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 #include <SDL_joystick.h>
-#include "Joystick.hpp"
+#include "SDL_Wii_Joystick.hpp"
 
 
 /**
  * @brief GameCubeController class
  */
-class GameCubeController : public Joystick
+class GameCubeController : public SDL_Wii_Joystick
 {
 public:
     static const uint8_t SCuyMaxGameCubeControllers = 4;    /**< Maximum number of GameCube controllers supported by SDL-wii */

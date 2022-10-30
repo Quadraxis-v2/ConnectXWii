@@ -28,30 +28,46 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Animation 
 {
 public:
-    void SetFrameRate(int32_t iRate) noexcept;
-    int32_t GetCurrentFrame() const noexcept;
-    void SetCurrentFrame(int32_t iFrame);
+    uint8_t GetMaxFrames() const noexcept;
+    void SetMaxFrames(uint8_t uyMaxFrames) noexcept;
+    uint16_t GetFrameRate() const noexcept;
+    void SetFrameRate(uint16_t urFrameRate) noexcept;
+    bool IsOscillate() const noexcept;
+    void SetOscillate(bool bOscillate) noexcept;
+    uint8_t GetCurrentFrame() const noexcept;
+    void SetCurrentFrame(int8_t yCurrentFrame);
+    int8_t GetFrameIncrement() const noexcept;
+    void SetFrameIncrement(int8_t yFrameIncrement) noexcept;
 
 
-    Animation(int32_t iMaxFrames, int32_t iFrameRate, bool bOscillate = false) noexcept;
+    Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate = false, 
+        int8_t yCurrentFrame = 0, int8_t yFrameIncrement = 1) noexcept;
 
 
-    void OnAnimate();
+    void OnAnimate() noexcept;
 
 
 private:
-    int32_t _iMaxFrames;
-    int32_t _iFrameRate;    /**< Milliseconds */
+    uint8_t _uyMaxFrames;
+    uint16_t _urFrameRate;    /**< Milliseconds */
     bool _bOscillate;
-    int32_t _iCurrentFrame;
-    int32_t _iFrameInc;
-    int64_t _lOldTime;
+    int8_t _yCurrentFrame;
+    int8_t _yFrameIncrement;
+    uint32_t _uiOldTime;
 
 };
 
 
-inline void Animation::SetFrameRate(int32_t iRate) noexcept { _iFrameRate = iRate; }
-inline int32_t Animation::GetCurrentFrame() const noexcept { return _iCurrentFrame; }
+inline uint8_t Animation::GetMaxFrames() const noexcept { return _uyMaxFrames; }
+inline void Animation::SetMaxFrames(uint8_t uyMaxFrames) noexcept { _uyMaxFrames = uyMaxFrames; }
+inline uint16_t Animation::GetFrameRate() const noexcept { return _urFrameRate; }
+inline void Animation::SetFrameRate(uint16_t urFrameRate) noexcept { _urFrameRate = urFrameRate; }
+inline bool Animation::IsOscillate() const noexcept { return _bOscillate; }
+inline void Animation::SetOscillate(bool bOscillate) noexcept { _bOscillate = bOscillate; }
+inline uint8_t Animation::GetCurrentFrame() const noexcept { return _yCurrentFrame; }
+inline int8_t Animation::GetFrameIncrement() const noexcept { return _yFrameIncrement; }
+inline void Animation::SetFrameIncrement(int8_t yFrameIncrement) noexcept 
+{ _yFrameIncrement = yFrameIncrement; }
 
  
 #endif

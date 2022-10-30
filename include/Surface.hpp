@@ -35,9 +35,13 @@ class App;
 class Surface
 {
 public:
+    friend class App;
+
+    SDL_PixelFormat* GetPixelFormat() const noexcept;
     int32_t GetWidth() const noexcept;
     int32_t GetHeight() const noexcept;
     uint16_t GetPitch() const noexcept;
+    void* GetPixels() const noexcept;
 
 
     /**
@@ -88,12 +92,11 @@ public:
      * @param uyGreen the green RGB component of the color that will be turned transparent
      * @param uyBlue the blue RGB component of the color that will be turned transparent
      */
-    void Transparent(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
+    void SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
 
 private:
     SDL_Surface* _pSdlSurface;  /**< The raw surface */
 
-    friend class App;   /**< Needed for accessing the raw surface */
 
     /**
      * @brief Construct a new void Surface
@@ -103,9 +106,16 @@ private:
 };
 
 
-inline int32_t Surface::GetWidth() const noexcept { return _pSdlSurface->w; }
-inline int32_t Surface::GetHeight() const noexcept { return _pSdlSurface->h; }
-inline uint16_t Surface::GetPitch() const noexcept { return _pSdlSurface->pitch; }
+inline SDL_PixelFormat* Surface::GetPixelFormat() const noexcept 
+{ return (_pSdlSurface != nullptr ? _pSdlSurface->format : nullptr); }
+inline int32_t Surface::GetWidth() const noexcept 
+{ return (_pSdlSurface != nullptr ? _pSdlSurface->w : 0); }
+inline int32_t Surface::GetHeight() const noexcept 
+{ return (_pSdlSurface != nullptr ? _pSdlSurface->h : 0); }
+inline uint16_t Surface::GetPitch() const noexcept 
+{ return (_pSdlSurface != nullptr ? _pSdlSurface->pitch : 0); }
+inline void* Surface::GetPixels() const noexcept 
+{ return (_pSdlSurface != nullptr ? _pSdlSurface->pixels : nullptr); }
 
 inline Surface::operator SDL_Surface *() const noexcept { return _pSdlSurface; }
 
