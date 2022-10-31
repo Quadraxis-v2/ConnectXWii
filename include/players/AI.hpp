@@ -56,30 +56,32 @@ private:
 
 
     /**
-     * @brief Min function of the A-B Pruning algorithm
+     * @brief Min function of the Alpha-Beta Pruning algorithm
      * 
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the min player
-     * @param uyDepth the depth level of exploration
+     * @param uyCurrentDepth the current depth of exploration
+     * @param uyMaxDepth the maximum depth to explore
      * @param iAlpha alpha value for the AB-Pruning algorithm
      * @param iBeta beta value for the AB-Pruning algorithm
      * @return int32_t the revised value of beta
      */
-    int32_t AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
-        int32_t iAlpha, int32_t iBeta) const noexcept;
+    int32_t AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
+        uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept;
 
     /**
-     * @brief Max function of the A-B Pruning algorithm
+     * @brief Max function of the Alpha-Beta Pruning algorithm
      * 
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the max player
-     * @param uyDepth the depth level of exploration
+     * @param uyCurrentDepth the current depth of exploration
+     * @param uyMaxDepth the maximum depth to explore
      * @param iAlpha alpha value for the AB-Pruning algorithm
      * @param iBeta beta value for the AB-Pruning algorithm
      * @return int32_t the revised value of alpha
      */
-    int32_t AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth, 
-        int32_t iAlpha, int32_t iBeta) const noexcept;
+    int32_t AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
+        uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept;
 
     /**
      * @brief Evaluation function

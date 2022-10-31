@@ -20,17 +20,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 #include <stdexcept>
+
 #include <SDL_timer.h>
+
 #include "../include/Animation.hpp"
 
 
-Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate, int8_t yCurrentFrame, 
-    int8_t yFrameIncrement ) noexcept : _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, 
-    _bOscillate{bOscillate}, _yCurrentFrame{yCurrentFrame}, _yFrameIncrement{yFrameIncrement}, 
-    _uiOldTime{0}
+/**
+ * @brief Construct a new Animation
+ * 
+ * @param uyMaxFrames the number of frames the animation has
+ * @param urFrameRate the time between frame changes, in milliseconds
+ * @param urFrameWidth the width of the frames of the animation
+ * @param urFrameHeight the height of the frames of the animation
+ * @param bOscillate signals if the animation goes back and forth
+ * @param yStartingFrame the starting frame of the animation
+ * @param yFrameIncrement the distance between frames in the animation
+ */
+Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, uint16_t urFrameWidth, 
+    uint16_t urFrameHeight, bool bOscillate, int8_t yStartingFrame, int8_t yFrameIncrement ) noexcept : 
+    _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, _urFrameWidth{urFrameWidth}, 
+    _urFrameHeight{urFrameHeight}, _bOscillate{bOscillate}, _yCurrentFrame{yStartingFrame}, 
+    _yFrameIncrement{yFrameIncrement}, _uiOldTime{0}
 {}
 
 
+/**
+ * @brief Goes automatically to the next frame if enough time has passed
+ */
 void Animation::OnAnimate() noexcept
 {
     if(_uiOldTime + _urFrameRate > SDL_GetTicks()) return;
@@ -49,6 +66,11 @@ void Animation::OnAnimate() noexcept
 }
  
 
+/**
+ * @brief Makes the animation go immediately to a certain frame
+ * 
+ * @param yCurrentFrame the frame that the animation will go to
+ */
 void Animation::SetCurrentFrame(int8_t yCurrentFrame) 
 {
     if (yCurrentFrame >= _uyMaxFrames) 

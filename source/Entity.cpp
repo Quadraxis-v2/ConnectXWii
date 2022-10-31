@@ -24,22 +24,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../include/Entity.hpp"
  
 
+/**
+ * @brief Construct a new Entity
+ * 
+ * @param CsFilePath the path to the sprite file
+ * @param Canimation the animation for the entity
+ */
 Entity::Entity(const std::string& CsFilePath, const Animation& Canimation) : __surfaceEntity{CsFilePath}, 
-    __animationController{Canimation}, _fX{0}, _fY{0}, _iAnimationState{0}
+    __animationController{Canimation}, _fPositionX{0}, _fPositionY{0}
 {}
 
 
-Entity::~Entity() noexcept
-{}
-
-
+/**
+ * @brief Handles all the entity processing between frames
+ */
 void Entity::OnLoop() noexcept 
 { __animationController.OnAnimate(); }
 
 
-void Entity::OnRender(Surface& surfaceDisplay) 
+/**
+ * @brief Renders the entity onto another
+ * 
+ * @param surfaceOther the surface where the entity will be rendered
+ */
+void Entity::OnRender(Surface& surfaceOther) 
 {
-    surfaceDisplay.OnDraw(__surfaceEntity, _fX, _fY, _iAnimationState * __surfaceEntity.GetWidth(), 
-        __animationController.GetCurrentFrame() * __surfaceEntity.GetHeight(), 
-        __surfaceEntity.GetWidth(), __surfaceEntity.GetHeight());
+    surfaceOther.OnDraw(__surfaceEntity, _fPositionX, _fPositionY, __animationController.GetFrameWidth(), 
+        __animationController.GetCurrentFrame() * __animationController.GetFrameHeight(), 
+        __animationController.GetFrameWidth(), __animationController.GetFrameHeight());
 }

@@ -50,41 +50,52 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{Ce
 void AI::ChooseMove(Grid& grid) const noexcept
 {
     int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max();
-    uint8_t uyDepth = 0, uyBestPlay = 0;
+    uint8_t uyBestMove = 0;
 
-    for (uint8_t i = 0; i < grid.GetWidth() && iAlpha < iBeta; i++)
+    for (uint8_t i = 0; i < _uySearchLimit && iAlpha < std::numeric_limits<int32_t>::max(); i++)    // Iterative deepening search
     {
-        if (grid.IsValidMove(i))
-        {
-            Grid gridAttempt = grid;
-            gridAttempt.MakeMove(__ePlayerMark, i);
-            int32_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), uyDepth + 1, 
-                iAlpha, iBeta);
+        iAlpha = std::numeric_limits<int32_t>::min();
+        uyBestMove = 0;
 
-            if (iMinimaxValue > iAlpha)
+        for (uint8_t j = 0; j < grid.GetWidth() && iAlpha < iBeta; j++)
+        {
+            if (grid.IsValidMove(j))
             {
-                iAlpha = iMinimaxValue;
-                uyBestPlay = i;
+                Grid gridAttempt = grid;
+                gridAttempt.MakeMove(__ePlayerMark, j);
+                int32_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), 1, i + 1,
+                    iAlpha, iBeta);
+
+                if (iMinimaxValue > iAlpha)
+                {
+                    iAlpha = iMinimaxValue;
+                    uyBestMove = j;
+                }
             }
         }
     }
 
-    if (grid.IsValidMove(uyBestPlay)) grid.MakeMove(__ePlayerMark, uyBestPlay);
+    /* Check the position chosen is valid, otherwise use the first valid one */
+    uint8_t i = 0;
+    while (i < grid.GetWidth() && !(grid.IsValidMove((uyBestMove + i) % grid.GetWidth()))) i++;
+    
+    if (i < grid.GetWidth()) grid.MakeMove(__ePlayerMark, (uyBestMove + i) % grid.GetWidth());
 }
 
 
 /**
- * @brief Min function of the AB-Pruning algorithm
- *
+ * @brief Min function of the Alpha-Beta Pruning algorithm
+ * 
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the min player
- * @param uyDepth the depth level of exploration
+ * @param uyCurrentDepth the current depth of exploration
+ * @param uyMaxDepth the maximum depth to explore
  * @param iAlpha alpha value for the AB-Pruning algorithm
  * @param iBeta beta value for the AB-Pruning algorithm
- * @return int32_t the value of the best move for Min
+ * @return int32_t the revised value of beta
  */
-int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
-    int32_t iAlpha, int32_t iBeta) const noexcept
+int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
+    uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
@@ -92,7 +103,7 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
         else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
-    else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
+    else if (uyCurrentDepth >= uyMaxDepth) return Heuristic(Cgrid);
     else
     {
         for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
@@ -101,8 +112,8 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1, 
-                    iAlpha, iBeta));
+                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), 
+                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta));
             }
         }
         return iBeta;
@@ -111,17 +122,18 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
 
 
 /**
- * @brief Max function of the AB-Pruning algorithm
- *
+ * @brief Max function of the Alpha-Beta Pruning algorithm
+ * 
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the max player
- * @param uyDepth the depth level of exploration
+ * @param uyCurrentDepth the current depth of exploration
+ * @param uyMaxDepth the maximum depth to explore
  * @param iAlpha alpha value for the AB-Pruning algorithm
  * @param iBeta beta value for the AB-Pruning algorithm
- * @return int32_t the value of the best move for Max
+ * @return int32_t the revised value of alpha
  */
-int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyDepth,
-    int32_t iAlpha, int32_t iBeta) const noexcept
+int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
+    uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
@@ -129,7 +141,7 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
         else return std::numeric_limits<int32_t>::min();
     }
     else if (Cgrid.IsFull()) return 0;
-    else if (uyDepth == _uySearchLimit) return Heuristic(Cgrid);
+    else if (uyCurrentDepth >= uyMaxDepth) return Heuristic(Cgrid);
     else
     {
         for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
@@ -138,8 +150,8 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), uyDepth + 1,
-                    iAlpha, iBeta));
+                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), 
+                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta));
             }
         }
         return iAlpha;

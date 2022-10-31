@@ -28,43 +28,71 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Animation.hpp"
  
 
+/**
+ * @brief Entity class
+ */
 class Entity 
 {
 public:
     Surface& GetSurface() noexcept;
+    const Surface& GetSurface() const noexcept;
     void SetSurface(const Surface& Csurface) noexcept;
     Animation& GetAnimation() noexcept;
+    const Animation& GetAnimation() const noexcept;
     void SetAnimation(const Animation& Canimation) noexcept;
+    float GetPositionX() const noexcept;
+    void SetPositionX(float fPositionX) noexcept;
+    float GetPositionY() const noexcept;
+    void SetPositionY(float fPositionY) noexcept;
 
 
+    /**
+     * @brief Construct a new Entity
+     * 
+     * @param CsFilePath the path to the sprite file
+     * @param Canimation the animation for the entity
+     */
     Entity(const std::string& CsFilePath, const Animation& Canimation);
 
-    virtual ~Entity() noexcept;
+    virtual ~Entity() = default;    /**< Destructor */
     
 
+    /**
+     * @brief Handles all the entity processing between frames
+     */
     virtual void OnLoop() noexcept;
 
-    virtual void OnRender(Surface& surfaceDisplay);
+    /**
+     * @brief Renders the entity onto another
+     * 
+     * @param surfaceOther the surface where the entity will be rendered
+     */
+    virtual void OnRender(Surface& surfaceOther);
 
 
 protected:
-    Surface __surfaceEntity;
-    Animation __animationController;
+    Surface __surfaceEntity;            /**< The surface of the entity */
+    Animation __animationController;    /**< The animation of the entity's surface */
 
 
 private:
-    float _fX;
-    float _fY;
-    int32_t _iAnimationState;
+    float _fPositionX;                  /**< The position X of the entity on the screen */
+    float _fPositionY;                  /**< The position Y of the entity on the screen */
 
 };
 
 
 inline Surface& Entity::GetSurface() noexcept { return __surfaceEntity; }
+inline const Surface& Entity::GetSurface() const noexcept { return __surfaceEntity; }
 inline void Entity::SetSurface(const Surface& Csurface) noexcept { __surfaceEntity = Csurface; }
 inline Animation& Entity::GetAnimation() noexcept { return __animationController; }
+inline const Animation& Entity::GetAnimation() const noexcept { return __animationController; }
 inline void Entity::SetAnimation(const Animation& Canimation) noexcept 
 { __animationController = Canimation; }
+inline float Entity::GetPositionX() const noexcept { return _fPositionX; }
+inline void Entity::SetPositionX(float fPositionX) noexcept { _fPositionX = fPositionX; }
+inline float Entity::GetPositionY() const noexcept { return _fPositionY; }
+inline void Entity::SetPositionY(float fPositionY) noexcept { _fPositionY = fPositionY; }
 
 
 #endif
