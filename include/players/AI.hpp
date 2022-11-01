@@ -56,7 +56,7 @@ private:
 
 
     /**
-     * @brief Min function of the Alpha-Beta Pruning algorithm
+     * @brief Alpha-Beta Pruning algorithm
      * 
      * @param Cgrid the main game board
      * @param CePlayerMark the mark of the min player
@@ -64,24 +64,11 @@ private:
      * @param uyMaxDepth the maximum depth to explore
      * @param iAlpha alpha value for the AB-Pruning algorithm
      * @param iBeta beta value for the AB-Pruning algorithm
+     * @param bIsMinNode signals if the current node is a Min node
      * @return int32_t the revised value of beta
      */
-    int32_t AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
-        uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept;
-
-    /**
-     * @brief Max function of the Alpha-Beta Pruning algorithm
-     * 
-     * @param Cgrid the main game board
-     * @param CePlayerMark the mark of the max player
-     * @param uyCurrentDepth the current depth of exploration
-     * @param uyMaxDepth the maximum depth to explore
-     * @param iAlpha alpha value for the AB-Pruning algorithm
-     * @param iBeta beta value for the AB-Pruning algorithm
-     * @return int32_t the revised value of alpha
-     */
-    int32_t AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
-        uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept;
+    int32_t AlphaBetaPruning(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, 
+        uint8_t uyCurrentDepth, uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta, bool bIsMinNode) const noexcept;
 
     /**
      * @brief Evaluation function
@@ -135,7 +122,7 @@ inline uint8_t AI::GetSearchLimit() const noexcept { return _uySearchLimit; }
 /**
  * @brief Callback for running the AI algorithm in a separate thread
  *
- * @param pData pointer to the global App object
+ * @param pData unused
  * @return int32_t error code of the thread
  */
 int32_t SDLCALL RunAI(void* pData);

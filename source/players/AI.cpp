@@ -63,8 +63,8 @@ void AI::ChooseMove(Grid& grid) const noexcept
             {
                 Grid gridAttempt = grid;
                 gridAttempt.MakeMove(__ePlayerMark, j);
-                int32_t iMinimaxValue = AB_MinValue(gridAttempt, NextPlayer(__ePlayerMark), 1, i + 1,
-                    iAlpha, iBeta);
+                int32_t iMinimaxValue = AlphaBetaPruning(gridAttempt, NextPlayer(__ePlayerMark), 1, i + 1,
+                    iAlpha, iBeta, true);
 
                 if (iMinimaxValue > iAlpha)
                 {
@@ -84,7 +84,7 @@ void AI::ChooseMove(Grid& grid) const noexcept
 
 
 /**
- * @brief Min function of the Alpha-Beta Pruning algorithm
+ * @brief Alpha-Beta Pruning algorithm
  * 
  * @param Cgrid the main game board
  * @param CePlayerMark the mark of the min player
@@ -92,10 +92,11 @@ void AI::ChooseMove(Grid& grid) const noexcept
  * @param uyMaxDepth the maximum depth to explore
  * @param iAlpha alpha value for the AB-Pruning algorithm
  * @param iBeta beta value for the AB-Pruning algorithm
+ * @param bIsMinNode signals if the current node is a Min node
  * @return int32_t the revised value of beta
  */
-int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
-    uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept
+int32_t AI::AlphaBetaPruning(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
+    uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta, bool bIsMinNode) const noexcept
 {
     if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
     {
@@ -104,7 +105,7 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
     }
     else if (Cgrid.IsFull()) return 0;
     else if (uyCurrentDepth >= uyMaxDepth) return Heuristic(Cgrid);
-    else
+    else if (bIsMinNode)    // Min node
     {
         for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
@@ -112,37 +113,13 @@ int32_t AI::AB_MinValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iBeta = std::min(iBeta, AB_MaxValue(gridAttempt, NextPlayer(CePlayerMark), 
-                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta));
+                iBeta = std::min(iBeta, AlphaBetaPruning(gridAttempt, NextPlayer(CePlayerMark), 
+                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta, false));
             }
         }
         return iBeta;
     }
-}
-
-
-/**
- * @brief Max function of the Alpha-Beta Pruning algorithm
- * 
- * @param Cgrid the main game board
- * @param CePlayerMark the mark of the max player
- * @param uyCurrentDepth the current depth of exploration
- * @param uyMaxDepth the maximum depth to explore
- * @param iAlpha alpha value for the AB-Pruning algorithm
- * @param iBeta beta value for the AB-Pruning algorithm
- * @return int32_t the revised value of alpha
- */
-int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
-    uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta) const noexcept
-{
-    if (Cgrid.CheckWinner() != Grid::EPlayerMark::EMPTY)
-    {
-        if (Cgrid.CheckWinner() == __ePlayerMark) return std::numeric_limits<int32_t>::max();
-        else return std::numeric_limits<int32_t>::min();
-    }
-    else if (Cgrid.IsFull()) return 0;
-    else if (uyCurrentDepth >= uyMaxDepth) return Heuristic(Cgrid);
-    else
+    else                    // Max node
     {
         for (uint8_t i = 0; i < Cgrid.GetWidth() && iAlpha < iBeta; i++)
         {
@@ -150,8 +127,8 @@ int32_t AI::AB_MaxValue(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark
             {
                 Grid gridAttempt = Cgrid;
                 gridAttempt.MakeMove(CePlayerMark, i);
-                iAlpha = std::max(iAlpha, AB_MinValue(gridAttempt, NextPlayer(CePlayerMark), 
-                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta));
+                iAlpha = std::max(iAlpha, AlphaBetaPruning(gridAttempt, NextPlayer(CePlayerMark), 
+                    uyCurrentDepth + 1, uyMaxDepth, iAlpha, iBeta, true));
             }
         }
         return iAlpha;
@@ -379,32 +356,32 @@ int8_t AI::PlayerMark2Heuristic(const Grid::EPlayerMark& CePlayerMark) const noe
 /**
  * @brief Callback for running the AI algorithm in a separate thread
  *
- * @param pData pointer to the global App object
+ * @param pData unused
  * @return int32_t error code of the thread
  */
 int32_t SDLCALL RunAI(void* pData)
 {
-    App* pApp = static_cast<App*>(pData);
+    App& app = App::GetInstance();
 
-    while (!(pApp->_bStopThreads))  // Thread termination
+    while (!(app._bStopThreads))  // Thread termination
     {
-        while(SDL_SemWait(pApp->_pSdlSemaphoreAI) == -1); // Wait until AI's turn
+        while(SDL_SemWait(app._pSdlSemaphoreAI) == -1); // Wait until AI's turn
 
-        if (!(pApp->_bStopThreads))
+        if (!(app._bStopThreads))
         {
-            if (AI* pAI = dynamic_cast<AI*>(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer]))
-                pAI->ChooseMove(pApp->_grid);
+            if (AI* pAI = dynamic_cast<AI*>(app._vectorpPlayers[app._uyCurrentPlayer]))
+                pAI->ChooseMove(app._grid);
 
             // If the game is won or there is a draw go to the corresponding state
-            if (pApp->_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || pApp->_grid.IsFull())
-                pApp->_eStateCurrent = App::EState::STATE_END;
+            if (app._grid.CheckWinner() != Grid::EPlayerMark::EMPTY || app._grid.IsFull())
+                app._eStateCurrent = App::EState::STATE_END;
             else
             {
-                ++(pApp->_uyCurrentPlayer) %= pApp->_vectorpPlayers.size(); // Move turn
+                ++(app._uyCurrentPlayer) %= app._vectorpPlayers.size(); // Move turn
 
                 // Check if next player is another AI
-                if (typeid(*(pApp->_vectorpPlayers[pApp->_uyCurrentPlayer])) == typeid(AI))
-                    while (SDL_SemPost(pApp->_pSdlSemaphoreAI) == -1);
+                if (typeid(*(app._vectorpPlayers[app._uyCurrentPlayer])) == typeid(AI))
+                    while (SDL_SemPost(app._pSdlSemaphoreAI) == -1);
             }
         }
     }
