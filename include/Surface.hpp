@@ -70,19 +70,28 @@ public:
     operator SDL_Surface*() const noexcept;                 /**< Conversion operator to raw surface */
 
     /**
-     * @brief Blits part of a surface into this surface
+     * @brief Blits an entire surface into this surface
      *
      * @param CsdlSurfaceSource the source surface
      * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
      * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
+     */
+    void OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX = 0, int16_t rDestinationY = 0);
+
+    /**
+     * @brief Blits part of a surface into this surface
+     *
+     * @param CsdlSurfaceSource the source surface
      * @param rSourceX the X component of the origin coordinate of the portion of the source surface
      * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
      * @param urSourceWidth the width in pixels of the portion of this surface that will be blitted
      * @param urSourceHeight the height in pixels of the portion of the source surface that will be blitted
+     * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
+     * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
      */
-    void OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX = 0, int16_t rDestinationY = 0,
-        int16_t rSourceX = 0, int16_t rSourceY = 0, uint16_t urSourceWidth = 0, 
-        uint16_t urSourceHeight = 0);
+    void OnDraw(const Surface& CsdlSurfaceSource, int16_t rSourceX, int16_t rSourceY,
+        uint16_t urSourceWidth, uint16_t urSourceHeight, int16_t rDestinationX = 0, 
+        int16_t rDestinationY = 0);
 
     /**
      * @brief Makes a color in this surface be transparent. If the color requested is not found, the most

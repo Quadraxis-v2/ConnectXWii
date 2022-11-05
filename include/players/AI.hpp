@@ -45,7 +45,7 @@ public:
         uint8_t uySearchLimit = std::numeric_limits<uint8_t>::max());
 
     /**
-     * @brief Makes the AI choose a play on the board using an Alpha-Beta pruning algorithm
+     * @brief Makes the AI choose a play on the board
      * 
      * @param grid the main game board
      */
@@ -59,13 +59,13 @@ private:
      * @brief Alpha-Beta Pruning algorithm
      * 
      * @param Cgrid the main game board
-     * @param CePlayerMark the mark of the min player
+     * @param CePlayerMark the mark of this node's player
      * @param uyCurrentDepth the current depth of exploration
      * @param uyMaxDepth the maximum depth to explore
      * @param iAlpha alpha value for the AB-Pruning algorithm
      * @param iBeta beta value for the AB-Pruning algorithm
      * @param bIsMinNode signals if the current node is a Min node
-     * @return int32_t the revised value of beta
+     * @return int32_t the value of the current node
      */
     int32_t AlphaBetaPruning(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, 
         uint8_t uyCurrentDepth, uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta, bool bIsMinNode) const noexcept;

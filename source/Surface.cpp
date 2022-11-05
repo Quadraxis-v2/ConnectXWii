@@ -17,6 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
 #include <string>
 #include <ios>
 #include <stdexcept>
@@ -47,7 +48,14 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
     if((pSdlSurfaceTemp = IMG_Load(CsFilePath.c_str())) == nullptr)
         throw std::ios_base::failure(SDL_GetError());
 
-    _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp); // Convert the loaded surface to the same format as the display
+    /* Convert the loaded surface to the same format as the display */
+    if (pSdlSurfaceTemp->format->Amask)     // Surface has an alpha channel
+    {
+        SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, 128);
+        _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
+    }
+    else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+
     SDL_FreeSurface(pSdlSurfaceTemp);
 
     if (_pSdlSurface == nullptr) throw std::ios_base::failure(SDL_GetError());
@@ -151,13 +159,8 @@ Surface& Surface::operator =(SDL_Surface* pSdlSurface) noexcept
  * @param CsdlSurfaceSource the source surface
  * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
  * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
- * @param rSourceX the X component of the origin coordinate of the portion of the source surface
- * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
- * @param urSourceWidth the width in pixels of the portion of this surface that will be blitted
- * @param urSourceHeight the height in pixels of the portion of the source surface that will be blitted
  */
-void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, int16_t rDestinationY,
-    int16_t rSourceX, int16_t rSourceY, uint16_t urSourceWidth, uint16_t urSourceHeight)
+void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, int16_t rDestinationY)
 {
     if(_pSdlSurface == nullptr || CsdlSurfaceSource._pSdlSurface == nullptr)
         throw std::invalid_argument("Surface is null");
@@ -169,17 +172,46 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, in
     sdlRectDestination.x = rDestinationX;
     sdlRectDestination.y = rDestinationY;
 
+    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, nullptr, _pSdlSurface, 
+        &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
+}
+
+
+/**
+ * @brief Blits part of a surface into this surface
+ *
+ * @param CsdlSurfaceSource the source surface
+ * @param rSourceX the X component of the origin coordinate of the portion of the source surface
+ * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
+ * @param urSourceWidth the width in pixels of the portion of this surface that will be blitted
+ * @param urSourceHeight the height in pixels of the portion of the source surface that will be blitted
+ * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
+ * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
+ */
+void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rSourceX, int16_t rSourceY,
+        uint16_t urSourceWidth, uint16_t urSourceHeight, int16_t rDestinationX, int16_t rDestinationY)
+{
+    if(_pSdlSurface == nullptr || CsdlSurfaceSource._pSdlSurface == nullptr)
+        throw std::invalid_argument("Surface is null");
+
     // Make a temporary rectangle to hold the source surface offsets
     SDL_Rect sdlRectSource{};
 
     // Give the offsets to the rectangle
     sdlRectSource.x = rSourceX;
     sdlRectSource.y = rSourceY;
-    sdlRectSource.w = (urSourceWidth > 0) ? urSourceWidth : CsdlSurfaceSource._pSdlSurface->w;
-    sdlRectSource.h = (urSourceHeight > 0) ? urSourceHeight : CsdlSurfaceSource._pSdlSurface->h;
+    sdlRectSource.w = urSourceWidth;
+    sdlRectSource.h = urSourceHeight;
 
-    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, &sdlRectSource,
-        _pSdlSurface, &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
+    // Make a temporary rectangle to hold the destination surface offsets
+    SDL_Rect sdlRectDestination{};
+
+    // Give the offsets to the rectangle
+    sdlRectDestination.x = rDestinationX;
+    sdlRectDestination.y = rDestinationY;
+
+    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, &sdlRectSource, _pSdlSurface, 
+        &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
 }
 
 

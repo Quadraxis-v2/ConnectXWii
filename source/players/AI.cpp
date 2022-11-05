@@ -43,7 +43,7 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{Ce
 
 
 /**
- * @brief Makes the AI choose a play on the board using an Alpha-Beta pruning algorithm
+ * @brief Makes the AI choose a play on the board
  *
  * @param grid the main game board
  */
@@ -87,13 +87,13 @@ void AI::ChooseMove(Grid& grid) const noexcept
  * @brief Alpha-Beta Pruning algorithm
  * 
  * @param Cgrid the main game board
- * @param CePlayerMark the mark of the min player
+ * @param CePlayerMark the mark of this node's player
  * @param uyCurrentDepth the current depth of exploration
  * @param uyMaxDepth the maximum depth to explore
  * @param iAlpha alpha value for the AB-Pruning algorithm
  * @param iBeta beta value for the AB-Pruning algorithm
  * @param bIsMinNode signals if the current node is a Min node
- * @return int32_t the revised value of beta
+ * @return int32_t the value of the current node
  */
 int32_t AI::AlphaBetaPruning(const Grid& Cgrid, const Grid::EPlayerMark& CePlayerMark, uint8_t uyCurrentDepth, 
     uint8_t uyMaxDepth, int32_t iAlpha, int32_t iBeta, bool bIsMinNode) const noexcept
@@ -370,18 +370,20 @@ int32_t SDLCALL RunAI(void* pData)
         if (!(app._bStopThreads))
         {
             if (AI* pAI = dynamic_cast<AI*>(app._vectorpPlayers[app._uyCurrentPlayer]))
+            {
                 pAI->ChooseMove(app._grid);
 
-            // If the game is won or there is a draw go to the corresponding state
-            if (app._grid.CheckWinner() != Grid::EPlayerMark::EMPTY || app._grid.IsFull())
-                app._eStateCurrent = App::EState::STATE_END;
-            else
-            {
-                ++(app._uyCurrentPlayer) %= app._vectorpPlayers.size(); // Move turn
+                // If the game is won or there is a draw go to the corresponding state
+                if (app._grid.CheckWinner() != Grid::EPlayerMark::EMPTY || app._grid.IsFull())
+                    app._eStateCurrent = App::EState::STATE_END;
+                else
+                {
+                    ++(app._uyCurrentPlayer) %= app._vectorpPlayers.size(); // Move turn
 
-                // Check if next player is another AI
-                if (typeid(*(app._vectorpPlayers[app._uyCurrentPlayer])) == typeid(AI))
-                    while (SDL_SemPost(app._pSdlSemaphoreAI) == -1);
+                    // Check if next player is another AI
+                    if (typeid(*(app._vectorpPlayers[app._uyCurrentPlayer])) == typeid(AI))
+                        while (SDL_SemPost(app._pSdlSemaphoreAI) == -1);
+                }
             }
         }
     }

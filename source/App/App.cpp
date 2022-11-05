@@ -70,8 +70,8 @@ App& App::GetInstance()
 App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{}, 
     _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr}, _bStopThreads{false}, _surfaceDisplay{}, 
     _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, 
-    _surfaceWinPlayer2{}, _surfaceDraw{}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, 
-    _bSingleController{true}, _yPlayColumn{0}
+    _surfaceWinPlayer2{}, _surfaceDraw{}, _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, 
+    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
 {
     uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
 
@@ -81,9 +81,9 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 
     if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
-    /*int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP;
+    int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
     if (IMG_Init(iIMGInitFlags) != iIMGInitFlags) 
-        throw std::runtime_error("Error initialising SDL_image");*/
+        throw std::runtime_error("Error initialising SDL_image support");
 
     if ((_surfaceDisplay = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
         16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr)
@@ -92,7 +92,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     SDL_JoystickEventState(SDL_ENABLE);
     if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
 
-    //SDL_ShowCursor(SDL_DISABLE);
+    SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
 
     #ifdef __wii__
 		// Initialise console
@@ -138,14 +138,14 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     // Retrieve resources from the filesystem
     try
     { _surfaceStart = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/start.bmp").lexically_normal().string()); }
+        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface("apps/ConnectXWii/gfx/start.bmp"); }
+    { _surfaceStart = Surface("apps/ConnectXWii/gfx/start.png"); }
     try 
     { _surfaceGrid = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/grid.bmp").lexically_normal().string()); }
+        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface("apps/ConnectXWii/gfx/grid.bmp"); }
+    { _surfaceGrid = Surface("apps/ConnectXWii/gfx/grid.png"); }
     try 
     { _surfaceMarker1 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
@@ -158,19 +158,24 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     { _surfaceMarker2 = Surface("apps/ConnectXWii/gfx/player2.bmp"); }
     try 
     { _surfaceWinPlayer1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer1.bmp").lexically_normal().string()); }
+        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface("apps/ConnectXWii/gfx/winPlayer1.bmp"); }
+    { _surfaceWinPlayer1 = Surface("apps/ConnectXWii/gfx/winPlayer1.png"); }
     try 
     { _surfaceWinPlayer2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer2.bmp").lexically_normal().string()); }
+        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface("apps/ConnectXWii/gfx/winPlayer2.bmp"); }
+    { _surfaceWinPlayer2 = Surface("apps/ConnectXWii/gfx/winPlayer2.png"); }
     try 
     { _surfaceDraw = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/draw.bmp").lexically_normal().string()); }
+        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface("apps/ConnectXWii/gfx/draw.bmp"); }
+    { _surfaceDraw = Surface("apps/ConnectXWii/gfx/draw.png"); }
+
+    try { _surfaceCursor = Surface("apps/ConnectXWii/gfx/generic_point.png"); }
+    catch (const std::ios_base::failure& CiosBaseFailure) {}
+    try { _surfaceCursorShadow = Surface("apps/ConnectXWii/gfx/shadow_point.png"); }
+    catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     // Take the background out of the marker pictures
     _surfaceMarker1.SetTransparentPixel(255, 0, 255);
@@ -269,6 +274,8 @@ void App::Reset()
     while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
     SDL_WaitThread(_pSdlThreadAI, nullptr);
     _pSdlThreadAI = nullptr;
+
+    _bStopThreads = false;
 
     SDL_DestroySemaphore(_pSdlSemaphoreAI);
     if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());

@@ -84,6 +84,8 @@ private:
     Surface _surfaceWinPlayer1; /**< Picture for the end screen when red wins */
     Surface _surfaceWinPlayer2; /**< Picture for the end screen when yellow wins */
     Surface _surfaceDraw;       /**< Picture for the end screen when there is a draw */
+    Surface _surfaceCursor;
+    Surface _surfaceCursorShadow;
 
     Grid _grid;                             /**< Main playing grid */
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */

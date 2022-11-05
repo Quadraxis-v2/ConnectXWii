@@ -81,6 +81,8 @@ void App::OnRender()
     // We need to draw the cursor because SDL-wii draws directly to video memory
     int32_t iMouseX = 0, iMouseY = 0;
     SDL_GetMouseState(&iMouseX, &iMouseY);
+    _surfaceDisplay.OnDraw(_surfaceCursorShadow, iMouseX - 47, iMouseY - 46);
+    _surfaceDisplay.OnDraw(_surfaceCursor, iMouseX - 48, iMouseY - 48);
 
     SDL_Flip(_surfaceDisplay);  // Refreshes the screen
 }
