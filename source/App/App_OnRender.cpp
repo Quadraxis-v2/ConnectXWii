@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_video.h>
 
 #include "../../include/App.hpp"
-#include "../../include/Surface.hpp"
+#include "../../include/video/Surface.hpp"
 #include "../../include/players/AI.hpp"
 
 

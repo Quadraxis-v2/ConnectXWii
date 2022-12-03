@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_error.h>
 #include <SDL_image.h>
 
-#include "../include/Surface.hpp"
+#include "../../include/video/Surface.hpp"
 
 
 /**
@@ -51,7 +51,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
     /* Convert the loaded surface to the same format as the display */
     if (pSdlSurfaceTemp->format->Amask)     // Surface has an alpha channel
     {
-        SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, 128);
+        SDL_SetColorKey(pSdlSurfaceTemp, SDL_RLEACCEL, pSdlSurfaceTemp->format->colorkey);
         _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
     }
     else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
@@ -154,7 +154,7 @@ Surface& Surface::operator =(SDL_Surface* pSdlSurface) noexcept
 
 
 /**
- * @brief Blits part of a surface into this surface
+ * @brief Blits an entire surface into this surface
  *
  * @param CsdlSurfaceSource the source surface
  * @param rDestinationX the X component of the top left coordinate where this surface will be blitted

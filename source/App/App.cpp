@@ -46,10 +46,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../../include/App.hpp"
 #include "../../include/EventListener.hpp"
-#include "../../include/Surface.hpp"
+#include "../../include/video/Surface.hpp"
 #include "../../include/Settings.hpp"
 #include "../../include/Grid.hpp"
 #include "../../include/players/Joystick.hpp"
+#include "../../include/Globals.hpp"
 #include "../../include/players/WiiController.hpp"
 #include "../../include/players/GameCubeController.hpp"
 #include "../../include/players/Player.hpp"
@@ -85,8 +86,8 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     if (IMG_Init(iIMGInitFlags) != iIMGInitFlags) 
         throw std::runtime_error("Error initialising SDL_image support");
 
-    if ((_surfaceDisplay = SDL_SetVideoMode(App::SCurWindowWidth, App::SCurWindowHeight,
-        16, SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr)
+    if ((_surfaceDisplay = SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16, 
+        SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr)
         throw std::runtime_error(SDL_GetError());
 
     SDL_JoystickEventState(SDL_ENABLE);
@@ -244,11 +245,11 @@ void App::OnExecute()
     try
     {
         SDL_Event sdlEvent{};
-        EventManager& eventManager = EventManager::GetInstance();
+        const EventManager& CeventManager = EventManager::GetInstance();
 
         while(_bRunning)
         {
-            while(SDL_PollEvent(&sdlEvent)) eventManager.OnEvent(&sdlEvent);
+            while(SDL_PollEvent(&sdlEvent)) CeventManager.OnEvent(&sdlEvent);
 
             OnLoop();
             OnRender();

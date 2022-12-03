@@ -17,9 +17,9 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	boot
 BUILD		:=	build
-SOURCES		:=	source source/App source/players
+SOURCES		:=	source source/App source/players source/video
 DATA		:=	data
-INCLUDES	:=	include include/players
+INCLUDES	:=	include include/players include/video
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -111,7 +111,7 @@ clean:
 
 #---------------------------------------------------------------------------------
 run:
-	wiiload $(TARGET).dol "sd:/apps/ConnectXWii/$(TARGET).dol"
+	wiiload $(TARGET).dol "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
 
 #---------------------------------------------------------------------------------
 test:

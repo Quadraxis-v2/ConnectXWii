@@ -49,7 +49,7 @@ AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{Ce
  */
 void AI::ChooseMove(Grid& grid) const noexcept
 {
-    int32_t iAlpha = std::numeric_limits<int32_t>::min(), iBeta = std::numeric_limits<int32_t>::max();
+    int32_t iAlpha = std::numeric_limits<int32_t>::min();
     uint8_t uyBestMove = 0;
 
     for (uint8_t i = 0; i < _uySearchLimit && iAlpha < std::numeric_limits<int32_t>::max(); i++)    // Iterative deepening search
@@ -57,14 +57,14 @@ void AI::ChooseMove(Grid& grid) const noexcept
         iAlpha = std::numeric_limits<int32_t>::min();
         uyBestMove = 0;
 
-        for (uint8_t j = 0; j < grid.GetWidth() && iAlpha < iBeta; j++)
+        for (uint8_t j = 0; j < grid.GetWidth() && iAlpha < std::numeric_limits<int32_t>::max(); j++)
         {
             if (grid.IsValidMove(j))
             {
                 Grid gridAttempt = grid;
                 gridAttempt.MakeMove(__ePlayerMark, j);
                 int32_t iMinimaxValue = AlphaBetaPruning(gridAttempt, NextPlayer(__ePlayerMark), 1, i + 1,
-                    iAlpha, iBeta, true);
+                    iAlpha, std::numeric_limits<int32_t>::max(), true);
 
                 if (iMinimaxValue > iAlpha)
                 {

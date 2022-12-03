@@ -96,12 +96,12 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
     }
 
     // Check the remaining directions except upwards
-    int8_t a2yDirections[][2] = {{0, -1}, {-1, -1}, {-1, 1}};
+    const int8_t Ca2yDirections[][2] = {{0, -1}, {-1, -1}, {-1, 1}};
 
-    for (int8_t* ayDirection : a2yDirections)
+    for (const int8_t* CayDirection : Ca2yDirections)
     {
-        int8_t yDirectionX = ayDirection[0];
-        int8_t yDirectionY = ayDirection[1];
+        int8_t yDirectionX = CayDirection[0];
+        int8_t yDirectionY = CayDirection[1];
 
         // Check one way
         uyCounter = 1;

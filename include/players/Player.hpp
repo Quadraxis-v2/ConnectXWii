@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Player
 {
 public:
-    Grid::EPlayerMark GetPlayerMark() const noexcept;
+    const Grid::EPlayerMark& GetPlayerMark() const noexcept;
     void SetPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept;
 
     Player(const Player& CplayerOther) = delete;    /**< Copy constructor */
@@ -57,7 +57,7 @@ private:
 };
 
 
-inline Grid::EPlayerMark Player::GetPlayerMark() const noexcept { return __ePlayerMark; }
+inline const Grid::EPlayerMark& Player::GetPlayerMark() const noexcept { return __ePlayerMark; }
 inline void Player::SetPlayerMark(const Grid::EPlayerMark& CePlayerMark) noexcept 
 { __ePlayerMark = CePlayerMark; }
 

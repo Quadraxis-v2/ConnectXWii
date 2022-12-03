@@ -45,6 +45,12 @@ public:
 
 
     /**
+     * @brief Construct a new void Surface
+     */
+    Surface() noexcept;
+
+
+    /**
      * @brief Constructor from a bitmap image in the filesystem
      *
      * @param CsFilePath the path to the bitmap image
@@ -105,12 +111,6 @@ public:
 
 private:
     SDL_Surface* _pSdlSurface;  /**< The raw surface */
-
-
-    /**
-     * @brief Construct a new void Surface
-     */
-    Surface() noexcept;
 
 };
 

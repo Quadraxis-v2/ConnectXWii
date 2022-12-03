@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <SDL_timer.h>
 
-#include "../include/Animation.hpp"
+#include "../../include/video/Animation.hpp"
 
 
 /**

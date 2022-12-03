@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mutex.h>
 #include "EventListener.hpp"
 #include "Settings.hpp"
-#include "Surface.hpp"
+#include "video/Surface.hpp"
 #include "Grid.hpp"
 #include "players/Joystick.hpp"
 #include "players/Player.hpp"
@@ -43,10 +43,6 @@ class App : public EventListener    // Receive events in this class
 {
 public:
     enum EState {STATE_START, STATE_INGAME, STATE_END};    /**< Application states for the state machine */
-
-
-    static const uint16_t SCurWindowWidth = 640;    /**< Fixed width of the application */
-    static const uint16_t SCurWindowHeight = 480;   /**< Fixed height of the application */
 
 
     friend int32_t SDLCALL RunAI(void* pData);

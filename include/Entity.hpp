@@ -24,8 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string>
 #include <cstdint>
  
-#include "Surface.hpp"
-#include "Animation.hpp"
+#include "video/Surface.hpp"
+#include "video/Animation.hpp"
  
 
 /**
