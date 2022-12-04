@@ -68,6 +68,7 @@
         "filesystem": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "sdl_config.h": "c"
     }
 }

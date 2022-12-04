@@ -40,7 +40,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
     #include <ogc/lwp.h>
-    #include "../../include/players/Player.hpp"
+    #include "../../include/players/WiiController.hpp"
+    #include "../../include/players/GameCubeController.hpp"
     #include "../../include/players/Human.hpp"
 #endif
 
@@ -50,12 +51,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/Settings.hpp"
 #include "../../include/Grid.hpp"
 #include "../../include/players/Joystick.hpp"
-#include "../../include/Globals.hpp"
-#include "../../include/players/WiiController.hpp"
-#include "../../include/players/GameCubeController.hpp"
 #include "../../include/players/Player.hpp"
-#include "../../include/players/Human.hpp"
 #include "../../include/EventManager.hpp"
+#include "../../include/video/Map.hpp"
 
 
 App& App::GetInstance()
@@ -68,28 +66,13 @@ App& App::GetInstance()
 /**
  * @brief Default constructor
  */
-App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{}, 
-    _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr}, _bStopThreads{false}, _surfaceDisplay{}, 
-    _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, 
-    _surfaceWinPlayer2{}, _surfaceDraw{}, _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, 
-    _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
+App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
+    _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr}, _bStopThreads{false},
+    _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
+    _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _surfaceCursor{},
+    _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0},
+    _bSingleController{true}, _yPlayColumn{0}
 {
-    uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
-
-    #ifdef SDL_CDROM_DISABLED
-        uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
-    #endif
-
-    if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
-
-    int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
-    if (IMG_Init(iIMGInitFlags) != iIMGInitFlags) 
-        throw std::runtime_error("Error initialising SDL_image support");
-
-    if ((_surfaceDisplay = SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16, 
-        SDL_HWSURFACE | SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/)) == nullptr)
-        throw std::runtime_error(SDL_GetError());
-
     SDL_JoystickEventState(SDL_ENABLE);
     if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
 
@@ -142,32 +125,32 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
         _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceStart = Surface("apps/ConnectXWii/gfx/start.png"); }
-    try 
+    try
     { _surfaceGrid = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceGrid = Surface("apps/ConnectXWii/gfx/grid.png"); }
-    try 
+    try
     { _surfaceMarker1 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceMarker1 = Surface("apps/ConnectXWii/gfx/player1.bmp"); }
-    try 
+    try
     { _surfaceMarker2 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceMarker2 = Surface("apps/ConnectXWii/gfx/player2.bmp"); }
-    try 
+    try
     { _surfaceWinPlayer1 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceWinPlayer1 = Surface("apps/ConnectXWii/gfx/winPlayer1.png"); }
-    try 
+    try
     { _surfaceWinPlayer2 = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
     { _surfaceWinPlayer2 = Surface("apps/ConnectXWii/gfx/winPlayer2.png"); }
-    try 
+    try
     { _surfaceDraw = Surface(std::filesystem::path(
         _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
@@ -183,12 +166,14 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _surfaceMarker2.SetTransparentPixel(255, 0, 255);
 
     EventManager::GetInstance().AttachListener(this);   // Receive events
+
+    //Map mapTemp{"apps/ConnectXWii/maps/1.map", 16};
 }
 
 
 /**
  * @brief Destroy the App:: App object
- * 
+ *
  */
 App::~App() noexcept
 {
@@ -229,7 +214,7 @@ App::~App() noexcept
     _surfaceDraw._pSdlSurface = nullptr;
 
     // Unload image libraries
-    // IMG_Quit();
+    IMG_Quit();
 
     // The display surface must be freed by SDL_Quit
     SDL_Quit();
@@ -284,12 +269,12 @@ void App::Reset()
     // Delete joysticks
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
-    _htJoysticks = std::unordered_map<uint8_t, Joystick*>();
+    _htJoysticks = std::unordered_map<uint8_t, Joystick*>{};
 
     // Delete players
     for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
         delete *i;
-    _vectorpPlayers = std::vector<Player*>();
+    _vectorpPlayers = std::vector<Player*>{};
 
     // Clear grid
     _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),

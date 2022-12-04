@@ -23,51 +23,48 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <sstream>
 
+#include <SDL_video.h>
+
 #include "../../include/video/Map.hpp"
 
 
-Map::Map(const std::string& CsFilePath, uint16_t urTileSize) : _surfaceTileset{}, _vectorTiles{}, 
-    _urHeight{0}, _urWidth{0}, _urTileSize{urTileSize}
+Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize) : 
+    _pSurfaceTileset{&surfaceTileset}, _surfaceCache{SDL_GetVideoSurface()->w, SDL_GetVideoSurface()->h}, 
+    _vectorTiles{}, _urWidth{0}, _urHeight{0}, _urTileSize{urTileSize}
 {
     std::ifstream fileTileset(CsFilePath, std::ios_base::in);
- 
-    if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath); 
+
+    if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
     Tile tileTemp{};
-    uint32_t uiTileCount{0};
     for (std::string sLine{}; std::getline(fileTileset, sLine); )
     {
         std::istringstream isStreamLine{sLine};
-        while (isStreamLine >> tileTemp) 
-        {
-            _vectorTiles.push_back(tileTemp);
-            uiTileCount++;
-        }
+        while (isStreamLine >> tileTemp) _vectorTiles.push_back(tileTemp);
         _urHeight++;
     }
-    _urWidth = uiTileCount / _urHeight;
+    _urWidth = _vectorTiles.size() / _urHeight;
 }
 
 
-void Map::OnRender(Surface& surfaceDisplay, int32_t iMapPosX, int32_t iMapPosY) 
+void Map::OnCache(int16_t rMapPosX, int16_t rMapPosY)
 {
-    uint16_t urTiles  = _surfaceTileset.GetWidth() / _urTileSize;
- 
+    uint16_t urTiles  = _pSurfaceTileset->GetWidth() / _urTileSize;
     uint16_t urID = 0;
 
-    for(uint32_t i = 0; i < _urHeight; i++) 
+    for(uint16_t i = 0; i < _urHeight && (rMapPosY + i * _urTileSize) < _surfaceCache.GetHeight(); i++)
     {
-        for(uint32_t j = 0; j < _urWidth; j++) 
+        for(uint16_t j = 0; j < _urWidth && (rMapPosX + j * _urTileSize) < _surfaceCache.GetWidth(); j++)
         {
-            if(_vectorTiles[urID].GetTileType() != Tile::ETileType::NONE) 
+            if(_vectorTiles[urID].GetTileType() != Tile::ETileType::NONE)
             {
-                int16_t rTileX = iMapPosX + (j * _urTileSize);
-                int16_t rTileY = iMapPosY + (i * _urTileSize);
-    
+                int16_t rTileX = rMapPosX + j * _urTileSize;
+                int16_t rTileY = rMapPosY + i * _urTileSize;
+
                 uint16_t urTilesetX = (_vectorTiles[urID].GetTileID() % urTiles) * _urTileSize;
                 uint16_t urTilesetY = (_vectorTiles[urID].GetTileID() / urTiles) * _urTileSize;
-    
-                surfaceDisplay.OnDraw(_surfaceTileset, urTilesetX, urTilesetY, _urTileSize, _urTileSize, 
+
+                _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileSize, _urTileSize,
                     rTileX, rTileY);
             }
             urID++;

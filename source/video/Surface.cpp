@@ -18,11 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+#include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <ios>
-#include <stdexcept>
-#include <cstdint>
 
+#include <SDL_config.h>
+#include <SDL_endian.h>
 #include <SDL_video.h>
 #include <SDL_error.h>
 #include <SDL_image.h>
@@ -33,7 +35,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Constructs a void surface
  */
-Surface::Surface() noexcept : _pSdlSurface{nullptr} {}
+Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr} 
+{
+    uint32_t urRmask{}, urGmask{}, urBmask{}, urAmask{};
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        urRmask = 0xff000000;
+        urGmask = 0x00ff0000;
+        urBmask = 0x0000ff00;
+        urAmask = 0x000000ff;
+    #else
+        urRmask = 0x000000ff;
+        urGmask = 0x0000ff00;
+        urBmask = 0x00ff0000;
+        urAmask = 0xff000000;
+    #endif
+
+    if ((_pSdlSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, iWidth, iHeight, uyBitsPerPixel, urRmask, 
+        urGmask, urBmask, urAmask)) == nullptr)
+        throw std::runtime_error(SDL_GetError());
+}
 
 
 /**
@@ -86,7 +107,7 @@ Surface::Surface(Surface&& surfaceOther) noexcept : _pSdlSurface{surfaceOther._p
 
 /**
  * @brief Conversion constructor from raw SDL Surface
- * 
+ *
  * @param pSdlSurface the raw surface
  */
 Surface::Surface(SDL_Surface* pSdlSurface) noexcept : _pSdlSurface{pSdlSurface}
@@ -98,8 +119,11 @@ Surface::Surface(SDL_Surface* pSdlSurface) noexcept : _pSdlSurface{pSdlSurface}
  */
 Surface::~Surface() noexcept
 {
-    SDL_FreeSurface(_pSdlSurface);
-    _pSdlSurface = nullptr;
+    if (_pSdlSurface != nullptr)
+    {
+        SDL_FreeSurface(_pSdlSurface);
+        _pSdlSurface = nullptr;
+    }
 }
 
 
@@ -142,7 +166,7 @@ Surface& Surface::operator =(Surface&& surfaceOther) noexcept
 
 /**
  * @brief Assignment and conversion from raw SDL Surface
- * 
+ *
  * @param pSdlSurface the raw surface
  * @return Surface& the converted surface
  */
@@ -172,7 +196,7 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, in
     sdlRectDestination.x = rDestinationX;
     sdlRectDestination.y = rDestinationY;
 
-    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, nullptr, _pSdlSurface, 
+    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, nullptr, _pSdlSurface,
         &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
 }
 
@@ -210,7 +234,7 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rSourceX, int16_t
     sdlRectDestination.x = rDestinationX;
     sdlRectDestination.y = rDestinationY;
 
-    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, &sdlRectSource, _pSdlSurface, 
+    if ((SDL_BlitSurface(CsdlSurfaceSource._pSdlSurface, &sdlRectSource, _pSdlSurface,
         &sdlRectDestination) != 0)) throw std::runtime_error(SDL_GetError());
 }
 

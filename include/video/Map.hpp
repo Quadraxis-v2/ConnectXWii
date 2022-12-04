@@ -31,17 +31,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Map 
 {
 public:
-    Map(const std::string& CsFilePath, uint16_t urTileSize);
+    Surface* GetTileset() const noexcept;
+    void SetTileset(Surface& pSurfaceTileset) noexcept;
+    uint16_t GetWidth() const noexcept;
+    uint16_t GetHeight() const noexcept;
+    uint16_t GetTileSize() const noexcept;
 
-    void OnRender(Surface& surfaceDisplay, int32_t iMapPosX, int32_t iMapPosY);
+    Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize);
+
+    void OnCache(int16_t rMapPosX, int16_t rMapPosY);
+
+    void OnRenderCache(Surface& surfaceDisplay, int16_t rMapPosX, int16_t rMapPosY);
 
 private:
-    Surface _surfaceTileset;
+    Surface* _pSurfaceTileset;
+    Surface _surfaceCache;
     std::vector<Tile> _vectorTiles;
-    uint16_t _urHeight;
     uint16_t _urWidth;
+    uint16_t _urHeight;
     uint16_t _urTileSize;
 
 };
+
+
+inline Surface* Map::GetTileset() const noexcept { return _pSurfaceTileset; }
+inline void Map::SetTileset(Surface& pSurfaceTileset) noexcept { _pSurfaceTileset = &pSurfaceTileset; }
+inline uint16_t Map::GetWidth() const noexcept { return _urWidth; }
+inline uint16_t Map::GetHeight() const noexcept { return _urHeight; }
+inline uint16_t Map::GetTileSize() const noexcept { return _urTileSize; }
+
+inline void Map::OnRenderCache(Surface& surfaceDisplay, int16_t rMapPosX, int16_t rMapPosY)
+{ surfaceDisplay.OnDraw(_surfaceCache); }
+
  
 #endif

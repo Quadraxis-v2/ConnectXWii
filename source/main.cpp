@@ -18,12 +18,40 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <cstdint>
+#include <stdexcept>
+
+#include <SDL.h>
+#include <SDL_config.h>
+#include <SDL_error.h>
+#include <SDL_image.h>
+#include <SDL_video.h>
+
+#include "../include/Globals.hpp"
 #include "../include/App.hpp"
 
 
 int32_t main(int32_t argc, char** argv)
 {
-	try { App::GetInstance().OnExecute(); }
+	try 
+	{
+		uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
+
+		#ifdef SDL_CDROM_DISABLED
+			uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
+		#endif
+
+		if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
+
+		int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+		if (IMG_Init(iIMGInitFlags) != iIMGInitFlags)
+			throw std::runtime_error("Error initialising SDL_image support");
+
+		if ((SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16,
+			SDL_HWSURFACE | SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/)) == nullptr)
+			throw std::runtime_error(SDL_GetError());
+
+		App::GetInstance().OnExecute(); 
+	}
 	catch (...) {}
 
 	return 0;

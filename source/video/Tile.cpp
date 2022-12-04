@@ -21,30 +21,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <istream>
 #include <string>
+#include <ios>
 
 #include "../../include/video/Tile.hpp"
 
 
-Tile::Tile(uint16_t urTileID, const ETileType& CeTileType) noexcept : _urTileID{urTileID}, 
+Tile::Tile(uint16_t urTileID, const ETileType& CeTileType) noexcept : _urTileID{urTileID},
     _eTileType{CeTileType} {}
 
 
-std::istream& operator >>(std::istream& istream, Tile& tile)
+std::istream& operator >>(std::istream& inStream, Tile& tile)
 {
     std::string sTemp{};
-    
-    std::getline(istream, sTemp, ':');
-    tile.SetTileID(std::stoi(sTemp));
-    
-    std::getline(istream, sTemp);
-    uint8_t yTileType = std::stoi(sTemp);
 
-    switch (yTileType)
+    try
     {
-    case 1: tile.SetTileType(Tile::ETileType::NORMAL); break;
-    case 2: tile.SetTileType(Tile::ETileType::BLOCK); break;
-    default: tile.SetTileType(Tile::ETileType::NONE); break;
-    }
+        std::getline(inStream, sTemp, ':');
+        tile.SetTileID(std::stoi(sTemp));
 
-    return istream;
+        inStream >> sTemp;
+        uint8_t yTileType = std::stoi(sTemp);
+
+        switch (yTileType)
+        {
+        case 1: tile.SetTileType(Tile::ETileType::NORMAL); break;
+        case 2: tile.SetTileType(Tile::ETileType::BLOCK); break;
+        default: tile.SetTileType(Tile::ETileType::NONE); break;
+        }
+    }
+    catch (...) { inStream.setstate(std::ios_base::failbit); }
+
+    return inStream;
 }

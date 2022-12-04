@@ -26,9 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_video.h>
 
 
-class App;
-
-
 /**
  * @brief Class for wrapping surfaces
  */
@@ -47,7 +44,8 @@ public:
     /**
      * @brief Construct a new void Surface
      */
-    Surface() noexcept;
+    explicit Surface(int32_t iWidth = 0, int32_t iHeight = 0, 
+        uint8_t uyBitsPerPixel = SDL_GetVideoSurface()->format->BitsPerPixel);
 
 
     /**

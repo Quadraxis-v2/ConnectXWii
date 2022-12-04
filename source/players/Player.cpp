@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <unordered_set>
 #include <stdexcept>
+
 #include "../../include/players/Player.hpp"
 #include "../../include/Grid.hpp"
 
