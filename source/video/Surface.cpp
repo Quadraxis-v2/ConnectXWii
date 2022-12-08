@@ -35,25 +35,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Constructs a void surface
  */
-Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr} 
+Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr}
 {
-    uint32_t urRmask{}, urGmask{}, urBmask{}, urAmask{};
+    SDL_Surface* pSdlSurfaceTemp = nullptr;
+    uint32_t uiRmask{}, uiGmask{}, uiBmask{}, uiAmask{};
 
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        urRmask = 0xff000000;
-        urGmask = 0x00ff0000;
-        urBmask = 0x0000ff00;
-        urAmask = 0x000000ff;
+        uiRmask = 0xff000000;
+        uiGmask = 0x00ff0000;
+        uiBmask = 0x0000ff00;
+        uiAmask = 0x000000ff;
     #else
-        urRmask = 0x000000ff;
-        urGmask = 0x0000ff00;
-        urBmask = 0x00ff0000;
-        urAmask = 0xff000000;
+        uiRmask = 0x000000ff;
+        uiGmask = 0x0000ff00;
+        uiBmask = 0x00ff0000;
+        uiAmask = 0xff000000;
     #endif
 
-    if ((_pSdlSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, iWidth, iHeight, uyBitsPerPixel, urRmask, 
-        urGmask, urBmask, urAmask)) == nullptr)
+    if ((pSdlSurfaceTemp = SDL_CreateRGBSurface(SDL_HWSURFACE, iWidth, iHeight, uyBitsPerPixel, uiRmask,
+        uiGmask, uiBmask, uiAmask)) == nullptr)
         throw std::runtime_error(SDL_GetError());
+
+    _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+    SDL_FreeSurface(pSdlSurfaceTemp);
+
+    if (_pSdlSurface == nullptr) throw std::ios_base::failure(SDL_GetError());
 }
 
 
@@ -251,5 +257,5 @@ void Surface::SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue
 {
     if((SDL_SetColorKey(_pSdlSurface, SDL_SRCCOLORKEY | SDL_RLEACCEL,
         SDL_MapRGB(_pSdlSurface->format, uyRed, uyGreen, uyBlue))) == -1)
-        throw std::invalid_argument(SDL_GetError());
+        throw std::runtime_error(SDL_GetError());
 }

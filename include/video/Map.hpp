@@ -33,35 +33,33 @@ class Map
 public:
     Surface* GetTileset() const noexcept;
     void SetTileset(Surface& pSurfaceTileset) noexcept;
-    uint16_t GetWidth() const noexcept;
-    uint16_t GetHeight() const noexcept;
     uint16_t GetTileSize() const noexcept;
+    uint16_t GetRows() const noexcept;
+    uint16_t GetColumns() const noexcept;
 
     Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize);
 
-    void OnCache(int16_t rMapPosX, int16_t rMapPosY);
-
-    void OnRenderCache(Surface& surfaceDisplay, int16_t rMapPosX, int16_t rMapPosY);
+    void OnRender(Surface& surfaceDisplay, int16_t rMapPosX, int16_t rMapPosY);
 
 private:
     Surface* _pSurfaceTileset;
     Surface _surfaceCache;
-    std::vector<Tile> _vectorTiles;
-    uint16_t _urWidth;
-    uint16_t _urHeight;
+    std::vector<std::vector<Tile> > _a2Tiles;
     uint16_t _urTileSize;
+    int16_t _rX;
+    int16_t _rY;
+
+
+    void OnCache();
 
 };
 
 
 inline Surface* Map::GetTileset() const noexcept { return _pSurfaceTileset; }
 inline void Map::SetTileset(Surface& pSurfaceTileset) noexcept { _pSurfaceTileset = &pSurfaceTileset; }
-inline uint16_t Map::GetWidth() const noexcept { return _urWidth; }
-inline uint16_t Map::GetHeight() const noexcept { return _urHeight; }
 inline uint16_t Map::GetTileSize() const noexcept { return _urTileSize; }
-
-inline void Map::OnRenderCache(Surface& surfaceDisplay, int16_t rMapPosX, int16_t rMapPosY)
-{ surfaceDisplay.OnDraw(_surfaceCache); }
+inline uint16_t Map::GetRows() const noexcept { return _a2Tiles.size(); }
+inline uint16_t Map::GetColumns() const noexcept { return _a2Tiles[0].size(); }
 
  
 #endif

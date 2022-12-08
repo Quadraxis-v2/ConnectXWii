@@ -23,12 +23,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <sstream>
 #include <utility>
+#include <cmath>
 
 #include "../../include/video/Area.hpp"
 #include "../../include/video/Surface.hpp"
 
 
-Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vectorpMaps{}, _uyWidth{}, _uyHeight{}
+Area::Area(const std::string& CsFilePath) : _htTilesets{}, _a2pMaps{}
 {
     std::ifstream fileArea(CsFilePath, std::ios_base::in);
 
@@ -40,36 +41,61 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vectorpMaps{}, _uyWi
     for (std::string sLine{}; std::getline(fileArea, sLine); )
     {
         std::istringstream isStreamLine{sLine};
-        while (isStreamLine >> sMapPath >> rTileSize >> sTilesetPath)
+        _a2pMaps.push_back(std::vector<Map*>{});
+        try
         {
-            if (!_htTilesets.contains(sTilesetPath)) 
-                _htTilesets.insert(std::make_pair(sTilesetPath, new Surface{sTilesetPath}));
+            while (isStreamLine >> sMapPath >> rTileSize >> sTilesetPath)
+            {
+                
+                if (!_htTilesets.contains(sTilesetPath))
+                    _htTilesets.insert(std::make_pair(sTilesetPath, new Surface{sTilesetPath}));
 
-            _vectorpMaps.push_back(new Map{sMapPath, *(_htTilesets.at(sTilesetPath)), rTileSize});
+                Map* pMapTemp = new Map{sMapPath, *(_htTilesets.at(sTilesetPath)), rTileSize};
+                if (_a2pMaps.size() > 1 && ((pMapTemp->GetColumns() * pMapTemp->GetTileSize() != 
+                    _a2pMaps[0][0]->GetColumns() * _a2pMaps[0][0]->GetTileSize()) ||
+                    (pMapTemp->GetRows() * pMapTemp->GetTileSize() != 
+                    _a2pMaps[0][0]->GetRows() * _a2pMaps[0][0]->GetTileSize())))
+                    throw std::runtime_error("Map dimensions differ");
+
+                _a2pMaps[_a2pMaps.size() - 1].push_back(pMapTemp);
+            }
+
+            if (_a2pMaps[_a2pMaps.size() - 1].size() != _a2pMaps[0].size())
+                throw std::ios_base::failure("Error in area contents");
         }
-        _uyHeight++;
+        catch (...)
+        {
+            for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin(); 
+                i != _htTilesets.end(); ++i) delete i->second;
+
+            for (std::vector<std::vector<Map*>>::iterator i = _a2pMaps.begin(); i != _a2pMaps.end(); ++i)
+                for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
+
+            throw;
+        }
     }
-    _uyWidth = _vectorpMaps.size() / _uyHeight;
 }
 
 
 void Area::OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY)
 {
-    uint16_t urMapWidth = _vectorpMaps[0]->GetWidth() * _vectorpMaps[0]->GetTileSize();
-    uint16_t urMapHeight = _vectorpMaps[0]->GetHeight() * _vectorpMaps[0]->GetTileSize();
+    uint16_t urMapWidth = _a2pMaps[0][0]->GetColumns() * _a2pMaps[0][0]->GetTileSize();
+    uint16_t urMapHeight = _a2pMaps[0][0]->GetRows() * _a2pMaps[0][0]->GetTileSize();
 
-    uint8_t uyFirstID = rCameraX / urMapWidth + ((rCameraY / urMapHeight) * _uyWidth);
- 
-    for(uint8_t i = 0; i < 4; i++) 
+    uint16_t urFirstX = rCameraX / urMapWidth;
+    uint16_t urFirstY = rCameraY / urMapHeight;
+
+    uint16_t urCameraColumns = std::ceil(surfaceDisplay.GetWidth() / urMapWidth) + 1;
+    uint16_t urCameraRows = std::ceil(surfaceDisplay.GetHeight() / urMapHeight) + 1;
+
+    for (uint16_t i = 0; i < urCameraRows; i++)
     {
-        uint8_t uyID = uyFirstID + ((i >> 1) * _uyWidth) + (i % 2);
- 
-        if(uyID < _vectorpMaps.size())
+        for (uint16_t j = 0; j < urCameraColumns; j++)
         {
-            int16_t rMapX = ((uyID % _uyWidth) * urMapWidth) - rCameraX;
-            int16_t rMapY = ((uyID / _uyWidth) * urMapHeight) - rCameraY;
+            int16_t rMapX = ((urFirstX + j) * urMapWidth) - rCameraX;
+            int16_t rMapY = ((urFirstY + i) * urMapHeight) - rCameraY;
 
-            _vectorpMaps[uyID]->OnRenderCache(surfaceDisplay, rMapX, rMapY);
+            _a2pMaps[urFirstY + i][urFirstX + j]->OnRender(surfaceDisplay, rMapX, rMapY);
         }
     }
 }
@@ -78,7 +104,8 @@ void Area::OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY)
 Area::~Area() noexcept
 {
     for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin(); 
-        i != _htTilesets.end(); i++) delete i->second;
+        i != _htTilesets.end(); ++i) delete i->second;
 
-    for (std::vector<Map*>::iterator i = _vectorpMaps.begin(); i != _vectorpMaps.end(); i++) delete *i;
+    for (std::vector<std::vector<Map*>>::iterator i = _a2pMaps.begin(); i != _a2pMaps.end(); ++i)
+                for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 }

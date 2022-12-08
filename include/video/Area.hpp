@@ -32,16 +32,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Area 
 {
     public:
-        Area(const std::string& CsFilePath);
+        explicit Area(const std::string& CsFilePath);
         ~Area() noexcept;
 
         void OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY);
 
     private:
         std::unordered_map<std::string, Surface*> _htTilesets;
-        std::vector<Map*> _vectorpMaps;
-        uint8_t _uyWidth;
-        uint8_t _uyHeight;
+        std::vector<std::vector<Map*> > _a2pMaps;
 
 };
 

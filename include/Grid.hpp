@@ -33,7 +33,7 @@ class Grid
 {
 public:
     /**< Types of player markers */
-    enum EPlayerMark {EMPTY = 0, PLAYER1, PLAYER2 };
+    enum EPlayerMark {EMPTY = 0, PLAYER1, PLAYER2};
 
     /* Getters */
     uint8_t GetWidth() const noexcept;

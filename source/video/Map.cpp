@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <string>
+#include <limits>
 #include <fstream>
 #include <ios>
 #include <cstdint>
@@ -26,12 +27,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_video.h>
 
 #include "../../include/video/Map.hpp"
+#include "../../include/video/Surface.hpp"
 
 
-Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize) : 
-    _pSurfaceTileset{&surfaceTileset}, _surfaceCache{SDL_GetVideoSurface()->w, SDL_GetVideoSurface()->h}, 
-    _vectorTiles{}, _urWidth{0}, _urHeight{0}, _urTileSize{urTileSize}
+Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize) :
+    _pSurfaceTileset{&surfaceTileset}, _surfaceCache{SDL_GetVideoSurface()->w, SDL_GetVideoSurface()->h},
+    _a2Tiles{}, _urTileSize{urTileSize}, _rX{std::numeric_limits<int16_t>::min()}, _rY{_rX}
 {
+    if (_urTileSize == 0) throw std::domain_error("Tile size can't be zero");
+
     std::ifstream fileTileset(CsFilePath, std::ios_base::in);
 
     if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
@@ -40,34 +44,56 @@ Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTile
     for (std::string sLine{}; std::getline(fileTileset, sLine); )
     {
         std::istringstream isStreamLine{sLine};
-        while (isStreamLine >> tileTemp) _vectorTiles.push_back(tileTemp);
-        _urHeight++;
+        _a2Tiles.push_back(std::vector<Tile>{});
+        while (isStreamLine >> tileTemp)
+        {
+            if (tileTemp.GetTileID() >=
+                (surfaceTileset.GetWidth() / urTileSize) * (surfaceTileset.GetHeight() / urTileSize))
+                throw std::ios_base::failure("Tile ID exceeds number of tiles");
+
+            _a2Tiles[_a2Tiles.size() - 1].push_back(tileTemp);
+        }
+        if (_a2Tiles[_a2Tiles.size() - 1].size() != _a2Tiles[0].size())
+            throw std::ios_base::failure("Error in map contents");
     }
-    _urWidth = _vectorTiles.size() / _urHeight;
+
+    _surfaceCache.SetTransparentPixel(0, 0, 0);
 }
 
 
-void Map::OnCache(int16_t rMapPosX, int16_t rMapPosY)
+void Map::OnCache()
 {
+    SDL_FillRect(_surfaceCache, nullptr, SDL_MapRGB(_surfaceCache.GetPixelFormat(), 0, 0, 0));
+
     uint16_t urTiles  = _pSurfaceTileset->GetWidth() / _urTileSize;
-    uint16_t urID = 0;
 
-    for(uint16_t i = 0; i < _urHeight && (rMapPosY + i * _urTileSize) < _surfaceCache.GetHeight(); i++)
+    for(uint16_t i = 0; i < _a2Tiles.size(); i++)
     {
-        for(uint16_t j = 0; j < _urWidth && (rMapPosX + j * _urTileSize) < _surfaceCache.GetWidth(); j++)
+        for(uint16_t j = 0; j < _a2Tiles[0].size(); j++)
         {
-            if(_vectorTiles[urID].GetTileType() != Tile::ETileType::NONE)
+            if(_a2Tiles[i][j].GetTileType() != Tile::ETileType::NONE)
             {
-                int16_t rTileX = rMapPosX + j * _urTileSize;
-                int16_t rTileY = rMapPosY + i * _urTileSize;
+                int16_t rTileX = _rX + j * _urTileSize;
+                int16_t rTileY = _rY + i * _urTileSize;
 
-                uint16_t urTilesetX = (_vectorTiles[urID].GetTileID() % urTiles) * _urTileSize;
-                uint16_t urTilesetY = (_vectorTiles[urID].GetTileID() / urTiles) * _urTileSize;
+                uint16_t urTilesetX = (_a2Tiles[i][j].GetTileID() % urTiles) * _urTileSize;
+                uint16_t urTilesetY = (_a2Tiles[i][j].GetTileID() / urTiles) * _urTileSize;
 
                 _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileSize, _urTileSize,
                     rTileX, rTileY);
             }
-            urID++;
         }
     }
+}
+
+
+void Map::OnRender(Surface& surfaceDisplay, int16_t rX, int16_t rY)
+{
+    if (_rX != rX || _rY != rY)
+    {
+        _rX = rX;
+        _rY = rY;
+        OnCache();
+    }
+    surfaceDisplay.OnDraw(_surfaceCache);
 }

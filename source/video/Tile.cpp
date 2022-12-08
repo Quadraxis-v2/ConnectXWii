@@ -33,10 +33,10 @@ Tile::Tile(uint16_t urTileID, const ETileType& CeTileType) noexcept : _urTileID{
 std::istream& operator >>(std::istream& inStream, Tile& tile)
 {
     std::string sTemp{};
+    std::getline(inStream, sTemp, ':');
 
     try
     {
-        std::getline(inStream, sTemp, ':');
         tile.SetTileID(std::stoi(sTemp));
 
         inStream >> sTemp;
@@ -44,9 +44,9 @@ std::istream& operator >>(std::istream& inStream, Tile& tile)
 
         switch (yTileType)
         {
-        case 1: tile.SetTileType(Tile::ETileType::NORMAL); break;
-        case 2: tile.SetTileType(Tile::ETileType::BLOCK); break;
-        default: tile.SetTileType(Tile::ETileType::NONE); break;
+        case Tile::ETileType::NORMAL:   tile.SetTileType(Tile::ETileType::NORMAL);  break;
+        case Tile::ETileType::BLOCK:    tile.SetTileType(Tile::ETileType::BLOCK);   break;
+        default:                        tile.SetTileType(Tile::ETileType::NONE);    break;
         }
     }
     catch (...) { inStream.setstate(std::ios_base::failbit); }

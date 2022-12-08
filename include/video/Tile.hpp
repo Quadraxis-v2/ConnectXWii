@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Tile 
 {
 public:
-    enum ETileType { NONE = 0, NORMAL, BLOCK };
+    enum ETileType {NONE = 0, NORMAL, BLOCK};
 
     uint16_t GetTileID() const noexcept;
     void SetTileID(uint16_t urTileID) noexcept;
