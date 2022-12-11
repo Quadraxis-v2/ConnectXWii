@@ -39,7 +39,7 @@ class Area
 
     private:
         std::unordered_map<std::string, Surface*> _htTilesets;
-        std::vector<std::vector<Map*> > _a2pMaps;
+        std::vector<std::vector<Map*> > _vector2pMaps;
 
 };
 

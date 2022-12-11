@@ -83,7 +83,7 @@ private:
     uint8_t _uyWidth;         /**< Width of the grid */
     uint8_t _uyHeight;        /**< Height of the grid */
     uint8_t _uyCellsToWin;    /**< Number of markers in a row that must be achieved */
-    std::vector<std::vector<EPlayerMark> > _a2playerMarkCells;   /**< A matrix of markers representing the board */
+    std::vector<std::vector<EPlayerMark> > _vector2playerMarkCells;   /**< A matrix of markers representing the board */
     std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
     uint8_t _uyEmptyCells;                  /**< Indicates the number of empty cells remaining */
     EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game, or empty */
@@ -105,12 +105,12 @@ inline uint8_t Grid::GetWidth() const noexcept { return _uyWidth; }
 inline uint8_t Grid::GetHeight() const noexcept { return _uyHeight; }
 inline uint8_t Grid::GetCellsToWin() const noexcept { return _uyCellsToWin; }
 inline const std::vector<std::vector<Grid::EPlayerMark> >& Grid::GetCells() const noexcept 
-{ return _a2playerMarkCells; }
+{ return _vector2playerMarkCells; }
 inline int8_t Grid::GetNextCell(uint8_t uyColumn) const noexcept { return _ayNextCell[uyColumn]; }
 
 
 inline const std::vector<Grid::EPlayerMark>& Grid::operator [](uint8_t uyIndex) const noexcept 
-{ return _a2playerMarkCells[uyIndex]; }
+{ return _vector2playerMarkCells[uyIndex]; }
 
 inline bool operator ==(const Grid& Cgrid1, const Grid& Cgrid2) noexcept
 { return Cgrid1.GetCells() == Cgrid2.GetCells(); }

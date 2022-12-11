@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyCellsToWin) : _uyWidth{uyWidth},
     _uyHeight{uyHeight}, _uyCellsToWin{uyCellsToWin}, 
-    _a2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
+    _vector2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
     std::vector<EPlayerMark>(_uyWidth, EMPTY))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
     _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
@@ -51,7 +51,7 @@ void Grid::MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
 {
     if (!IsValidMove(uyPlayColumn)) throw std::domain_error("Play is not valid");
 
-    _a2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CePlayerMark;
+    _vector2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CePlayerMark;
     _ayNextCell[uyPlayColumn]--;
     _uyEmptyCells--;
 
@@ -90,7 +90,7 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
     if (yPlayRow <= _uyHeight - _uyCellsToWin)
     {
         for (uint8_t i = 1; i < _uyCellsToWin && yPlayRow + i < _uyHeight &&
-            _a2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; i++) uyCounter++;
+            _vector2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; i++) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
     }
@@ -108,8 +108,8 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
         for (int8_t i = 1; i < _uyCellsToWin &&
             yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < _uyHeight &&
             yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < _uyWidth &&
-            _a2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == CePlayerMark;
-            i++) uyCounter++;
+            _vector2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == 
+            CePlayerMark; i++) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
 
@@ -117,8 +117,8 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
         for (int8_t i = 1; i < _uyCellsToWin &&
             yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < _uyHeight &&
             yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < _uyWidth &&
-            _a2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == CePlayerMark;
-            i++) uyCounter++;
+            _vector2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == 
+            CePlayerMark; i++) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
     }

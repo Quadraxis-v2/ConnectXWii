@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ios>
 #include <cstdint>
 #include <sstream>
+#include <algorithm>
 
 #include <SDL_video.h>
 
@@ -30,70 +31,61 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/video/Surface.hpp"
 
 
-Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileSize) :
-    _pSurfaceTileset{&surfaceTileset}, _surfaceCache{SDL_GetVideoSurface()->w, SDL_GetVideoSurface()->h},
-    _a2Tiles{}, _urTileSize{urTileSize}, _rX{std::numeric_limits<int16_t>::min()}, _rY{_rX}
+Map::Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileWidth, 
+    uint16_t urTileHeight) : _pSurfaceTileset{&surfaceTileset}, _surfaceCache{}, _vector2Tiles{}, 
+    _urTileWidth{urTileWidth}, _urTileHeight{urTileHeight}
 {
-    if (_urTileSize == 0) throw std::domain_error("Tile size can't be zero");
+    if (_urTileWidth == 0 || _urTileHeight == 0) throw std::domain_error("Tile size can't be zero");
 
     std::ifstream fileTileset(CsFilePath, std::ios_base::in);
 
     if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
+    uint16_t urTileCount = (surfaceTileset.GetWidth() / _urTileWidth) * 
+        (surfaceTileset.GetHeight() / _urTileHeight);
+    uint16_t urMaxColumns{};
     Tile tileTemp{};
+
     for (std::string sLine{}; std::getline(fileTileset, sLine); )
     {
         std::istringstream isStreamLine{sLine};
-        _a2Tiles.push_back(std::vector<Tile>{});
+        _vector2Tiles.push_back(std::vector<Tile>{});
         while (isStreamLine >> tileTemp)
         {
-            if (tileTemp.GetTileID() >=
-                (surfaceTileset.GetWidth() / urTileSize) * (surfaceTileset.GetHeight() / urTileSize))
+            if (tileTemp.GetTileID() >= urTileCount) 
                 throw std::ios_base::failure("Tile ID exceeds number of tiles");
 
-            _a2Tiles[_a2Tiles.size() - 1].push_back(tileTemp);
+            _vector2Tiles[_vector2Tiles.size() - 1].push_back(tileTemp);
         }
-        if (_a2Tiles[_a2Tiles.size() - 1].size() != _a2Tiles[0].size())
-            throw std::ios_base::failure("Error in map contents");
+        urMaxColumns = std::max(static_cast<uint16_t>(_vector2Tiles[_vector2Tiles.size() - 1].size()),
+            urMaxColumns);
     }
 
-    _surfaceCache.SetTransparentPixel(0, 0, 0);
+    _surfaceCache = Surface{urMaxColumns * _urTileWidth, 
+        static_cast<int32_t>(_vector2Tiles.size() * _urTileHeight)};
+    OnCache();
 }
 
 
 void Map::OnCache()
 {
-    SDL_FillRect(_surfaceCache, nullptr, SDL_MapRGB(_surfaceCache.GetPixelFormat(), 0, 0, 0));
+    uint16_t urTilesetColumns = _pSurfaceTileset->GetWidth() / _urTileWidth;
 
-    uint16_t urTiles  = _pSurfaceTileset->GetWidth() / _urTileSize;
-
-    for(uint16_t i = 0; i < _a2Tiles.size(); i++)
+    for(uint16_t i = 0; i < _vector2Tiles.size(); ++i)
     {
-        for(uint16_t j = 0; j < _a2Tiles[0].size(); j++)
+        for(uint16_t j = 0; j < _vector2Tiles[i].size(); ++j)
         {
-            if(_a2Tiles[i][j].GetTileType() != Tile::ETileType::NONE)
+            if(_vector2Tiles[i][j].GetTileType() != Tile::ETileType::NONE)
             {
-                int16_t rTileX = _rX + j * _urTileSize;
-                int16_t rTileY = _rY + i * _urTileSize;
+                uint16_t urTilesetX = _vector2Tiles[i][j].GetTileID() % urTilesetColumns * _urTileWidth;
+                uint16_t urTilesetY = _vector2Tiles[i][j].GetTileID() / urTilesetColumns * _urTileHeight;
 
-                uint16_t urTilesetX = (_a2Tiles[i][j].GetTileID() % urTiles) * _urTileSize;
-                uint16_t urTilesetY = (_a2Tiles[i][j].GetTileID() / urTiles) * _urTileSize;
+                int16_t rTilePosX = j * _urTileWidth;
+                int16_t rTilePosY = i * _urTileHeight;
 
-                _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileSize, _urTileSize,
-                    rTileX, rTileY);
+                _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileWidth, 
+                    _urTileHeight, rTilePosX, rTilePosY);
             }
         }
     }
-}
-
-
-void Map::OnRender(Surface& surfaceDisplay, int16_t rX, int16_t rY)
-{
-    if (_rX != rX || _rY != rY)
-    {
-        _rX = rX;
-        _rY = rY;
-        OnCache();
-    }
-    surfaceDisplay.OnDraw(_surfaceCache);
 }

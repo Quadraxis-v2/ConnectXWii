@@ -20,8 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 #include <stdexcept>
-#include <string>
 #include <ios>
+#include <string>
 
 #include <SDL_config.h>
 #include <SDL_endian.h>
@@ -56,7 +56,8 @@ Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSd
         uiGmask, uiBmask, uiAmask)) == nullptr)
         throw std::runtime_error(SDL_GetError());
 
-    _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+    SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, pSdlSurfaceTemp->format->alpha);
+    _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
     SDL_FreeSurface(pSdlSurfaceTemp);
 
     if (_pSdlSurface == nullptr) throw std::ios_base::failure(SDL_GetError());
@@ -78,10 +79,14 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
     /* Convert the loaded surface to the same format as the display */
     if (pSdlSurfaceTemp->format->Amask)     // Surface has an alpha channel
     {
-        SDL_SetColorKey(pSdlSurfaceTemp, SDL_RLEACCEL, pSdlSurfaceTemp->format->colorkey);
+        SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, pSdlSurfaceTemp->format->alpha);
         _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
     }
-    else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+    else 
+    {
+        SDL_SetColorKey(pSdlSurfaceTemp, SDL_RLEACCEL, pSdlSurfaceTemp->format->colorkey);
+        _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+    }
 
     SDL_FreeSurface(pSdlSurfaceTemp);
 

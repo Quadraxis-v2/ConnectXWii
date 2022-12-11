@@ -21,8 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _EVENTMANAGER_HPP_
 
 
-#include <unordered_set>
+#include <list>
+
 #include <SDL_events.h>
+
 #include "EventListener.hpp"
 
 
@@ -32,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class EventManager
 {
 public:
-    typedef std::unordered_set<EventListener*> EventListeners;
+    typedef std::list<EventListener*> EventListeners;
 
     static EventManager& GetInstance();
     const EventListeners& GetEventListeners() const noexcept;

@@ -60,7 +60,7 @@ public:
      * 
      * @param pSdlSurface the raw surface
      */
-    explicit Surface(SDL_Surface* pSdlSurface) noexcept;
+    Surface(SDL_Surface* pSdlSurface) noexcept;
 
     Surface(const Surface& CsurfaceOther);  /**< Copy constructor */
     Surface(Surface&& surfaceOther) noexcept;   /**< Movement constructor */
@@ -124,7 +124,8 @@ inline uint16_t Surface::GetPitch() const noexcept
 inline void* Surface::GetPixels() const noexcept 
 { return (_pSdlSurface != nullptr ? _pSdlSurface->pixels : nullptr); }
 
-inline Surface::operator SDL_Surface *() const noexcept { return _pSdlSurface; }
+
+inline Surface::operator SDL_Surface*() const noexcept { return _pSdlSurface; }
 
 
 #endif

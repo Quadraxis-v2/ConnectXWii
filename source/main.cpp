@@ -17,6 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <ios>
 #include <cstdint>
 #include <stdexcept>
 
@@ -32,14 +33,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 int32_t main(int32_t argc, char** argv)
 {
+	std::ios_base::sync_with_stdio();
+
+	uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
+
+	#ifdef SDL_CDROM_DISABLED
+		uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
+	#endif
+
 	try 
 	{
-		uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
-
-		#ifdef SDL_CDROM_DISABLED
-			uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
-		#endif
-
 		if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
 		int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
