@@ -24,32 +24,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sstream>
 #include <utility>
 #include <cmath>
+#include <algorithm>
 
 #include "../../include/video/Area.hpp"
 #include "../../include/video/Surface.hpp"
 
 
+/**
+ * @brief Construct a new Area
+ * 
+ * @param CsFilePath the path to the area file
+ */
 Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
 {
-    std::ifstream fileArea(CsFilePath, std::ios_base::in);
+    std::ifstream fileArea(CsFilePath, std::ios_base::in);  // Open the area file
 
     if(!fileArea) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
     std::string sMapPath{}, sTilesetPath{};
-    uint16_t rTileSize{};
 
-    for (std::string sLine{}; std::getline(fileArea, sLine); )
+    for (std::string sLine{}; std::getline(fileArea, sLine); )  // Grab a row of maps
     {
         std::istringstream isStreamLine{sLine};
-        _vector2pMaps.push_back(std::vector<Map*>{});
+        _vector2pMaps.push_back(std::vector<Map*>{});   // Insert new row of tiles in the map
         try
         {
-            while (isStreamLine >> sMapPath >> rTileSize >> sTilesetPath)
+            while (isStreamLine >> sMapPath >> sTilesetPath)   // Grab the map file path and the tileset path
             {
-                if (!_htTilesets.contains(sTilesetPath))
+                if (!_htTilesets.contains(sTilesetPath))    // Create new tileset surface only if it does not exist
                     _htTilesets.insert(std::make_pair(sTilesetPath, new Surface{sTilesetPath}));
 
-                Map* pMapTemp = new Map{sMapPath, *(_htTilesets.at(sTilesetPath)), rTileSize, rTileSize};
+                // Check all maps' dimensions are the same
+                Map* pMapTemp = new Map{sMapPath, *(_htTilesets.at(sTilesetPath))};
                 if (_vector2pMaps.size() > 1 && ((pMapTemp->GetTiles()[0].size() * 
                     pMapTemp->GetTileWidth() != _vector2pMaps[0][0]->GetTiles()[0].size() * 
                     _vector2pMaps[0][0]->GetTileWidth()) ||
@@ -57,13 +63,13 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
                     _vector2pMaps[0][0]->GetTiles().size() * _vector2pMaps[0][0]->GetTileWidth())))
                     throw std::runtime_error("Map dimensions differ");
 
-                _vector2pMaps[_vector2pMaps.size() - 1].push_back(pMapTemp);
+                _vector2pMaps[_vector2pMaps.size() - 1].push_back(pMapTemp);    // Insert the map in the last row
             }
 
-            if (_vector2pMaps[_vector2pMaps.size() - 1].size() != _vector2pMaps[0].size())
+            if (_vector2pMaps[_vector2pMaps.size() - 1].size() != _vector2pMaps[0].size())  // Check all rows have the same number of maps
                 throw std::ios_base::failure("Error in area contents");
         }
-        catch (...)
+        catch (...) // Clean memory in case of error
         {
             for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin(); 
                 i != _htTilesets.end(); ++i) delete i->second;
@@ -78,36 +84,56 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
 }
 
 
+/**
+ * @brief Destructor
+ */
 Area::~Area() noexcept
 {
-    for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin(); 
+    for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin();   // Delete tileset surfaces
         i != _htTilesets.end(); ++i) delete i->second;
 
-    for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin(); 
+    for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin();    // Delete maps
         i != _vector2pMaps.end(); ++i)
         for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 }
 
 
+/**
+ * @brief Renders the area on a surface
+ * 
+ * @param surfaceDisplay the surface that the area will be rendered on
+ * @param rCameraX the X coordinate from where the rendering will start
+ * @param rCameraY the Y coordinate from where the rendering will start
+ */
 void Area::OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY)
 {
+    // Width and height of maps, in pixels
     uint16_t urMapWidth = _vector2pMaps[0][0]->GetTiles()[0].size() * _vector2pMaps[0][0]->GetTileWidth();
     uint16_t urMapHeight = _vector2pMaps[0][0]->GetTiles().size() * _vector2pMaps[0][0]->GetTileHeight();
 
-    uint16_t urTopLeftMapX = rCameraX / urMapWidth;
-    uint16_t urTopLeftMapY = rCameraY / urMapHeight;
+    // Top left map in the matrix that will be rendered
+    int16_t rTopLeftMapX = rCameraX / urMapWidth;
+    int16_t rTopLeftMapY = rCameraY / urMapHeight;
 
+    // Number of maps that fit in the viewport
     uint16_t urCameraColumns = std::ceil(surfaceDisplay.GetWidth() / urMapWidth) + 1;
     uint16_t urCameraRows = std::ceil(surfaceDisplay.GetHeight() / urMapHeight) + 1;
 
-    for (uint16_t i = 0; i < urCameraRows; i++)
+    // Render all necessary maps
+    if (rCameraX < surfaceDisplay.GetWidth() && rCameraY < surfaceDisplay.GetHeight())
     {
-        for (uint16_t j = 0; j < urCameraColumns; j++)
+        for (int16_t i = std::max(rTopLeftMapY, static_cast<int16_t>(0)); 
+            i < static_cast<int16_t>(_vector2pMaps.size()) && i < rTopLeftMapY + urCameraRows; i++)
         {
-            int16_t rMapX = ((urTopLeftMapX + j) * urMapWidth) - rCameraX;
-            int16_t rMapY = ((urTopLeftMapY + i) * urMapHeight) - rCameraY;
+            for (int16_t j = std::max(rTopLeftMapX, static_cast<int16_t>(0)); 
+                j < static_cast<int16_t>(_vector2pMaps[0].size()) && i < rTopLeftMapX + urCameraColumns; j++)
+            {
+                // Position where a map will be rendered
+                int16_t rMapX = j * urMapWidth - rCameraX;
+                int16_t rMapY = i * urMapHeight - rCameraY;
 
-            _vector2pMaps[urTopLeftMapY + i][urTopLeftMapX + j]->OnRender(surfaceDisplay, rMapX, rMapY);
+                _vector2pMaps[i][j]->OnRender(surfaceDisplay, rMapX, rMapY);
+            }
         }
     }
 }

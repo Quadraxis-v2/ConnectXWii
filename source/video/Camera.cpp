@@ -23,18 +23,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "../../include/video/Camera.hpp"
 
- 
+
+/**
+ * @brief Construct a new Camera that will start in normal mode
+ * 
+ * @param rX X coordinate of the top left corner in normal mode
+ * @param rY Y coordinate of the top left corner in normal mode
+ */
 Camera::Camera(int16_t rX, int16_t rY) noexcept : _eTargetMode{ETargetMode::TARGET_MODE_NORMAL}, 
     _prX{new int16_t{rX}}, _prY{new int16_t{rY}}, _rOffsetX{}, _rOffsetY{} 
 {}
 
 
+/**
+ * @brief Construct a new Camera that will start in follow mode
+ * 
+ * @param prTargetX X coordinate of the target
+ * @param prTargetY Y coordinate of the target
+ * @param rOffsetX X offset from the target
+ * @param rOffsetY Y offset from the target
+ */
 Camera::Camera(int16_t* prTargetX, int16_t* prTargetY, int16_t rOffsetX, int16_t rOffsetY) noexcept : 
     _eTargetMode{ETargetMode::TARGET_MODE_FOLLOW}, _prX{prTargetX}, _prY{prTargetY}, _rOffsetX{rOffsetX}, 
     _rOffsetY{rOffsetY} 
 {}
 
 
+/**
+ * @brief Destructor
+ */
 Camera::~Camera() noexcept
 {
     if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)
@@ -108,6 +125,12 @@ void Camera::SetOffset(int16_t rOffsetX, int16_t rOffsetY) noexcept
 }
 
 
+/**
+ * @brief Moves the camera by a relative amount
+ * 
+ * @param rMoveX the relative movement of the X axis
+ * @param rMoveY the relative movement of the Y axis
+ */
 void Camera::OnMove(int16_t rMoveX, int16_t rMoveY) noexcept
 {
     if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)

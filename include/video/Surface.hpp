@@ -60,7 +60,7 @@ public:
      * 
      * @param pSdlSurface the raw surface
      */
-    Surface(SDL_Surface* pSdlSurface) noexcept;
+    explicit Surface(SDL_Surface* pSdlSurface) noexcept;
 
     Surface(const Surface& CsurfaceOther);  /**< Copy constructor */
     Surface(Surface&& surfaceOther) noexcept;   /**< Movement constructor */

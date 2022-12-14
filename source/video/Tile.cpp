@@ -26,20 +26,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/video/Tile.hpp"
 
 
+/**
+ * @brief Construct a new Tile
+ * 
+ * @param urTileID the ID of the tile in the tileset
+ * @param CeTileType the type of tile
+ */
 Tile::Tile(uint16_t urTileID, const ETileType& CeTileType) noexcept : _urTileID{urTileID},
     _eTileType{CeTileType} {}
 
 
+/**
+ * @brief Stream extraction operator overload for Tile
+ * The correct format should be id:type
+ * 
+ * @param istream the input stream
+ * @param tile the tile to extract on
+ * @return std::istream& the input stream after the extraction
+ */
 std::istream& operator >>(std::istream& inStream, Tile& tile)
 {
     std::string sTemp{};
-    std::getline(inStream, sTemp, ':');
+    std::getline(inStream, sTemp, ':'); // Extract tile ID and token
 
     try
     {
         tile.SetTileID(std::stoi(sTemp));
 
-        inStream >> sTemp;
+        inStream >> sTemp;  // Extract the type of tile
         uint8_t yTileType = std::stoi(sTemp);
 
         switch (yTileType)
@@ -49,7 +63,7 @@ std::istream& operator >>(std::istream& inStream, Tile& tile)
         default:                        tile.SetTileType(Tile::ETileType::NONE);    break;
         }
     }
-    catch (...) { inStream.setstate(std::ios_base::failbit); }
+    catch (...) { inStream.setstate(std::ios_base::failbit); }  // Set error in case of badly formed stream
 
     return inStream;
 }

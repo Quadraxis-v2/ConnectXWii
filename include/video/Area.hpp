@@ -29,17 +29,33 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Map.hpp"
 
 
+/**
+ * @brief Area class
+ */
 class Area 
 {
     public:
+        /**
+         * @brief Construct a new Area
+         * 
+         * @param CsFilePath the path to the area file
+         */
         explicit Area(const std::string& CsFilePath);
-        ~Area() noexcept;
 
+        ~Area() noexcept;   /**< Destructor */
+
+        /**
+         * @brief Renders the area on a surface
+         * 
+         * @param surfaceDisplay the surface that the area will be rendered on
+         * @param rCameraX the X coordinate from where the rendering will start
+         * @param rCameraY the Y coordinate from where the rendering will start
+         */
         void OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY);
 
     private:
-        std::unordered_map<std::string, Surface*> _htTilesets;
-        std::vector<std::vector<Map*> > _vector2pMaps;
+        std::unordered_map<std::string, Surface*> _htTilesets;  /**z Dictionary of tilesets that the maps can share */
+        std::vector<std::vector<Map*> > _vector2pMaps;          /**< Matrix of maps */
 
 };
 

@@ -24,10 +24,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 
 
+/**
+ * @brief Camera class
+ */
 class Camera 
 {
 public:
-    enum ETargetMode {TARGET_MODE_NORMAL = 0, TARGET_MODE_FOLLOW};
+    enum ETargetMode {TARGET_MODE_NORMAL = 0, TARGET_MODE_FOLLOW};  // Static camera or follow a target
 
     const ETargetMode& GetMode() const noexcept;
     int16_t GetX() const;
@@ -36,20 +39,45 @@ public:
     void SetTarget(int16_t* prTargetX, int16_t* prTargetY);
     void SetOffset(int16_t rOffsetX, int16_t rOffsetY) noexcept;
 
+    /**
+     * @brief Construct a new Camera that will start in normal mode
+     * 
+     * @param rX X coordinate of the top left corner in normal mode
+     * @param rY Y coordinate of the top left corner in normal mode
+     */
     Camera(int16_t rX, int16_t rY) noexcept;
+
+    /**
+     * @brief Construct a new Camera that will start in follow mode
+     * 
+     * @param prTargetX X coordinate of the target
+     * @param prTargetY Y coordinate of the target
+     * @param rOffsetX X offset from the target
+     * @param rOffsetY Y offset from the target
+     */
     Camera(int16_t* prTargetX, int16_t* prTargetY, int16_t rOffsetX = 0, int16_t rOffsetY = 0) noexcept;
+
+    /**
+     * @brief Destructor
+     */
     ~Camera() noexcept;
 
+    /**
+     * @brief Moves the camera by a relative amount
+     * 
+     * @param rMoveX the relative movement of the X axis
+     * @param rMoveY the relative movement of the Y axis
+     */
     void OnMove(int16_t rMoveX, int16_t rMoveY) noexcept;
 
 private:
-    ETargetMode _eTargetMode;
+    ETargetMode _eTargetMode;   /**< Mode of the camera */
 
-    int16_t* _prX;
-    int16_t* _prY;
+    int16_t* _prX;  /**< Top left corner X coordinate of the camera */
+    int16_t* _prY;  /**< Top left corner Y coordinate of the camera */
 
-    int16_t _rOffsetX;
-    int16_t _rOffsetY;
+    int16_t _rOffsetX;  /**< Offset in the X axis when following a target */
+    int16_t _rOffsetY;  /**< Offset in the Y axis when following a target */
 
 };
 

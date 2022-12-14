@@ -28,6 +28,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Tile.hpp"
  
 
+/**
+ * @brief Map class
+ */
 class Map 
 {
 public:
@@ -37,19 +40,38 @@ public:
     uint16_t GetTileWidth() const noexcept;
     uint16_t GetTileHeight() const noexcept;
 
-    Map(const std::string& CsFilePath, Surface& surfaceTileset, uint16_t urTileWidth, 
-        uint16_t urTileHeight);
+    /**
+     * @brief Construct a new Map
+     * Tiles must have the same width and height
+     * Maps must be a matrix of tiles in id:type format
+     * 
+     * @param CsFilePath the path to the map file
+     * @param surfaceTileset the surface that will hold the tileset
+     * @param urTileWidth the width of the tiles in the tileset
+     * @param urTileHeight the height of the tiles in the tileset
+     */
+    Map(const std::string& CsFilePath, Surface& surfaceTileset);
 
+    /**
+     * @brief Renders the map on a surface
+     * 
+     * @param surfaceDisplay the surface that the map will be rendered on
+     * @param rX the X coordinate from where the rendering will start
+     * @param rY the Y coordinate from where the rendering will start
+     */
     void OnRender(Surface& surfaceDisplay, int16_t rX, int16_t rY);
 
 private:
-    Surface* _pSurfaceTileset;
-    Surface _surfaceCache;
-    std::vector<std::vector<Tile> > _vector2Tiles;
-    uint16_t _urTileWidth;
-    uint16_t _urTileHeight;
+    Surface* _pSurfaceTileset;                      /**< Map tileset */
+    Surface _surfaceCache;                          /**< Cache for fast rendering */
+    std::vector<std::vector<Tile> > _vector2Tiles;  /**< Matrix of all the tiles in the map */
+    uint16_t _urTileWidth;                          /**< Width of the tiles in the tileset */
+    uint16_t _urTileHeight;                         /**< Height of the tiles in the tileset */
 
 
+    /**
+     * @brief Caches the map on a private surface
+     */
     void OnCache();
 
 };

@@ -23,22 +23,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <istream>
 
- 
+
+/**
+ * @brief Tile class
+ */
 class Tile 
 {
 public:
-    enum ETileType {NONE = 0, NORMAL, BLOCK};
+    enum ETileType {NONE = 0, NORMAL, BLOCK};   /**< Type of tile */
 
     uint16_t GetTileID() const noexcept;
     void SetTileID(uint16_t urTileID) noexcept;
     const ETileType& GetTileType() const noexcept;
     void SetTileType(const ETileType& CeTileType) noexcept;
 
+    /**
+     * @brief Construct a new Tile
+     * 
+     * @param urTileID the ID of the tile in the tileset
+     * @param CeTileType the type of tile
+     */
     explicit Tile(uint16_t urTileID = 0, const ETileType& CeTileType = ETileType::NONE) noexcept;
 
 private:
-    uint16_t _urTileID;
-    ETileType _eTileType;
+    uint16_t _urTileID;     /**< The ID of the tile in the tileset */
+    ETileType _eTileType;   /**< The type of tile */
 
 };
 
@@ -48,6 +57,14 @@ inline const Tile::ETileType& Tile::GetTileType() const noexcept { return _eTile
 inline void Tile::SetTileType(const ETileType& CeTileType) noexcept { _eTileType = CeTileType; }
 
 
+/**
+ * @brief Stream extraction operator overload for Tile
+ * The correct format should be id:type
+ * 
+ * @param istream the input stream
+ * @param tile the tile to extract on
+ * @return std::istream& the input stream after the extraction
+ */
 std::istream& operator >>(std::istream& istream, Tile& tile);
 
 

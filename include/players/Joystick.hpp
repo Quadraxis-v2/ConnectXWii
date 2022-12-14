@@ -45,7 +45,7 @@ public:
      * 
      * @param pSdlJoystick the raw joystick
      */
-    Joystick(SDL_Joystick* pSdlJoystick) noexcept;
+    explicit Joystick(SDL_Joystick* pSdlJoystick) noexcept;
 
     Joystick(const Joystick& CjoystickOther) = delete;              /**< Copy constructor */
     Joystick(Joystick&& joystickOther) noexcept;                    /**< Move constructor */
