@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_error.h>
 #include <SDL_image.h>
 #include <SDL_video.h>
+#include <SDL_mixer.h>
 
 #include "../include/Globals.hpp"
 #include "../include/App.hpp"
@@ -52,6 +53,9 @@ int32_t main(int32_t argc, char** argv)
 		if ((SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16,
 			SDL_HWSURFACE | SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/)) == nullptr)
 			throw std::runtime_error(SDL_GetError());
+
+		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) == -1) 
+			throw std::runtime_error("Error initialising SDL_mixer support");
 
 		App::GetInstance().OnExecute(); 
 	}

@@ -20,16 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _SETTINGS_HPP_
 #define _SETTINGS_HPP_
 
-/**
-	@file		Settings.hpp
-	@author		Juan de la Cruz Caravaca Guerrero
-	@date		09/10/2022
-    @brief		Settings class
-    @par		Description
-                Class for managing application settings
-				
-*/
-
 #include <cstdint>
 #include <string>
 
