@@ -32,7 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * @brief Construct a new Area
- * 
+ *
  * @param CsFilePath the path to the area file
  */
 Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
@@ -56,10 +56,10 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
 
                 // Check all maps' dimensions are the same
                 Map* pMapTemp = new Map{sMapPath, *(_htTilesets.at(sTilesetPath))};
-                if (_vector2pMaps.size() > 1 && ((pMapTemp->GetTiles()[0].size() * 
-                    pMapTemp->GetTileWidth() != _vector2pMaps[0][0]->GetTiles()[0].size() * 
+                if (_vector2pMaps.size() > 1 && ((pMapTemp->GetTiles()[0].size() *
+                    pMapTemp->GetTileWidth() != _vector2pMaps[0][0]->GetTiles()[0].size() *
                     _vector2pMaps[0][0]->GetTileWidth()) ||
-                    (pMapTemp->GetTiles().size() * pMapTemp->GetTileHeight() != 
+                    (pMapTemp->GetTiles().size() * pMapTemp->GetTileHeight() !=
                     _vector2pMaps[0][0]->GetTiles().size() * _vector2pMaps[0][0]->GetTileWidth())))
                     throw std::runtime_error("Map dimensions differ");
 
@@ -71,10 +71,10 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
         }
         catch (...) // Clean memory in case of error
         {
-            for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin(); 
+            for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin();
                 i != _htTilesets.end(); ++i) delete i->second;
 
-            for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin(); 
+            for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin();
                 i != _vector2pMaps.end(); ++i)
                 for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 
@@ -100,7 +100,7 @@ Area::~Area() noexcept
 
 /**
  * @brief Renders the area on a surface
- * 
+ *
  * @param surfaceDisplay the surface that the area will be rendered on
  * @param rCameraX the X coordinate from where the rendering will start
  * @param rCameraY the Y coordinate from where the rendering will start
@@ -120,20 +120,17 @@ void Area::OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY)
     uint16_t urCameraRows = std::ceil(surfaceDisplay.GetHeight() / urMapHeight) + 1;
 
     // Render all necessary maps
-    if (rCameraX < surfaceDisplay.GetWidth() && rCameraY < surfaceDisplay.GetHeight())
+    for (int16_t i = std::max(rTopLeftMapY, static_cast<int16_t>(0));
+        i < static_cast<int16_t>(_vector2pMaps.size()) && i < rTopLeftMapY + urCameraRows; ++i)
     {
-        for (int16_t i = std::max(rTopLeftMapY, static_cast<int16_t>(0)); 
-            i < static_cast<int16_t>(_vector2pMaps.size()) && i < rTopLeftMapY + urCameraRows; i++)
+        for (int16_t j = std::max(rTopLeftMapX, static_cast<int16_t>(0));
+            j < static_cast<int16_t>(_vector2pMaps[0].size()) && i < rTopLeftMapX + urCameraColumns; ++j)
         {
-            for (int16_t j = std::max(rTopLeftMapX, static_cast<int16_t>(0)); 
-                j < static_cast<int16_t>(_vector2pMaps[0].size()) && i < rTopLeftMapX + urCameraColumns; j++)
-            {
-                // Position where a map will be rendered
-                int16_t rMapX = j * urMapWidth - rCameraX;
-                int16_t rMapY = i * urMapHeight - rCameraY;
+            // Position where a map will be rendered
+            int16_t rMapX = j * urMapWidth - rCameraX;
+            int16_t rMapY = i * urMapHeight - rCameraY;
 
-                _vector2pMaps[i][j]->OnRender(surfaceDisplay, rMapX, rMapY);
-            }
+            _vector2pMaps[i][j]->OnRender(surfaceDisplay, rMapX, rMapY);
         }
     }
 }

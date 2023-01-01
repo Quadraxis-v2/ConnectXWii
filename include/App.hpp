@@ -35,7 +35,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "players/Joystick.hpp"
 #include "players/Player.hpp"
 
-
 /**
  * @brief Main application class
  */
@@ -72,16 +71,16 @@ private:
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
 
-    Surface _surfaceDisplay;    /**< The main display surface */
-    Surface _surfaceStart;      /**< Picture for the start screen */
-    Surface _surfaceGrid;       /**< Picture of the grid */
-    Surface _surfaceMarker1;    /**< Picture of the red marker for the grid */
-    Surface _surfaceMarker2;    /**< Picture of the yellow marker for the grid */
-    Surface _surfaceWinPlayer1; /**< Picture for the end screen when red wins */
-    Surface _surfaceWinPlayer2; /**< Picture for the end screen when yellow wins */
-    Surface _surfaceDraw;       /**< Picture for the end screen when there is a draw */
-    Surface _surfaceCursor;
-    Surface _surfaceCursorShadow;
+    Surface _surfaceDisplay;        /**< The main display surface */
+    Surface _surfaceStart;          /**< Picture for the start screen */
+    Surface _surfaceGrid;           /**< Picture of the grid */
+    Surface _surfaceMarker1;        /**< Picture of the red marker for the grid */
+    Surface _surfaceMarker2;        /**< Picture of the yellow marker for the grid */
+    Surface _surfaceWinPlayer1;     /**< Picture for the end screen when red wins */
+    Surface _surfaceWinPlayer2;     /**< Picture for the end screen when yellow wins */
+    Surface _surfaceDraw;           /**< Picture for the end screen when there is a draw */
+    Surface _surfaceCursor;         /**< Picture for the cursor */
+    Surface _surfaceCursorShadow;   /**< Picture for the shadow of the cursor */
 
     Grid _grid;                             /**< Main playing grid */
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
@@ -89,7 +88,7 @@ private:
     uint8_t _uyCurrentPlayer;               /** The index for the current player */
     bool _bSingleController;                /** The main controller can be used for all players */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
-
+    
 
     App();    /**< Default constructor */
 

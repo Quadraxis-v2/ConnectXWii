@@ -39,6 +39,7 @@ public:
     void SetTarget(int16_t* prTargetX, int16_t* prTargetY);
     void SetOffset(int16_t rOffsetX, int16_t rOffsetY) noexcept;
 
+
     /**
      * @brief Construct a new Camera that will start in normal mode
      * 
@@ -55,12 +56,8 @@ public:
      * @param rOffsetX X offset from the target
      * @param rOffsetY Y offset from the target
      */
-    Camera(int16_t* prTargetX, int16_t* prTargetY, int16_t rOffsetX = 0, int16_t rOffsetY = 0) noexcept;
+    Camera(int16_t* prTargetX, int16_t* prTargetY, int16_t rOffsetX, int16_t rOffsetY) noexcept;
 
-    /**
-     * @brief Destructor
-     */
-    ~Camera() noexcept;
 
     /**
      * @brief Moves the camera by a relative amount
@@ -73,11 +70,14 @@ public:
 private:
     ETargetMode _eTargetMode;   /**< Mode of the camera */
 
-    int16_t* _prX;  /**< Top left corner X coordinate of the camera */
-    int16_t* _prY;  /**< Top left corner Y coordinate of the camera */
+    int16_t _rX;
+    int16_t _rY;
 
-    int16_t _rOffsetX;  /**< Offset in the X axis when following a target */
-    int16_t _rOffsetY;  /**< Offset in the Y axis when following a target */
+    int16_t* _prTargetX;    /**< Top left corner X coordinate of the camera */
+    int16_t* _prTargetY;    /**< Top left corner Y coordinate of the camera */
+
+    int16_t _rOffsetX;      /**< Offset in the X axis when following a target */
+    int16_t _rOffsetY;      /**< Offset in the Y axis when following a target */
 
 };
 

@@ -17,9 +17,9 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	boot
 BUILD		:=	build
-SOURCES		:=	source source/App source/players source/video
+SOURCES		:=	source source/App source/audio source/players source/video
 DATA		:=	data
-INCLUDES	:=	include include/players include/video
+INCLUDES	:=	include include/audio include/players include/video
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -27,7 +27,8 @@ INCLUDES	:=	include include/players include/video
 
 CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` \
 			`sdl-config --cflags` \
-			`$(PREFIX)pkg-config --cflags libturbojpeg zlib jansson SDL_image`
+			`$(PREFIX)pkg-config --cflags libturbojpeg zlib jansson SDL_image \
+			SDL_mixer`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -35,8 +36,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`$(PREFIX)pkg-config --libs libturbojpeg zlib jansson SDL_image` \
-			`sdl-config --libs` `libpng-config --libs` \
+LIBS	:=	`$(PREFIX)pkg-config --libs libturbojpeg zlib jansson SDL_image \
+			SDL_mixer` `sdl-config --libs` `libpng-config --libs` \
 			-lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------

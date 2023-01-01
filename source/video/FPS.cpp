@@ -1,6 +1,6 @@
 /*
-Settings.hpp --- App settings
-Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+FPS.cpp --- FPS class
+Copyright (C) 2023  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,25 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _SOUNDBANK_HPP_
-#define _SOUNDBANK_HPP_
+#include <cstdint>
+
+#include <SDL_timer.h>
+
+#include "../../include/video/FPS.hpp"
 
 
-#include <string>
-#include <unordered_map>
-
-#include <SDL.h>
-#include <SDL_mixer.h>
-
-
-class SoundBank 
+FPS& FPS::GetInstance()
 {
-public:
-    ~SoundBank() noexcept;
+    static FPS SFPSInstance{};
+    return SFPSInstance;
+}
 
-    void OnLoad(const std::string& CsFilePath, const std::string& CsSoundID);
-    void Play(const std::string& CsSoundID);
 
-private:
-    std::unordered_map<std::string, Mix_Chunk*> _htMixChunks;
+void FPS::OnLoop() 
+{
+    uint32_t uiTime = SDL_GetTicks();
 
-};
- 
-
-#endif
+    _urNumFrames = 1000 / (uiTime - _uiLastTime);
+    _fSpeedFactor = ((uiTime - _uiLastTime) / 1000.0f) * 30;
+    _uiLastTime = uiTime;
+}

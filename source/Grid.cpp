@@ -52,8 +52,8 @@ void Grid::MakeMove(const EPlayerMark& CePlayerMark, uint8_t uyPlayColumn)
     if (!IsValidMove(uyPlayColumn)) throw std::domain_error("Play is not valid");
 
     _vector2playerMarkCells[_ayNextCell[uyPlayColumn]][uyPlayColumn] = CePlayerMark;
-    _ayNextCell[uyPlayColumn]--;
-    _uyEmptyCells--;
+    --_ayNextCell[uyPlayColumn];
+    --_uyEmptyCells;
 
     if (IsWinnerMove(CePlayerMark, uyPlayColumn)) _ePlayerMarkWinner = CePlayerMark;
 }
@@ -90,7 +90,7 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
     if (yPlayRow <= _uyHeight - _uyCellsToWin)
     {
         for (uint8_t i = 1; i < _uyCellsToWin && yPlayRow + i < _uyHeight &&
-            _vector2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; i++) ++uyCounter;
+            _vector2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; ++i) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
     }
@@ -109,7 +109,7 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
             yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < _uyHeight &&
             yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < _uyWidth &&
             _vector2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == 
-            CePlayerMark; i++) ++uyCounter;
+            CePlayerMark; ++i) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
 
@@ -118,7 +118,7 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
             yPlayRow - i * yDirectionX >= 0 && yPlayRow - i * yDirectionX < _uyHeight &&
             yPlayColumn - i * yDirectionY >= 0 && yPlayColumn - i * yDirectionY < _uyWidth &&
             _vector2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == 
-            CePlayerMark; i++) ++uyCounter;
+            CePlayerMark; ++i) ++uyCounter;
 
         if (uyCounter == _uyCellsToWin) return true;
     }
@@ -150,15 +150,15 @@ std::ostream& operator <<(std::ostream& ostream, const Grid& Cgrid) noexcept
     const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.GetCells();
     std::string sSeparator{};
 
-    for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; i++) sSeparator.append("---+");
+    for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; ++i) sSeparator.append("---+");
     sSeparator.append("---");
 
-    for (uint8_t i = 0; i < Cgrid.GetHeight(); i++)
+    for (uint8_t i = 0; i < Cgrid.GetHeight(); ++i)
     {
         ostream << sSeparator << std::endl <<
             " " << a2playerMarkCells[i][0] << " ";
 
-        for (uint8_t j = 1; j < Cgrid.GetWidth(); j++)
+        for (uint8_t j = 1; j < Cgrid.GetWidth(); ++j)
             ostream << "| " << a2playerMarkCells[i][j] << " ";
 
         ostream << std::endl;

@@ -42,22 +42,27 @@ int32_t main(int32_t argc, char** argv)
 		uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
 	#endif
 
-	try 
+	try
 	{
 		if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
-		int32_t iIMGInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
-		if (IMG_Init(iIMGInitFlags) != iIMGInitFlags)
+		int32_t iInitFlags = IMG_InitFlags::IMG_INIT_JPG | IMG_InitFlags::IMG_INIT_PNG;
+		if ((IMG_Init(iInitFlags) & iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_image support");
 
 		if ((SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16,
 			SDL_HWSURFACE | SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/)) == nullptr)
 			throw std::runtime_error(SDL_GetError());
 
-		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) == -1) 
+		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+			throw std::runtime_error(Mix_GetError());
+
+		iInitFlags = MIX_InitFlags::MIX_INIT_OGG;
+
+		if ((Mix_Init(iInitFlags) & iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_mixer support");
 
-		App::GetInstance().OnExecute(); 
+		App::GetInstance().OnExecute();
 	}
 	catch (...) {}
 

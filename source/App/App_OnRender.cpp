@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/App.hpp"
 #include "../../include/video/Surface.hpp"
 #include "../../include/players/AI.hpp"
-
+#include "../../include/video/Map.hpp"
 
 /**
  * @brief Handles all the rendering for each frame
@@ -46,12 +46,12 @@ void App::OnRender()
     {
         _surfaceDisplay.OnDraw(_surfaceGrid);
 
-        for(int32_t i = 0; i < _grid.GetHeight(); i++)  // Search for markers and draw them
+        for(int32_t i = 0; i < _grid.GetHeight(); ++i)  // Search for markers and draw them
         {
             // Surface coordinate of the i'th row of the grid
             int32_t iY = i * (_surfaceDisplay.GetHeight() / _grid.GetHeight());
 
-            for (int32_t j = 0; j < _grid.GetWidth(); j++)
+            for (int32_t j = 0; j < _grid.GetWidth(); ++j)
             {
                 // Surface coordinate of the j'th column of the grid
                 int32_t iX = j * (_surfaceDisplay.GetWidth() / _grid.GetWidth());

@@ -76,8 +76,8 @@ protected:
 
 
 private:
-    float _fPositionX;                  /**< The position X of the entity on the screen */
-    float _fPositionY;                  /**< The position Y of the entity on the screen */
+    float _fX;                  /**< The position X of the entity on the screen */
+    float _fY;                  /**< The position Y of the entity on the screen */
 
 };
 
@@ -89,10 +89,10 @@ inline Animation& Entity::GetAnimation() noexcept { return __animationController
 inline const Animation& Entity::GetAnimation() const noexcept { return __animationController; }
 inline void Entity::SetAnimation(const Animation& Canimation) noexcept 
 { __animationController = Canimation; }
-inline float Entity::GetPositionX() const noexcept { return _fPositionX; }
-inline void Entity::SetPositionX(float fPositionX) noexcept { _fPositionX = fPositionX; }
-inline float Entity::GetPositionY() const noexcept { return _fPositionY; }
-inline void Entity::SetPositionY(float fPositionY) noexcept { _fPositionY = fPositionY; }
+inline float Entity::GetPositionX() const noexcept { return _fX; }
+inline void Entity::SetPositionX(float fPositionX) noexcept { _fX = fPositionX; }
+inline float Entity::GetPositionY() const noexcept { return _fY; }
+inline void Entity::SetPositionY(float fPositionY) noexcept { _fY = fPositionY; }
 
 
 #endif

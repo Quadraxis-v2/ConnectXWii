@@ -83,15 +83,13 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
             switch (sdlKeySymbol)
             {
             case SDLK_LEFT:
-                _yPlayColumn--;
-                if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
+                if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
                     (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             case SDLK_RIGHT:
-                _yPlayColumn++;
-                if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
+                if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
                     (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
@@ -405,15 +403,13 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
             switch (uyValue)
             {
             case SDL_HAT_LEFT:
-                _yPlayColumn--;
-                if (_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
+                if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
                     (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             case SDL_HAT_RIGHT:
-                _yPlayColumn++;
-                if (_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
+                if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
                     (_surfaceDisplay.GetHeight() / _grid.GetHeight()));

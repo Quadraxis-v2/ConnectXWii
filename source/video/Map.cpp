@@ -35,33 +35,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @brief Construct a new Map
  * Tiles must have the same width and height
  * Maps must be a matrix of tiles in id:type format
- * 
+ *
  * @param CsFilePath the path to the map file
  * @param surfaceTileset the surface that will hold the tileset
  * @param urTileWidth the width of the tiles in the tileset
  * @param urTileHeight the height of the tiles in the tileset
  */
-Map::Map(const std::string& CsFilePath, Surface& surfaceTileset) : _pSurfaceTileset{&surfaceTileset}, 
+Map::Map(const std::string& CsFilePath, Surface& surfaceTileset) : _pSurfaceTileset{&surfaceTileset},
     _surfaceCache{}, _vector2Tiles{}, _urTileWidth{}, _urTileHeight{}
 {
     std::ifstream fileTileset(CsFilePath, std::ios_base::in);   // Open the map file
 
     if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
-    fileTileset >> _urTileWidth >> _urTileHeight;
+    std::string sLine{};
+    std::getline(fileTileset, sLine);
+    std::istringstream isStreamLine{sLine};
+    isStreamLine >> _urTileWidth >> _urTileHeight;
 
     uint16_t urTileCount = (surfaceTileset.GetWidth() / _urTileWidth) *     // How many tiles the tileset has
         (surfaceTileset.GetHeight() / _urTileHeight);
     uint16_t urMaxColumns{};    // The longest row of the map
     Tile tileTemp{};
 
-    for (std::string sLine{}; std::getline(fileTileset, sLine); )   // Grab a row
+    for ( ; std::getline(fileTileset, sLine); )   // Grab a row
     {
-        std::istringstream isStreamLine{sLine};
+        isStreamLine = std::istringstream{sLine};
         _vector2Tiles.push_back(std::vector<Tile>{});   // Insert new row of tiles in the map
         while (isStreamLine >> tileTemp)    // Grab a tile
         {
-            if (tileTemp.GetTileID() >= urTileCount) 
+            if (tileTemp.GetTileID() >= urTileCount)
                 throw std::ios_base::failure("Tile ID exceeds number of tiles");
 
             _vector2Tiles[_vector2Tiles.size() - 1].push_back(tileTemp);    // Insert the tile in the last row
@@ -70,7 +73,7 @@ Map::Map(const std::string& CsFilePath, Surface& surfaceTileset) : _pSurfaceTile
             urMaxColumns);
     }
 
-    _surfaceCache = Surface{urMaxColumns * _urTileWidth, 
+    _surfaceCache = Surface{urMaxColumns * _urTileWidth,
         static_cast<int32_t>(_vector2Tiles.size() * _urTileHeight)};
     OnCache();  // Caches the initial state of the map
 }
@@ -97,7 +100,7 @@ void Map::OnCache()
                 int16_t rTilePosX = j * _urTileWidth;
                 int16_t rTilePosY = i * _urTileHeight;
 
-                _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileWidth, 
+                _surfaceCache.OnDraw(*_pSurfaceTileset, urTilesetX, urTilesetY, _urTileWidth,
                     _urTileHeight, rTilePosX, rTilePosY);
             }
         }

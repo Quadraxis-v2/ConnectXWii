@@ -30,10 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 #include <SDL_joystick.h>
+#include <SDL_keyboard.h>
 #include <SDL_timer.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 
 #ifdef __wii__
     #include <iostream>
@@ -53,13 +55,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/players/Joystick.hpp"
 #include "../../include/players/Player.hpp"
 #include "../../include/EventManager.hpp"
-#include "../../include/video/Map.hpp"
 
 
 App& App::GetInstance()
 {
-    static App appInstance{};
-    return appInstance;
+    static App SappInstance{};
+    return SappInstance;
 }
 
 
@@ -73,10 +74,11 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0},
     _bSingleController{true}, _yPlayColumn{0}
 {
-    SDL_JoystickEventState(SDL_ENABLE);
-    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
-
     SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
+    SDL_JoystickEventState(SDL_ENABLE);
+    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
+    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
 
     #ifdef __wii__
 		// Initialise console
@@ -166,8 +168,6 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _surfaceMarker2.SetTransparentPixel(255, 0, 255);
 
     EventManager::GetInstance().AttachListener(this);   // Receive events
-
-    //Map mapTemp{"apps/ConnectXWii/maps/1.map", 16};
 }
 
 
@@ -212,6 +212,10 @@ App::~App() noexcept
     _surfaceWinPlayer2._pSdlSurface = nullptr;
     SDL_FreeSurface(_surfaceDraw);
     _surfaceDraw._pSdlSurface = nullptr;
+
+    // Unload sound libraries
+    while (Mix_Init(0)) Mix_Quit();
+    while (Mix_QuerySpec(nullptr, nullptr, nullptr)) Mix_CloseAudio();
 
     // Unload image libraries
     IMG_Quit();

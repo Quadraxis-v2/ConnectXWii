@@ -56,13 +56,10 @@ void Animation::OnAnimate() noexcept
  
     _yCurrentFrame += _yFrameIncrement;
  
-    if(_bOscillate)
-    {
-        if((_yFrameIncrement > 0 && _yCurrentFrame >= _uyMaxFrames - 1) || 
-            (_yFrameIncrement <= 0 && _yCurrentFrame <= 0)) _yFrameIncrement *= -1;
-    }
+    if(_bOscillate && ((_yFrameIncrement > 0 && _yCurrentFrame >= _uyMaxFrames - 1) || 
+            (_yFrameIncrement <= 0 && _yCurrentFrame <= 0))) _yFrameIncrement *= -1;
     
-    _yCurrentFrame %= _uyMaxFrames;
+    _yCurrentFrame = (_yCurrentFrame % _uyMaxFrames + _uyMaxFrames) % _uyMaxFrames;
 }
  
 

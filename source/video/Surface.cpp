@@ -74,7 +74,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
     SDL_Surface* pSdlSurfaceTemp = nullptr;
 
     if((pSdlSurfaceTemp = IMG_Load(CsFilePath.c_str())) == nullptr)
-        throw std::ios_base::failure(SDL_GetError());
+        throw std::ios_base::failure(IMG_GetError());
 
     /* Convert the loaded surface to the same format as the display */
     if (pSdlSurfaceTemp->format->Amask)     // Surface has an alpha channel

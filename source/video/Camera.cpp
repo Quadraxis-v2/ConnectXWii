@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param rY Y coordinate of the top left corner in normal mode
  */
 Camera::Camera(int16_t rX, int16_t rY) noexcept : _eTargetMode{ETargetMode::TARGET_MODE_NORMAL}, 
-    _prX{new int16_t{rX}}, _prY{new int16_t{rY}}, _rOffsetX{}, _rOffsetY{} 
+    _rX{rX}, _rY{rY}, _prTargetX{nullptr}, _prTargetY{nullptr}, _rOffsetX{}, _rOffsetY{} 
 {}
 
 
@@ -44,56 +44,39 @@ Camera::Camera(int16_t rX, int16_t rY) noexcept : _eTargetMode{ETargetMode::TARG
  * @param rOffsetY Y offset from the target
  */
 Camera::Camera(int16_t* prTargetX, int16_t* prTargetY, int16_t rOffsetX, int16_t rOffsetY) noexcept : 
-    _eTargetMode{ETargetMode::TARGET_MODE_FOLLOW}, _prX{prTargetX}, _prY{prTargetY}, _rOffsetX{rOffsetX}, 
-    _rOffsetY{rOffsetY} 
+    _eTargetMode{ETargetMode::TARGET_MODE_FOLLOW}, _rX{}, _rY{}, _prTargetX{prTargetX}, 
+    _prTargetY{prTargetY}, _rOffsetX{rOffsetX}, _rOffsetY{rOffsetY} 
 {}
-
-
-/**
- * @brief Destructor
- */
-Camera::~Camera() noexcept
-{
-    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)
-    {
-        delete _prX;
-        delete _prY;
-        _prX = nullptr;
-        _prY = nullptr;
-    }
-}
 
 
 int16_t Camera::GetX() const
 {
-    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL) return *_prX;
-    else if (_prX == nullptr) throw std::runtime_error("No target found.");
+    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL) return _rX;
+    else if (_prTargetX == nullptr) throw std::runtime_error("No target found.");
     
-    return *_prX - (SDL_GetVideoSurface()->w >> 1) + _rOffsetX;
+    return *_prTargetX - (SDL_GetVideoSurface()->w >> 1) + _rOffsetX;
 }
 
 
 int16_t Camera::GetY() const
 {
-    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL) return *_prY;
-    else if (_prY == nullptr) throw std::runtime_error("No target found.");
+    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL) return _rY;
+    else if (_prTargetY == nullptr) throw std::runtime_error("No target found.");
     
-    return *_prY - (SDL_GetVideoSurface()->h >> 1) + _rOffsetY;
+    return *_prTargetY - (SDL_GetVideoSurface()->h >> 1) + _rOffsetY;
 }
  
 
 void Camera::SetPosition(int16_t rX, int16_t rY) noexcept
 {
-    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)
+    _rX = rX;
+    _rY = rY;
+
+    if (_eTargetMode == ETargetMode::TARGET_MODE_FOLLOW)
     {
-        *_prX = rX;
-        *_prY = rY;
-    }
-    else
-    {
-        _prX = new int16_t{rX};
-        _prY = new int16_t{rY};
         _eTargetMode = ETargetMode::TARGET_MODE_NORMAL;
+        _prTargetX = nullptr;
+        _prTargetY = nullptr;
     }
 }
 
@@ -102,19 +85,9 @@ void Camera::SetTarget(int16_t* prTargetX, int16_t* prTargetY)
 {
     if (prTargetX == nullptr || prTargetY == nullptr) throw std::runtime_error("Target can't be null.");
 
-    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)
-    {
-        delete _prX;
-        delete _prY;
-        _prX = prTargetX;
-        _prY = prTargetY;
-        _eTargetMode = ETargetMode::TARGET_MODE_FOLLOW;
-    }
-    else
-    {
-        _prX = prTargetX;
-        _prY = prTargetY;
-    }
+    if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL) _eTargetMode = ETargetMode::TARGET_MODE_FOLLOW;
+    _prTargetX = prTargetX;
+    _prTargetY = prTargetY;
 }
 
 
@@ -135,8 +108,8 @@ void Camera::OnMove(int16_t rMoveX, int16_t rMoveY) noexcept
 {
     if (_eTargetMode == ETargetMode::TARGET_MODE_NORMAL)
     {
-        *_prX += rMoveX;
-        *_prY += rMoveY;
+        _rX += rMoveX;
+        _rY += rMoveY;
     }
     else
     {

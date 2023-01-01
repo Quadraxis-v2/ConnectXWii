@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param Canimation the animation for the entity
  */
 Entity::Entity(const std::string& CsFilePath, const Animation& Canimation) : __surfaceEntity{CsFilePath}, 
-    __animationController{Canimation}, _fPositionX{0}, _fPositionY{0}
+    __animationController{Canimation}, _fX{0}, _fY{0}
 {}
 
 
@@ -49,7 +49,7 @@ void Entity::OnLoop() noexcept
  */
 void Entity::OnRender(Surface& surfaceOther) 
 {
-    surfaceOther.OnDraw(__surfaceEntity, _fPositionX, _fPositionY, __animationController.GetFrameWidth(), 
+    surfaceOther.OnDraw(__surfaceEntity, 0, 
         __animationController.GetCurrentFrame() * __animationController.GetFrameHeight(), 
-        __animationController.GetFrameWidth(), __animationController.GetFrameHeight());
+        __animationController.GetFrameWidth(), __animationController.GetFrameHeight(), _fX, _fY);
 }
