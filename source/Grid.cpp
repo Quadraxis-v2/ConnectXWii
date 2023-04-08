@@ -26,7 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 /**
- * @brief Construct a new empty Grid
+ * @brief Construct a new Grid
+ * 
+ * @param uyWidth the width of the grid
+ * @param uyHeight the height of the grid
+ * @param uyCellsToWin the number of cells in a row required to win
  */
 Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyCellsToWin) : _uyWidth{uyWidth},
     _uyHeight{uyHeight}, _uyCellsToWin{uyCellsToWin}, 

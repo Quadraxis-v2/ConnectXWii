@@ -31,17 +31,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * @param uyMaxFrames the number of frames the animation has
  * @param urFrameRate the time between frame changes, in milliseconds
- * @param urFrameWidth the width of the frames of the animation
- * @param urFrameHeight the height of the frames of the animation
  * @param bOscillate signals if the animation goes back and forth
- * @param yStartingFrame the starting frame of the animation
  * @param yFrameIncrement the distance between frames in the animation
  */
-Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, uint16_t urFrameWidth, 
-    uint16_t urFrameHeight, bool bOscillate, int8_t yStartingFrame, int8_t yFrameIncrement ) noexcept : 
-    _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, _urFrameWidth{urFrameWidth}, 
-    _urFrameHeight{urFrameHeight}, _bOscillate{bOscillate}, _yCurrentFrame{yStartingFrame}, 
-    _yFrameIncrement{yFrameIncrement}, _uiOldTime{0}
+Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate, 
+    int8_t yFrameIncrement) noexcept : _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, 
+    _bOscillate{bOscillate}, _yCurrentFrame{0}, _yFrameIncrement{yFrameIncrement}, _uiOldTime{0}
 {}
 
 
@@ -53,11 +48,11 @@ void Animation::OnAnimate() noexcept
     if(_uiOldTime + _urFrameRate > SDL_GetTicks()) return;
  
     _uiOldTime = SDL_GetTicks();
- 
+
     _yCurrentFrame += _yFrameIncrement;
- 
+
     if(_bOscillate && ((_yFrameIncrement > 0 && _yCurrentFrame >= _uyMaxFrames - 1) || 
-            (_yFrameIncrement <= 0 && _yCurrentFrame <= 0))) _yFrameIncrement *= -1;
+        (_yFrameIncrement < 0 && _yCurrentFrame <= 0))) _yFrameIncrement = -_yFrameIncrement;
     
     _yCurrentFrame = (_yCurrentFrame % _uyMaxFrames + _uyMaxFrames) % _uyMaxFrames;
 }
@@ -66,11 +61,10 @@ void Animation::OnAnimate() noexcept
 /**
  * @brief Makes the animation go immediately to a certain frame
  * 
- * @param yCurrentFrame the frame that the animation will go to
+ * @param yFrame the frame that the animation will go to
  */
-void Animation::SetCurrentFrame(int8_t yCurrentFrame) 
+void Animation::SetCurrentFrame(int8_t yFrame) 
 {
-    if (yCurrentFrame >= _uyMaxFrames) 
-        throw std::out_of_range("Max frames: " + static_cast<int32_t>(_uyMaxFrames));
-    _yCurrentFrame = yCurrentFrame;
+    if (yFrame < 0 || yFrame >= _uyMaxFrames) throw std::out_of_range("Invalid frame");
+    _yCurrentFrame = yFrame;
 }

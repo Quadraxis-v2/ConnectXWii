@@ -33,7 +33,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 /**
- * @brief Constructs a void surface
+ * @brief Construct a new void Surface
+ * 
+ * @param iWidth the width of the surface
+ * @param iHeight the height of the surface
+ * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
  */
 Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr}
 {
@@ -95,6 +99,15 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
 
 
 /**
+ * @brief Conversion constructor from raw SDL Surface
+ *
+ * @param pSdlSurface the raw surface
+ */
+Surface::Surface(SDL_Surface* pSdlSurface) noexcept : _pSdlSurface{pSdlSurface}
+{}
+
+
+/**
  * @brief Copy constructor
  *
  * @param CsurfaceOther the surface to be copied
@@ -114,15 +127,6 @@ Surface::Surface(const Surface& CsurfaceOther) : _pSdlSurface{nullptr}
  */
 Surface::Surface(Surface&& surfaceOther) noexcept : _pSdlSurface{surfaceOther._pSdlSurface}
 { surfaceOther._pSdlSurface = nullptr; }
-
-
-/**
- * @brief Conversion constructor from raw SDL Surface
- *
- * @param pSdlSurface the raw surface
- */
-Surface::Surface(SDL_Surface* pSdlSurface) noexcept : _pSdlSurface{pSdlSurface}
-{}
 
 
 /**
@@ -183,7 +187,9 @@ Surface& Surface::operator =(Surface&& surfaceOther) noexcept
  */
 Surface& Surface::operator =(SDL_Surface* pSdlSurface) noexcept
 {
+    SDL_FreeSurface(_pSdlSurface);
     _pSdlSurface = pSdlSurface;
+    
     return *this;
 }
 

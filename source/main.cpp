@@ -47,7 +47,7 @@ int32_t main(int32_t argc, char** argv)
 		if(SDL_Init(uiSDLInitFlags) == -1) throw std::runtime_error(SDL_GetError());
 
 		int32_t iInitFlags = IMG_InitFlags::IMG_INIT_JPG | IMG_InitFlags::IMG_INIT_PNG;
-		if ((IMG_Init(iInitFlags) & iInitFlags) != iInitFlags)
+		if (IMG_Init(iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_image support");
 
 		if ((SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16,
@@ -59,7 +59,7 @@ int32_t main(int32_t argc, char** argv)
 
 		iInitFlags = MIX_InitFlags::MIX_INIT_OGG;
 
-		if ((Mix_Init(iInitFlags) & iInitFlags) != iInitFlags)
+		if (Mix_Init(iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_mixer support");
 
 		App::GetInstance().OnExecute();

@@ -42,7 +42,14 @@ public:
     const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
     int8_t GetNextCell(uint8_t uyColumn) const noexcept;
 
-    explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyCellsToWin = 4);   /**< Default constructor */
+    /**
+     * @brief Construct a new Grid
+     * 
+     * @param uyWidth the width of the grid
+     * @param uyHeight the height of the grid
+     * @param uyCellsToWin the number of cells in a row required to win
+     */
+    explicit Grid(uint8_t uyWidth = 7, uint8_t uyHeight = 6, uint8_t uyCellsToWin = 4);
     
 
     const std::vector<EPlayerMark>& operator [](uint8_t uyIndex) const noexcept; /**< Bracket operator */
@@ -82,7 +89,7 @@ public:
 private:
     uint8_t _uyWidth;         /**< Width of the grid */
     uint8_t _uyHeight;        /**< Height of the grid */
-    uint8_t _uyCellsToWin;    /**< Number of markers in a row that must be achieved */
+    uint8_t _uyCellsToWin;    /**< Number of markers in a row required to win */
     std::vector<std::vector<EPlayerMark> > _vector2playerMarkCells;   /**< A matrix of markers representing the board */
     std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
     uint8_t _uyEmptyCells;                  /**< Indicates the number of empty cells remaining */

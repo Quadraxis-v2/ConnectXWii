@@ -43,6 +43,10 @@ public:
 
     /**
      * @brief Construct a new void Surface
+     * 
+     * @param iWidth the width of the surface
+     * @param iHeight the height of the surface
+     * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
      */
     explicit Surface(int32_t iWidth = 0, int32_t iHeight = 0, 
         uint8_t uyBitsPerPixel = SDL_GetVideoSurface()->format->BitsPerPixel);

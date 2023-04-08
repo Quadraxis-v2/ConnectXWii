@@ -29,6 +29,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/audio/Sample.hpp"
 
 
+/**
+ * @brief Construct a new Sample
+ * 
+ * @param CsFilePath the path to the sound sample
+ */
 Sample::Sample(const std::string& CsFilePath) : _pMixChunk{nullptr}
 {
     if ((_pMixChunk = Mix_LoadWAV(CsFilePath.c_str())) == nullptr)
@@ -36,57 +41,86 @@ Sample::Sample(const std::string& CsFilePath) : _pMixChunk{nullptr}
 }
 
 
-Sample::Sample(const Sample& CsampleOther) noexcept : _pMixChunk{new Mix_Chunk{}}
-{
-    if (CsampleOther._pMixChunk->allocated) 
-    {
-        _pMixChunk->abuf = new uint8_t[CsampleOther._pMixChunk->alen];
-        std::copy(_pMixChunk->abuf, _pMixChunk->abuf + CsampleOther._pMixChunk->alen, 
-            CsampleOther._pMixChunk->abuf);
-    }
-    else _pMixChunk->abuf = CsampleOther._pMixChunk->abuf;
-
-    _pMixChunk->alen = CsampleOther._pMixChunk->alen;
-    _pMixChunk->allocated = CsampleOther._pMixChunk->allocated;
-    _pMixChunk->volume = CsampleOther._pMixChunk->volume;
-}
-
-
-Sample::Sample(Sample&& sampleOther) noexcept : _pMixChunk{sampleOther._pMixChunk}
-{ sampleOther._pMixChunk = nullptr; }
-
-
+/**
+ * @brief Conversion constructor from raw sound sample
+ * 
+ * @param pMixChunk the raw sound sample
+ */
 Sample::Sample(Mix_Chunk* pMixChunk) noexcept : _pMixChunk{pMixChunk}
 {}
 
 
+/**
+ * @brief Copy constructor
+ * 
+ * @param CsampleOther the sound sample to be copied
+ */
+Sample::Sample(const Sample& CsampleOther) noexcept : _pMixChunk{new Mix_Chunk{}}
+{
+    _pMixChunk->allocated = CsampleOther._pMixChunk->allocated;
+    _pMixChunk->alen = CsampleOther._pMixChunk->alen;
+    _pMixChunk->volume = CsampleOther._pMixChunk->volume;
+
+    if (_pMixChunk->allocated)  // Copy audio into new buffer
+    {
+        _pMixChunk->abuf = new uint8_t[_pMixChunk->alen];
+        std::copy(_pMixChunk->abuf, _pMixChunk->abuf + _pMixChunk->alen, CsampleOther._pMixChunk->abuf);
+    }
+    else _pMixChunk->abuf = CsampleOther._pMixChunk->abuf;
+}
+
+
+/**
+ * @brief Movement constructor
+ * 
+ * @param sampleOther the sound sample to be moved
+ */
+Sample::Sample(Sample&& sampleOther) noexcept : _pMixChunk{sampleOther._pMixChunk}
+{ sampleOther._pMixChunk = nullptr; }
+
+
+/**
+ * @brief Destructor
+ */
 Sample::~Sample() noexcept
 { Mix_FreeChunk(_pMixChunk); }
 
 
+/**
+ * @brief Assignment with copy operator
+ * 
+ * @param CsampleOther the sound sample to be assigned
+ * @return Sample& the copied sound sample
+ */
 Sample& Sample::operator =(const Sample& CsampleOther) noexcept
 {
     if (this != &CsampleOther)
     {
         Mix_FreeChunk(_pMixChunk);
         _pMixChunk = new Mix_Chunk{};
-        
-        if (CsampleOther._pMixChunk->allocated) 
-        {
-            _pMixChunk->abuf = new uint8_t[CsampleOther._pMixChunk->alen];
-            std::copy(_pMixChunk->abuf, _pMixChunk->abuf + CsampleOther._pMixChunk->alen, 
-                CsampleOther._pMixChunk->abuf);
-        }
-        else _pMixChunk->abuf = CsampleOther._pMixChunk->abuf;
-        
+
         _pMixChunk->alen = CsampleOther._pMixChunk->alen;
         _pMixChunk->allocated = CsampleOther._pMixChunk->allocated;
         _pMixChunk->volume = CsampleOther._pMixChunk->volume;
+        
+        if (_pMixChunk->allocated) // Copy audio into new buffer
+        {
+            _pMixChunk->abuf = new uint8_t[_pMixChunk->alen];
+            std::copy(_pMixChunk->abuf, _pMixChunk->abuf + _pMixChunk->alen, 
+                CsampleOther._pMixChunk->abuf);
+        }
+        else _pMixChunk->abuf = CsampleOther._pMixChunk->abuf;
     }
     return *this;
 }
 
 
+/**
+ * @brief Assignment with movement operator
+ * 
+ * @param sampleOther the sound sample to be assigned
+ * @return Sample& the moved sound sample
+ */
 Sample& Sample::operator =(Sample&& sampleOther) noexcept
 {
     if (this != &sampleOther)
@@ -95,5 +129,20 @@ Sample& Sample::operator =(Sample&& sampleOther) noexcept
         _pMixChunk = sampleOther._pMixChunk;
         sampleOther._pMixChunk = nullptr;
     }
+    return *this;
+}
+
+
+/**
+ * @brief Assignment and conversion from raw sound sample
+ * 
+ * @param pMixChunk the raw sound sample
+ * @return Sample& the converted sound sample
+ */
+Sample& Sample::operator =(Mix_Chunk* pMixChunk) noexcept
+{
+    Mix_FreeChunk(_pMixChunk);
+    _pMixChunk = pMixChunk;
+
     return *this;
 }
