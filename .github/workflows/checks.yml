@@ -49,4 +49,4 @@ jobs:
         run: cppcheck source/ --enable=all --verbose -D__wii__ --platform=cppcheckFolder/wii --cppcheck-build-dir=cppcheckFolder --suppress=unusedFunction --error-exitcode=1
 
       - name: Build
-        run: make build
+        run: make all
