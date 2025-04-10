@@ -1,5 +1,5 @@
 /*
-FPS.cpp --- FPS class
+Time.cpp --- Time class
 Copyright (C) 2023  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
@@ -21,21 +21,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <SDL_timer.h>
 
-#include "../../include/video/FPS.hpp"
+#include "../../include/video/Time.hpp"
 
 
-FPS& FPS::GetInstance()
+Time& Time::GetInstance()
 {
-    static FPS SFPSInstance{};
-    return SFPSInstance;
+    static Time StimeInstance{};
+    return StimeInstance;
 }
 
 
-void FPS::OnLoop() 
+void Time::OnLoop() 
 {
     uint32_t uiTime = SDL_GetTicks();
 
     _urNumFrames = 1000 / (uiTime - _uiLastTime);
-    _fSpeedFactor = ((uiTime - _uiLastTime) / 1000.0f) * 30;
+    _fDeltaTime = ((uiTime - _uiLastTime) / 1000.0f);
     _uiLastTime = uiTime;
 }
+
+
+Time::Time() noexcept : _uiLastTime{}, _fDeltaTime{}, _urNumFrames{} 
+{}

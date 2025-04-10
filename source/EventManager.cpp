@@ -17,8 +17,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <list>
 #include <algorithm>
+#include <stdexcept>
+#include <list>
 
 #include <SDL_events.h>
 #include <SDL_active.h>
@@ -38,24 +39,29 @@ EventManager& EventManager::GetInstance()
 /**
  * @brief Attaches a listener to the event manager
  * 
- * @param pEventListener the event listener to be be attached
+ * @param eventListener the event listener to be be attached
  */
-void EventManager::AttachListener(EventListener* pEventListener) noexcept
+void EventManager::AttachListener(EventListener& eventListener)
 { 
-    if (pEventListener && (std::find(_eventListeners.cbegin(), _eventListeners.cend(), pEventListener) == 
-        _eventListeners.cend())) _eventListeners.push_back(pEventListener); 
+    if (std::find(_eventListeners.cbegin(), _eventListeners.cend(), &eventListener) != 
+        _eventListeners.cend()) throw std::logic_error("Listener is already attached");
+        
+    _eventListeners.push_back(&eventListener); 
 }
 
 
 /**
  * @brief Detaches a listener from the event manager
  * 
- * @param pEventListener the event listener to be detached
+ * @param eventListener the event listener to be detached
  */
-void EventManager::DetachListener(EventListener* pEventListener) noexcept
-{ 
-    if (pEventListener) _eventListeners.erase(std::find(_eventListeners.cbegin(), _eventListeners.cend(), 
-        pEventListener)); 
+void EventManager::DetachListener(EventListener& eventListener)
+{
+    EventManager::EventListeners::const_iterator CIteratorPosition = std::find(_eventListeners.cbegin(), 
+        _eventListeners.cend(), &eventListener);
+    if (CIteratorPosition == _eventListeners.cend()) throw std::logic_error("Listener is not attached");
+    
+    _eventListeners.erase(CIteratorPosition); 
 }
 
 

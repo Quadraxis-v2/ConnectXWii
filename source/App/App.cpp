@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mixer.h>
 
 #ifdef __wii__
-    #include <iostream>
+    #include <cstdio>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
     #include <ogc/lwp.h>
@@ -68,11 +68,11 @@ App& App::GetInstance()
  * @brief Default constructor
  */
 App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
-    _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr}, _bStopThreads{false},
-    _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{}, _surfaceMarker1{},
-    _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{}, _surfaceCursor{},
-    _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{0},
-    _bSingleController{true}, _yPlayColumn{0}
+    _loggerApp{"App", "apps/ConnectXWii/log.txt"}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
+    _bStopThreads{false}, _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{},
+    _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{},
+    _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{},
+    _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
 {
     SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
     SDL_JoystickEventState(SDL_ENABLE);
@@ -88,7 +88,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
             {
                 CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
                     _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-                std::cout << "\x1b[2;0H";
+                std::printf("\x1b[2;0H");
                 SDL_UnlockSurface(_surfaceDisplay);
             }
         }
@@ -96,7 +96,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
         {
             CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
                 _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-            std::cout << "\x1b[2;0H";
+            std::printf("\x1b[2;0H");
         }
 
         // Correct main thread's priority
@@ -167,7 +167,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _surfaceMarker1.SetTransparentPixel(255, 0, 255);
     _surfaceMarker2.SetTransparentPixel(255, 0, 255);
 
-    EventManager::GetInstance().AttachListener(this);   // Receive events
+    EventManager::GetInstance().AttachListener(*this);   // Receive events
 }
 
 
@@ -231,22 +231,18 @@ App::~App() noexcept
  */
 void App::OnExecute()
 {
-    try
+    SDL_Event sdlEvent{};
+    const EventManager& CeventManager{EventManager::GetInstance()};
+
+    while(_bRunning)
     {
-        SDL_Event sdlEvent{};
-        const EventManager& CeventManager = EventManager::GetInstance();
+        while(SDL_PollEvent(&sdlEvent)) CeventManager.OnEvent(&sdlEvent);
 
-        while(_bRunning)
-        {
-            while(SDL_PollEvent(&sdlEvent)) CeventManager.OnEvent(&sdlEvent);
+        OnLoop();
+        OnRender();
 
-            OnLoop();
-            OnRender();
-
-            SDL_Delay(10);  // Give up some CPU to allow events to arrive
-        }
+        SDL_Delay(10);  // Give up some CPU to allow events to arrive
     }
-    catch (...) {}
 }
 
 

@@ -21,12 +21,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <ostream>
 #include <cstdint>
-#include <string>
+#include <sstream>
 #include "../include/Grid.hpp"
 
 
 /**
- * @brief Construct a new empty Grid
+ * @brief Construct a new Grid
+ * 
+ * @param uyWidth the width of the grid
+ * @param uyHeight the height of the grid
+ * @param uyCellsToWin the number of cells in a row required to win
  */
 Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyCellsToWin) : _uyWidth{uyWidth},
     _uyHeight{uyHeight}, _uyCellsToWin{uyCellsToWin}, 
@@ -130,14 +134,14 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 /**
  * @brief Stream insertion operator overload for player marks
  */
-std::ostream& operator <<(std::ostream& ostream, const Grid::EPlayerMark& CePlayerMark) noexcept
+std::ostream& operator <<(std::ostream& ostreamOut, const Grid::EPlayerMark& CePlayerMark) noexcept
 {
     switch(CePlayerMark)
     {
-        case Grid::EPlayerMark::EMPTY:     return ostream << ' ';      break;
-        case Grid::EPlayerMark::PLAYER2:   return ostream << 'Y';      break;
-        case Grid::EPlayerMark::PLAYER1:   return ostream << 'R';      break;
-        default:                           return ostream << ' ';      break;
+        case Grid::EPlayerMark::EMPTY:     return ostreamOut << ' ';      break;
+        case Grid::EPlayerMark::PLAYER2:   return ostreamOut << 'Y';      break;
+        case Grid::EPlayerMark::PLAYER1:   return ostreamOut << 'R';      break;
+        default:                           return ostreamOut << ' ';      break;
     }
 }
 
@@ -145,25 +149,24 @@ std::ostream& operator <<(std::ostream& ostream, const Grid::EPlayerMark& CePlay
 /**
  * @brief Stream insertion operator overload for the grid
  */
-std::ostream& operator <<(std::ostream& ostream, const Grid& Cgrid) noexcept
+std::ostream& operator <<(std::ostream& ostreamOut, const Grid& Cgrid) noexcept
 {
     const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.GetCells();
-    std::string sSeparator{};
 
-    for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; ++i) sSeparator.append("---+");
-    sSeparator.append("---");
+    std::ostringstream ossSeparator{"---"};
+    for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; ++i) ossSeparator << "+---";
 
     for (uint8_t i = 0; i < Cgrid.GetHeight(); ++i)
     {
-        ostream << sSeparator << std::endl <<
+        ostreamOut << ossSeparator.str() << std::endl <<
             " " << a2playerMarkCells[i][0] << " ";
 
         for (uint8_t j = 1; j < Cgrid.GetWidth(); ++j)
-            ostream << "| " << a2playerMarkCells[i][j] << " ";
+            ostreamOut << "| " << a2playerMarkCells[i][j] << " ";
 
-        ostream << std::endl;
+        ostreamOut << std::endl;
     }
-    ostream << sSeparator << std::endl;
+    ostreamOut << ossSeparator.str() << std::endl;
 
-    return ostream;
+    return ostreamOut;
 }

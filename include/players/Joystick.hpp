@@ -47,16 +47,16 @@ public:
      */
     explicit Joystick(SDL_Joystick* pSdlJoystick) noexcept;
 
-    Joystick(const Joystick& CjoystickOther) = delete;              /**< Copy constructor */
-    Joystick(Joystick&& joystickOther) noexcept;                    /**< Move constructor */
+    Joystick(const Joystick& CjoystickOther);       /**< Copy constructor */
+    Joystick(Joystick&& joystickOther) noexcept;    /**< Move constructor */
 
     virtual ~Joystick() noexcept;
 
 
-    Joystick& operator =(const Joystick& CjoystickOther) = delete;  /**< Copy assignment operator */
-    Joystick& operator =(Joystick&& joystickOther) noexcept;       /**< Move assignment operator */
-    Joystick& operator =(SDL_Joystick* pSdlJoystick) noexcept;      /**< Conversion and assignment from raw joystick */
-    operator SDL_Joystick*() const noexcept;                        /**< Conversion operator to raw joystick */
+    Joystick& operator =(const Joystick& CjoystickOther);       /**< Copy assignment operator */
+    Joystick& operator =(Joystick&& joystickOther) noexcept;    /**< Move assignment operator */
+    Joystick& operator =(SDL_Joystick* pSdlJoystick) noexcept;  /**< Conversion and assignment from raw joystick */
+    operator SDL_Joystick*() const noexcept;                    /**< Conversion operator to raw joystick */
 
 protected:
     SDL_Joystick* __pSdlJoystick;   /**< The raw joystick */

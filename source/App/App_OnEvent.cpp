@@ -85,14 +85,12 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
             case SDLK_LEFT:
                 if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                    _grid.GetNextCell(_yPlayColumn) * (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             case SDLK_RIGHT:
                 if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
                 SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                    _grid.GetNextCell(_yPlayColumn) * (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
                 break;
             default: break;
             }
@@ -328,9 +326,9 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         {
         case 0: // Button A
         {
-            if (Human* pHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
+            if (const Human* CpHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
             {
-                if (pHuman->GetJoysticks().contains(uyWhich) ||
+                if (CpHuman->GetJoysticks().contains(uyWhich) ||
                     ((uyWhich == 0 || uyWhich == 4) && _bSingleController))
                 {
                     if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid

@@ -48,16 +48,16 @@ public:
     /**
      * @brief Attaches a listener to the event manager
      * 
-     * @param pEventListener the event listener to be be attached
+     * @param eventListener the event listener to be be attached
      */
-    void AttachListener(EventListener* pEventListener) noexcept;
+    void AttachListener(EventListener& eventListener);
 
     /**
      * @brief Detaches a listener from the event manager
      * 
-     * @param pEventListener the event listener to be detached
+     * @param eventListener the event listener to be detached
      */
-    void DetachListener(EventListener* pEventListener) noexcept;
+    void DetachListener(EventListener& eventListener);
 
     /**
      * @brief Handles all input events

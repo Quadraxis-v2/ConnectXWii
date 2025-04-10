@@ -69,6 +69,14 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "list": "cpp",
-        "sdl_config.h": "c"
-    }
+        "sdl_config.h": "c",
+        "optional": "cpp",
+        "queue": "cpp",
+        "format": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "span": "cpp",
+        "text_encoding": "cpp",
+        "variant": "cpp"
+    },
 }

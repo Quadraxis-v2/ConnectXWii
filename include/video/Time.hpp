@@ -1,5 +1,5 @@
 /*
-FPS.hpp --- FPS class
+Time.hpp --- Time class
 Copyright (C) 2023  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
@@ -17,42 +17,42 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _FPS_HPP_
-#define _FPS_HPP_
+#ifndef _TIME_HPP_
+#define _TIME_HPP_
 
 #include <cstdint>
 
 
-class FPS 
+class Time 
 {
     public:
-        static FPS& GetInstance();
+        static Time& GetInstance();
 
         uint16_t GetFPS() const noexcept;
-        float GetSpeedFactor() const noexcept;
+        float GetDeltaTime() const noexcept;
 
 
-        FPS(const FPS& CFPSOther) = delete;             /**< Copy constructor */
-        FPS(FPS&& FPSOther) = default;                  /**< Move constructor */
-        FPS& operator =(const FPS& CFPSOther) = delete; /**< Copy assignment operator */
-        FPS& operator =(FPS&& FPSOther) = default;      /**< Move assignment operator */
+        Time(const Time& CtimeOther) = delete;             /**< Copy constructor */
+        Time(Time&& timeOther) = default;                  /**< Move constructor */
+        Time& operator =(const Time& CtimeOther) = delete; /**< Copy assignment operator */
+        Time& operator =(Time&& timeOther) = default;      /**< Move assignment operator */
 
 
         void OnLoop();
 
     private:
         uint32_t _uiLastTime;
-        float _fSpeedFactor;
+        float _fDeltaTime;
         uint32_t _urNumFrames;
 
 
-        FPS() noexcept = default;
+        Time() noexcept;
 
 };
 
 
-inline uint16_t FPS::GetFPS() const noexcept { return _urNumFrames; }
-inline float FPS::GetSpeedFactor() const noexcept { return _fSpeedFactor; }
+inline uint16_t Time::GetFPS() const noexcept { return _urNumFrames; }
+inline float Time::GetDeltaTime() const noexcept { return _fDeltaTime; }
 
 
 #endif

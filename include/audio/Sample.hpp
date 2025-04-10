@@ -26,28 +26,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mixer.h>
 
 
+/**
+ * @brief Sound Sample class
+ * 
+ */
 class Sample
 {
 public:
+    uint8_t GetVolume() const noexcept;
     void SetVolume(int32_t iVolume) noexcept;
 
-    Sample(const std::string& CsFilePath);
-    Sample(const Sample& CsampleOther) noexcept;
-    Sample(Sample&& sampleOther) noexcept;
-    Sample(Mix_Chunk* pMixChunk) noexcept;
-    ~Sample() noexcept;
+    /**
+     * @brief Construct a new Sample
+     * 
+     * @param CsFilePath the path to the sound sample
+     */
+    explicit Sample(const std::string& CsFilePath);
 
-    Sample& operator =(const Sample& CsampleOther) noexcept;
-    Sample& operator =(Sample&& sampleOther) noexcept;
+    /**
+     * @brief Conversion constructor from raw sound sample
+     * 
+     * @param pMixChunk the raw sound sample
+     */
+    explicit Sample(Mix_Chunk* pMixChunk) noexcept;
 
-    operator Mix_Chunk*() const noexcept;
+    Sample(const Sample& CsampleOther) noexcept;    /**< Copy constructor */
+    Sample(Sample&& sampleOther) noexcept;          /**< Move constructor */
+
+    ~Sample() noexcept;                             /**< Destructor */
+
+    Sample& operator =(const Sample& CsampleOther) noexcept;    /**< Copy assignment operator */
+    Sample& operator =(Sample&& sampleOther) noexcept;          /**< Move assignment operator */
+    Sample& operator =(Mix_Chunk* pMixChunk) noexcept;          /**< Conversion and assignment from raw sound sample */
+    operator Mix_Chunk*() const noexcept;           /**< Conversion operator to raw sample */
 
 private:
-    Mix_Chunk* _pMixChunk;
+    Mix_Chunk* _pMixChunk;  /**< The raw sound sample */
 
 };
 
 
+inline uint8_t Sample::GetVolume() const noexcept { return _pMixChunk->volume; }
 inline void Sample::SetVolume(int32_t iVolume) noexcept { Mix_VolumeChunk(_pMixChunk, iVolume); }
 inline Sample::operator Mix_Chunk*() const noexcept { return _pMixChunk; }
 

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include <string>
+#include <sstream>
 #include <ios>
 #include <algorithm>
 #include <jansson.h>
@@ -26,14 +27,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 /** Default path for storing the application's settings */
-const char* Settings::SCsDefaultPath = "apps/ConnectXWii/settings.json";
+std::string Settings::SCsDefaultPath{"apps/ConnectXWii/settings.json"};
 
 
 /**
  * @brief Creates an object with the default settings
  */
-Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4},
-	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"} {}
+Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsToWin,
+	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bLogging) noexcept : 
+	_uyBoardWidth{uyBoardWidth}, _uyBoardHeight{uyBoardHeight}, _uyCellsToWin{uyCellsToWin},
+	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bEnableLogging{bLogging} {}
 
 
 /**
@@ -41,49 +44,56 @@ Settings::Settings() noexcept : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{
  *
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeight{6}, _yCellsToWin{4},
-	_yAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}
+Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{7}, _uyBoardHeight{6}, _uyCellsToWin{4},
+	_uyAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}, _bEnableLogging{false}
 {
-    json_t* jsonRoot = nullptr;			// Root object of the JSON file
+    json_t* pJsonRoot{nullptr};			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
-    json_t* jsonSettings = nullptr;		// "Settings" JSON object
-    json_t* jsonField = nullptr;		// Every JSON field inside the "Settings" object
+    json_t* pJsonSettings{nullptr};		// "Settings" JSON object
+    json_t* pJsonField{nullptr};		// Every JSON field inside the "Settings" object
 
-	if((jsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
-        throw std::ios_base::failure(jsonError.text);
+	if ((pJsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
+	{
+		std::ostringstream ossError{jsonError.source};
+		ossError << ": " << jsonError.text << " - Line: " << jsonError.line << ", Column: " <<
+			jsonError.column; 
+		throw std::ios_base::failure(ossError.str());
+	}
 
 	/* Retrieve the root and the "Settings" object first */
-	if(!json_is_object(jsonRoot))
+	if (!json_is_object(pJsonRoot))
 	{
-		json_decref(jsonRoot);
+		json_decref(pJsonRoot);
 		throw std::ios_base::failure("Error: Root is not an object");
 	}
 
-	jsonSettings = json_object_get(jsonRoot, "Settings");
-	if(!json_is_object(jsonSettings))
+	pJsonSettings = json_object_get(pJsonRoot, "Settings");
+	if (!json_is_object(pJsonSettings))
 	{
-		json_decref(jsonRoot);
+		json_decref(pJsonRoot);
 		throw std::ios_base::failure("Error: Settings is not an object");
 	}
 
 	/* New fields that are added to the class must be retrieved from here */
-	jsonField = json_object_get(jsonSettings, "Board width");
-	if(json_is_integer(jsonField)) _yBoardWidth = json_integer_value(jsonField);
-	jsonField = json_object_get(jsonSettings, "Board height");
-	if(json_is_integer(jsonField)) _yBoardHeight = json_integer_value(jsonField);
-    jsonField = json_object_get(jsonSettings, "Number of cells to win");
-	if(json_is_integer(jsonField)) _yCellsToWin = json_integer_value(jsonField);
-    jsonField = json_object_get(jsonSettings, "AI Difficulty");
-	if(json_is_integer(jsonField)) _yAIDifficulty = json_integer_value(jsonField);
-	jsonField = json_object_get(jsonSettings, "Custom path for sprites");
-	if(json_is_string(jsonField)) _sCustomPath = json_string_value(jsonField);
+	pJsonField = json_object_get(pJsonSettings, "Board width");
+	if (json_is_integer(pJsonField)) _uyBoardWidth = json_integer_value(pJsonField);
+	pJsonField = json_object_get(pJsonSettings, "Board height");
+	if (json_is_integer(pJsonField)) _uyBoardHeight = json_integer_value(pJsonField);
+    pJsonField = json_object_get(pJsonSettings, "Number of cells to win");
+	if (json_is_integer(pJsonField)) _uyCellsToWin = json_integer_value(pJsonField);
+    pJsonField = json_object_get(pJsonSettings, "AI Difficulty");
+	if (json_is_integer(pJsonField)) _uyAIDifficulty = json_integer_value(pJsonField);
+	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
+	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
+	pJsonField = json_object_get(pJsonSettings, "Enable logging");
+	if (json_is_boolean(pJsonField)) _bEnableLogging = json_boolean_value(pJsonField);
 
 	/* Validation */
-	if (_yCellsToWin > _yBoardWidth && _yCellsToWin > _yBoardHeight)
-		_yCellsToWin = std::max(_yBoardWidth, _yBoardHeight);
+	if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
+		_uyCellsToWin = std::max(_uyBoardWidth, _uyBoardHeight);
 
 	// Free the objects from memory
-    json_decref(jsonRoot);
+    json_decref(pJsonRoot);
 }
 
 
@@ -94,23 +104,24 @@ Settings::Settings(const std::string& CsFilePath) : _yBoardWidth{7}, _yBoardHeig
  */
 void Settings::Save(const std::string& CsPath) const
 {
-    json_t* jsonRoot = json_object();		// Root object of the JSON file
-    json_t* jsonSettings = json_object();	// "Settings" JSON object
+    json_t* pJsonRoot{json_object()};		// Root object of the JSON file
+    json_t* pJsonSettings{json_object()};	// "Settings" JSON object
 
 	/* New fields that are added to the class must be dumped from here */
-    json_object_set_new(jsonSettings, "Board width", json_integer(_yBoardWidth));
-    json_object_set_new(jsonSettings, "Board height", json_integer(_yBoardHeight));
-    json_object_set_new(jsonSettings, "Number of cells to win", json_integer(_yCellsToWin));
-    json_object_set_new(jsonSettings, "AI Difficulty", json_integer(_yAIDifficulty));
-	json_object_set_new(jsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
+    json_object_set_new(pJsonSettings, "Board width", json_integer(_uyBoardWidth));
+    json_object_set_new(pJsonSettings, "Board height", json_integer(_uyBoardHeight));
+    json_object_set_new(pJsonSettings, "Number of cells to win", json_integer(_uyCellsToWin));
+    json_object_set_new(pJsonSettings, "AI Difficulty", json_integer(_uyAIDifficulty));
+	json_object_set_new(pJsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
+	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bEnableLogging));
 
 	// Attach the settings to the root
-    json_object_set_new(jsonRoot, "Settings", jsonSettings);
+    json_object_set_new(pJsonRoot, "Settings", pJsonSettings);
 
 	// Store the JSON settings on disk
-    if (json_dump_file(jsonRoot, CsPath.c_str(), JSON_INDENT(4) | JSON_SORT_KEYS) == -1)
+    if (json_dump_file(pJsonRoot, CsPath.c_str(), JSON_INDENT(4) | JSON_SORT_KEYS) == -1)
 		throw std::ios_base::failure("I/O Error");
 
 	// Free the objects from memory
-    json_decref(jsonRoot);
+    json_decref(pJsonRoot);
 }
