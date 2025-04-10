@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mutex.h>
 #include "EventListener.hpp"
 #include "Settings.hpp"
+#include "Logger.hpp"
 #include "video/Surface.hpp"
 #include "Grid.hpp"
 #include "players/Joystick.hpp"
@@ -67,6 +68,7 @@ private:
     bool _bRunning;             /**< Marks whether the application should continue running */
     EState _eStateCurrent;      /**< The current state of the application for the state machine */
     Settings _settingsGlobal;   /**< The global settings of the application */
+    Logger _loggerApp;          /**< Global logger */
     SDL_Thread* _pSdlThreadAI;  /**< Background AI thread */
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */

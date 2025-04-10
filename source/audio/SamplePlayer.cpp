@@ -112,10 +112,7 @@ bool SamplePlayer::IsPlaying() const noexcept
  * @return Mix_Fading the fading status
  */
 Mix_Fading SamplePlayer::IsFading() const noexcept
-{
-    if (IsPlaying()) return Mix_FadingChannel(_iChannel);
-    else return Mix_Fading::MIX_NO_FADING;
-}
+{ return (IsPlaying() ? Mix_FadingChannel(_iChannel) : Mix_Fading::MIX_NO_FADING); }
 
 
 /**

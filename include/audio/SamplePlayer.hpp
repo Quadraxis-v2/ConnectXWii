@@ -31,7 +31,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class SamplePlayer
 {
 public:
-    /* Getters and setters */
     Sample* GetSample() const noexcept;
     void SetSample(Sample* pSample) noexcept;
     int32_t GetVolume() const noexcept;
@@ -43,7 +42,7 @@ public:
      * 
      * @param pSample the sample to be played
      */
-    SamplePlayer(Sample* pSample) noexcept;
+    explicit SamplePlayer(Sample* pSample) noexcept;
 
     ~SamplePlayer() noexcept;   /**< Destructor */
 

@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Settings
 {
 public:
-    static const char* SCsDefaultPath;   /**< Default path for storing the application's settings */
+    static std::string SCsDefaultPath;   /**< Default path for storing the application's settings */
 
 
     /* Getters and setters */
@@ -44,12 +44,16 @@ public:
     void SetAIDifficulty(uint8_t yAIDifficulty) noexcept;
     const std::string& GetCustomPath() const noexcept;
     void SetCustomPath(const std::string& CsCustomPath) noexcept;
+    bool GetHasLogging() const noexcept;
+    void SetHasLogging(bool bHasLogging) noexcept;
 
 
     /**
      * @brief Creates an object with the default settings
      */
-    Settings() noexcept;
+    explicit Settings(uint8_t uyBoardWidth = 7, uint8_t uyBoardHeight = 6, uint8_t uyCellsToWin = 4,
+        uint8_t uyAIDifficulty = 4, const std::string& sCustomPath = "/apps/ConnectXWii/gfx/custom",
+        bool bEnableLogging = false) noexcept;
 
     /**
      * @brief Constructs a new object by reading a settings file
@@ -65,25 +69,28 @@ public:
     void Save(const std::string& CsPath) const;
 
 private:
-    uint8_t _yBoardWidth;
-    uint8_t _yBoardHeight;
-    uint8_t _yCellsToWin;
-    uint8_t _yAIDifficulty;
+    uint8_t _uyBoardWidth;
+    uint8_t _uyBoardHeight;
+    uint8_t _uyCellsToWin;
+    uint8_t _uyAIDifficulty;
     std::string _sCustomPath;
+    bool _bEnableLogging;
     
 };
 
 
-inline uint8_t Settings::GetBoardWidth() const noexcept { return _yBoardWidth; }
-inline void Settings::SetBoardWidth(uint8_t yBoardWidth) noexcept { _yBoardWidth = yBoardWidth; }
-inline uint8_t Settings::GetBoardHeight() const noexcept { return _yBoardHeight; }
-inline void Settings::SetBoardHeight(uint8_t yBoardHeight) noexcept { _yBoardHeight = yBoardHeight; }
-inline uint8_t Settings::GetCellsToWin() const noexcept { return _yCellsToWin; }
-inline void Settings::SetCellsToWin(uint8_t yCellsToWin) noexcept { _yCellsToWin = yCellsToWin; }
-inline uint8_t Settings::GetAIDifficulty() const noexcept { return _yAIDifficulty; }
-inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _yAIDifficulty = yAIDifficulty; }
+inline uint8_t Settings::GetBoardWidth() const noexcept { return _uyBoardWidth; }
+inline void Settings::SetBoardWidth(uint8_t yBoardWidth) noexcept { _uyBoardWidth = yBoardWidth; }
+inline uint8_t Settings::GetBoardHeight() const noexcept { return _uyBoardHeight; }
+inline void Settings::SetBoardHeight(uint8_t yBoardHeight) noexcept { _uyBoardHeight = yBoardHeight; }
+inline uint8_t Settings::GetCellsToWin() const noexcept { return _uyCellsToWin; }
+inline void Settings::SetCellsToWin(uint8_t yCellsToWin) noexcept { _uyCellsToWin = yCellsToWin; }
+inline uint8_t Settings::GetAIDifficulty() const noexcept { return _uyAIDifficulty; }
+inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _uyAIDifficulty = yAIDifficulty; }
 inline const std::string& Settings::GetCustomPath() const noexcept { return _sCustomPath; }
 inline void Settings::SetCustomPath(const std::string& CsCustomPath) noexcept 
 { _sCustomPath = CsCustomPath; }
+inline bool Settings::GetHasLogging() const noexcept { return _bEnableLogging; }
+inline void Settings::SetHasLogging(bool bHasLogging) noexcept { _bEnableLogging = bHasLogging; }
 
 #endif

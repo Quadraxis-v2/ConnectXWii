@@ -144,7 +144,7 @@ int32_t AI::AlphaBetaPruning(const Grid& Cgrid, const Grid::EPlayerMark& CePlaye
  */
 int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 {
-    int32_t lHeuristic = 0;
+    int32_t iHeuristic = 0;
 
     Grid::EPlayerMark ePlayerMarkLast{};
     uint8_t uySamePlayerMarkCount{}, uyEmptyCellCount{};
@@ -165,7 +165,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 
                 for (int8_t j = Cgrid.GetHeight() - 2;
                     j >= std::max(0, Cgrid.GetNextCell(i) - Cgrid.GetCellsToWin() + 2); --j)
-                    lHeuristic += EvaluateSector(Cgrid, j, i, quPlayerMarks, ePlayerMarkLast,
+                    iHeuristic += EvaluateSector(Cgrid, j, i, quPlayerMarks, ePlayerMarkLast,
                         uySamePlayerMarkCount, uyEmptyCellCount);
             }
         }
@@ -187,7 +187,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < Cgrid.GetWidth(); ++j)
-                lHeuristic += EvaluateSector(Cgrid, i, j, quPlayerMarks, ePlayerMarkLast,
+                iHeuristic += EvaluateSector(Cgrid, i, j, quPlayerMarks, ePlayerMarkLast,
                     uySamePlayerMarkCount, uyEmptyCellCount);
         }
     }
@@ -205,7 +205,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
 
             for (uint8_t j = 0; j < std::min(Cgrid.GetWidth(), static_cast<uint8_t>(i - std::max(0,
                 yMaxColumnHeight - Cgrid.GetCellsToWin()))); ++j)
-                lHeuristic += EvaluateSector(Cgrid, i - j, j, quPlayerMarks, ePlayerMarkLast,
+                iHeuristic += EvaluateSector(Cgrid, i - j, j, quPlayerMarks, ePlayerMarkLast,
                     uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
@@ -220,7 +220,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
                 j < std::min(static_cast<uint8_t>(Cgrid.GetWidth() - i), std::min(Cgrid.GetHeight(),
                     static_cast<uint8_t>(Cgrid.GetHeight() - yMaxColumnHeight + 
                     Cgrid.GetCellsToWin() - 1))); ++j)
-                lHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i + j, quPlayerMarks,
+                iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i + j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
@@ -235,7 +235,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             for (uint8_t j = 0; j < std::min(static_cast<uint8_t>(i + 1), std::min(Cgrid.GetHeight(),
                     static_cast<uint8_t>(Cgrid.GetHeight() -
                     yMaxColumnHeight + Cgrid.GetCellsToWin() - 1))); ++j)
-                lHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i - j, quPlayerMarks,
+                iHeuristic += EvaluateSector(Cgrid, Cgrid.GetHeight() - 1 - j, i - j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
 
@@ -248,12 +248,12 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
             quPlayerMarks = std::queue<Grid::EPlayerMark>{};
 
             for (uint8_t j = 0; j < std::min(i, Cgrid.GetWidth()); ++j)
-                lHeuristic += EvaluateSector(Cgrid, i - j, Cgrid.GetWidth() - 1 - j, quPlayerMarks,
+                iHeuristic += EvaluateSector(Cgrid, i - j, Cgrid.GetWidth() - 1 - j, quPlayerMarks,
                     ePlayerMarkLast, uySamePlayerMarkCount, uyEmptyCellCount);
         }
     }
 
-    return lHeuristic;
+    return iHeuristic;
 }
 
 
@@ -365,13 +365,13 @@ int32_t SDLCALL RunAI(void* pData)
 
     while (!(app._bStopThreads))  // Thread termination
     {
-        while(SDL_SemWait(app._pSdlSemaphoreAI) == -1); // Wait until AI's turn
+        while (SDL_SemWait(app._pSdlSemaphoreAI) == -1); // Wait until AI's turn
 
         if (!(app._bStopThreads))
         {
-            if (AI* pAI = dynamic_cast<AI*>(app._vectorpPlayers[app._uyCurrentPlayer]))
+            if (const AI* CpAI = dynamic_cast<AI*>(app._vectorpPlayers[app._uyCurrentPlayer]))
             {
-                pAI->ChooseMove(app._grid);
+                CpAI->ChooseMove(app._grid);
 
                 // If the game is won or there is a draw go to the corresponding state
                 if (app._grid.CheckWinner() != Grid::EPlayerMark::EMPTY || app._grid.IsFull())

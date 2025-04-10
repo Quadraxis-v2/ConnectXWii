@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Sample
 {
 public:
+    uint8_t GetVolume() const noexcept;
     void SetVolume(int32_t iVolume) noexcept;
 
     /**
@@ -65,6 +66,7 @@ private:
 };
 
 
+inline uint8_t Sample::GetVolume() const noexcept { return _pMixChunk->volume; }
 inline void Sample::SetVolume(int32_t iVolume) noexcept { Mix_VolumeChunk(_pMixChunk, iVolume); }
 inline Sample::operator Mix_Chunk*() const noexcept { return _pMixChunk; }
 

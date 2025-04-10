@@ -26,9 +26,8 @@ INCLUDES	:=	include include/audio include/players include/video
 #---------------------------------------------------------------------------------
 
 CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` \
-			`sdl-config --cflags` \
-			`$(PREFIX)pkg-config --cflags libturbojpeg zlib jansson SDL_image \
-			SDL_mixer`
+			`sdl-config --cflags` `$(PREFIX)pkg-config libturbojpeg zlib jansson SDL_image \
+			SDL_mixer --cflags`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -36,9 +35,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`$(PREFIX)pkg-config --libs libturbojpeg zlib jansson SDL_image \
-			SDL_mixer` `sdl-config --libs` `libpng-config --libs` \
-			-lwiiuse -lbte -lfat -logc -lm
+LIBS	:=	`$(PREFIX)pkg-config libturbojpeg zlib jansson SDL_image SDL_mixer --libs` \
+			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -98,11 +96,11 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) \
 export LIBPATHS	:= -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-.PHONY: $(BUILD) clean
+.PHONY: $(BUILD) all clean run test
 
 #---------------------------------------------------------------------------------
-$(BUILD):
-	@[ -d $@ ] || mkdir -p $@
+all:
+	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
@@ -116,7 +114,7 @@ run:
 
 #---------------------------------------------------------------------------------
 test:
-	$(DOLPHIN_HOME)/dolphin -d -b -e $(TARGET).dol
+	dolphin --debugger --logger --audio_emulation=LLE --exec=$(TARGET).elf
 
 
 #---------------------------------------------------------------------------------

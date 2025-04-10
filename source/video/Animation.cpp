@@ -41,7 +41,7 @@ Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate,
 
 
 /**
- * @brief Goes automatically to the next frame if enough time has passed
+ * @brief Goes to the next frame if enough time has passed
  */
 void Animation::OnAnimate() noexcept
 {
