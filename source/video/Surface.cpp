@@ -41,7 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr}
 {
-    SDL_Surface* pSdlSurfaceTemp = nullptr;
+    SDL_Surface* pSdlSurfaceTemp{nullptr};
     uint32_t uiRmask{}, uiGmask{}, uiBmask{}, uiAmask{};
 
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -75,7 +75,7 @@ Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSd
  */
 Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
 {
-    SDL_Surface* pSdlSurfaceTemp = nullptr;
+    SDL_Surface* pSdlSurfaceTemp{nullptr};
 
     if((pSdlSurfaceTemp = IMG_Load(CsFilePath.c_str())) == nullptr)
         throw std::ios_base::failure(IMG_GetError());
@@ -232,7 +232,7 @@ void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX, in
 void Surface::OnDraw(const Surface& CsdlSurfaceSource, int16_t rSourceX, int16_t rSourceY,
         uint16_t urSourceWidth, uint16_t urSourceHeight, int16_t rDestinationX, int16_t rDestinationY)
 {
-    if(_pSdlSurface == nullptr || CsdlSurfaceSource._pSdlSurface == nullptr)
+    if (_pSdlSurface == nullptr || CsdlSurfaceSource._pSdlSurface == nullptr)
         throw std::invalid_argument("Surface is null");
 
     // Make a temporary rectangle to hold the source surface offsets

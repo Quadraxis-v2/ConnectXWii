@@ -169,23 +169,30 @@ void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
         }
         else if (urMouseX >= (Globals::SCurAppWidth >> 1) && urMouseX < Globals::SCurAppWidth &&
             /*urMouseY >= 0 && */urMouseY < Globals::SCurAppHeight) // If the controller is pointing at the right half of the screen
+        {
             _eStateCurrent = EState::STATE_INGAME; // Start the game
 
+            // Create another human player
+            Human* pSecondPlayer{new Human(Grid::EPlayerMark::PLAYER2)};
+            _vectorpPlayers.push_back(pSecondPlayer);
+        }
         break;
     }
     case EState::STATE_INGAME:
     {
-        if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(Human))
         {
-            _grid.MakeMove(Grid::EPlayerMark::PLAYER1, _yPlayColumn);
-            //++_uyCurrentPlayer %= _vectorpPlayers.size();
-            //_bAITurn = true;
+            if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+            {
+                _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
+                ++_uyCurrentPlayer %= _vectorpPlayers.size();
 
-            // If the game is won or there is a draw go to the corresponding state
-            if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
-                _eStateCurrent = EState::STATE_END;
-            else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
-                while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+                // If the game is won or there is a draw go to the corresponding state
+                if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
+                    _eStateCurrent = EState::STATE_END;
+                else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
+                    while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+            }
         }
         break;
     }
@@ -301,13 +308,14 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
                 // Create another human player
-                WiiController* pJoystickWii = new WiiController(1);
+                WiiController* pJoystickWii{new WiiController(1)};
                 _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-                GameCubeController* pJoystickGameCube = new GameCubeController(1);
+                GameCubeController* pJoystickGameCube{new GameCubeController(1)};
                 _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-                Human* pSecondPlayer = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER2);
+                Human* pSecondPlayer{new Human(Grid::EPlayerMark::PLAYER2)};
+                pSecondPlayer->AssociateJoystick(*pJoystickWii);
                 pSecondPlayer->AssociateJoystick(*pJoystickGameCube);
 
                 _vectorpPlayers.push_back(pSecondPlayer);

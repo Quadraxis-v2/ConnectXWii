@@ -28,12 +28,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Construct a new Human object
  * 
- * @param joystick the joystick associated with the player
  * @param CePlayerMark the mark that the player will use
  */
-Human::Human(Joystick& joystick, const Grid::EPlayerMark& CePlayerMark) : Player{CePlayerMark}, 
-    _htJoysticks{} 
-{ _htJoysticks.insert(std::make_pair(joystick.GetIndex(), &joystick)); }
+Human::Human(const Grid::EPlayerMark& CePlayerMark) : Player{CePlayerMark}, _htJoysticks{} {}
 
 
 /**

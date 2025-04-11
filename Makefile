@@ -110,7 +110,12 @@ clean:
 
 #---------------------------------------------------------------------------------
 run:
-	wiiload $(TARGET).dol "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
+	@[ -d $(notdir $(CURDIR)) ] || mkdir -p $(notdir $(CURDIR))
+	@cp -u $(TARGET).dol $(notdir $(CURDIR))/
+	@cp -u hbc/icon.png $(notdir $(CURDIR))/
+	@cp -u hbc/meta.xml $(notdir $(CURDIR))/
+	@zip -r $(notdir $(CURDIR)).zip $(notdir $(CURDIR))/
+	wiiload $(notdir $(CURDIR)).zip "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
 
 #---------------------------------------------------------------------------------
 test:

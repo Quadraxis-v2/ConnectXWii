@@ -44,7 +44,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     #include <ogc/lwp.h>
     #include "../../include/players/WiiController.hpp"
     #include "../../include/players/GameCubeController.hpp"
-    #include "../../include/players/Human.hpp"
 #endif
 
 #include "../../include/App.hpp"
@@ -54,6 +53,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/Grid.hpp"
 #include "../../include/players/Joystick.hpp"
 #include "../../include/players/Player.hpp"
+#include "../../include/players/Human.hpp"
 #include "../../include/EventManager.hpp"
 
 
@@ -103,17 +103,20 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
         LWP_SetThreadPriority(LWP_THREAD_NULL, 65);
 
         // Create the main human player
-        WiiController* pJoystickWii = new WiiController(0);
+        WiiController* pJoystickWii{new WiiController(0)};
         _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-        GameCubeController* pJoystickGameCube = new GameCubeController(0);
+        GameCubeController* pJoystickGameCube{new GameCubeController(0)};
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        pPlayerMain->AssociateJoystick(*pJoystickWii);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-
-        _vectorpPlayers.push_back(pPlayerMain);
+    #else
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
 	#endif
+
+	_vectorpPlayers.push_back(pPlayerMain);
 
     try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
@@ -282,14 +285,19 @@ void App::Reset()
 
     #ifdef __wii__
         /* Create a new main player */
-        WiiController* pJoystickWii = new WiiController(0);
+        WiiController* pJoystickWii{new WiiController(0)};
         _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-        GameCubeController* pJoystickGameCube = new GameCubeController(0);
+        GameCubeController* pJoystickGameCube{new GameCubeController(0)};
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        pPlayerMain->AssociateJoystick(*pJoystickWii);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-        _vectorpPlayers.push_back(pPlayerMain);
+
+    #else
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
     #endif
+
+    _vectorpPlayers.push_back(pPlayerMain);
 }

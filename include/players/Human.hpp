@@ -42,10 +42,9 @@ public:
     /**
      * @brief Construct a new Human object
      * 
-     * @param joystick the joystick associated with the player
      * @param CePlayerMark the mark that the player will use
      */
-    explicit Human(Joystick& joystick, const Grid::EPlayerMark& CePlayerMark);
+    explicit Human(const Grid::EPlayerMark& CePlayerMark);
 
     /**
      * @brief Associates a new joystick with the player
