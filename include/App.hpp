@@ -36,6 +36,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "players/Joystick.hpp"
 #include "players/Player.hpp"
 
+#include "video/Animation.hpp"
+
 /**
  * @brief Main application class
  */
@@ -90,6 +92,9 @@ private:
     uint8_t _uyCurrentPlayer;               /** The index for the current player */
     bool _bSingleController;                /** The main controller can be used for all players */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
+
+    Surface _surfaceYoshi;
+    Animation _animationYoshi;
     
 
     App();    /**< Default constructor */
@@ -100,7 +105,7 @@ private:
     /**
      * @brief Handles all the data updates between frames
      */
-    void OnLoop() const noexcept;
+    void OnLoop() noexcept;
 
     /**
      * @brief Handles all the rendering for each frame

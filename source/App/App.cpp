@@ -72,7 +72,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _bStopThreads{false}, _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{},
     _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{},
     _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{},
-    _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
+    _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}, _surfaceYoshi{}, _animationYoshi{8, 100, false, 1}
 {
     SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
     SDL_JoystickEventState(SDL_ENABLE);
@@ -99,72 +99,72 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
             std::printf("\x1b[2;0H");
         }
 
-        // Correct main thread's priority
-        LWP_SetThreadPriority(LWP_THREAD_NULL, 65);
-
         // Create the main human player
-        WiiController* pJoystickWii{new WiiController(0)};
+        WiiController* pJoystickWii{new WiiController{0}};
         _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-        GameCubeController* pJoystickGameCube{new GameCubeController(0)};
+        GameCubeController* pJoystickGameCube{new GameCubeController{0}};
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        Human* pPlayerMain{new Human{Grid::EPlayerMark::PLAYER1}};
         pPlayerMain->AssociateJoystick(*pJoystickWii);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
     #else
-        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        Human* pPlayerMain{new Human{Grid::EPlayerMark::PLAYER1}};
 	#endif
 
 	_vectorpPlayers.push_back(pPlayerMain);
 
-    try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
+    try { _settingsGlobal = Settings{Settings::SCsDefaultPath}; }   // Load settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
-    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
-        _settingsGlobal.GetCellsToWin());
+    _grid = Grid{_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
+        _settingsGlobal.GetCellsToWin()};
 
     // Retrieve resources from the filesystem
     try
-    { _surfaceStart = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
+    { _surfaceStart = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface("apps/ConnectXWii/gfx/start.png"); }
+    { _surfaceStart = Surface{"apps/ConnectXWii/gfx/start.png"}; }
     try
-    { _surfaceGrid = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
+    { _surfaceGrid = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface("apps/ConnectXWii/gfx/grid.png"); }
+    { _surfaceGrid = Surface{"apps/ConnectXWii/gfx/grid.png"}; }
     try
-    { _surfaceMarker1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
+    { _surfaceMarker1 = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker1 = Surface("apps/ConnectXWii/gfx/player1.bmp"); }
+    { _surfaceMarker1 = Surface{"apps/ConnectXWii/gfx/player1.bmp"}; }
     try
-    { _surfaceMarker2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()); }
+    { _surfaceMarker2 = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker2 = Surface("apps/ConnectXWii/gfx/player2.bmp"); }
+    { _surfaceMarker2 = Surface{"apps/ConnectXWii/gfx/player2.bmp"}; }
     try
-    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
+    { _surfaceWinPlayer1 = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface("apps/ConnectXWii/gfx/winPlayer1.png"); }
+    { _surfaceWinPlayer1 = Surface{"apps/ConnectXWii/gfx/winPlayer1.png"}; }
     try
-    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
+    { _surfaceWinPlayer2 = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface("apps/ConnectXWii/gfx/winPlayer2.png"); }
+    { _surfaceWinPlayer2 = Surface{"apps/ConnectXWii/gfx/winPlayer2.png"}; }
     try
-    { _surfaceDraw = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
+    { _surfaceDraw = Surface{std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()}; }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface("apps/ConnectXWii/gfx/draw.png"); }
+    { _surfaceDraw = Surface{"apps/ConnectXWii/gfx/draw.png"}; }
 
-    try { _surfaceCursor = Surface("apps/ConnectXWii/gfx/generic_point.png"); }
+    try { _surfaceCursor = Surface{"apps/ConnectXWii/gfx/generic_point.png"}; }
     catch (const std::ios_base::failure& CiosBaseFailure) {}
-    try { _surfaceCursorShadow = Surface("apps/ConnectXWii/gfx/shadow_point.png"); }
+    try { _surfaceCursorShadow = Surface{"apps/ConnectXWii/gfx/shadow_point.png"}; }
     catch (const std::ios_base::failure& CiosBaseFailure) {}
+
+    _surfaceYoshi = Surface("apps/ConnectXWii/gfx/yoshi.bmp");
+    _surfaceYoshi.SetTransparentPixel(255, 0, 255);
 
     // Take the background out of the marker pictures
     _surfaceMarker1.SetTransparentPixel(255, 0, 255);
@@ -215,6 +215,8 @@ App::~App() noexcept
     _surfaceWinPlayer2._pSdlSurface = nullptr;
     SDL_FreeSurface(_surfaceDraw);
     _surfaceDraw._pSdlSurface = nullptr;
+
+    SDL_FreeSurface(_surfaceYoshi);
 
     // Unload sound libraries
     while (Mix_Init(0)) Mix_Quit();

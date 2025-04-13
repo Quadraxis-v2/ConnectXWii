@@ -23,5 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Handles all the data updates between frames
  */
-void App::OnLoop() const noexcept
-{}
+void App::OnLoop() noexcept
+{
+    _animationYoshi.OnAnimate();
+}

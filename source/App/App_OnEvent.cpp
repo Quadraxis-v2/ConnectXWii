@@ -153,56 +153,58 @@ void App::OnMouseWheel(bool Up, bool Down) {}
  */
 void App::OnLButtonDown(uint16_t urMouseX, uint16_t urMouseY)
 {
-    switch (_eStateCurrent)
-    {
-    case EState::STATE_START:
-    {
-        if (/*urMouseX >= 0 && */urMouseX < (Globals::SCurAppWidth >> 1) &&/* urMouseY >= 0 &&*/
-            urMouseY < Globals::SCurAppHeight)   // If the controller is pointing at the left half of the screen
+    #ifndef __wii__
+        switch (_eStateCurrent)
         {
-            _eStateCurrent = EState::STATE_INGAME; // Start the game
-
-            // Create an AI player
-            _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
-                _settingsGlobal.GetAIDifficulty()));
-            _pSdlThreadAI = SDL_CreateThread(RunAI, nullptr);
-        }
-        else if (urMouseX >= (Globals::SCurAppWidth >> 1) && urMouseX < Globals::SCurAppWidth &&
-            /*urMouseY >= 0 && */urMouseY < Globals::SCurAppHeight) // If the controller is pointing at the right half of the screen
+        case EState::STATE_START:
         {
-            _eStateCurrent = EState::STATE_INGAME; // Start the game
-
-            // Create another human player
-            Human* pSecondPlayer{new Human(Grid::EPlayerMark::PLAYER2)};
-            _vectorpPlayers.push_back(pSecondPlayer);
-        }
-        break;
-    }
-    case EState::STATE_INGAME:
-    {
-        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(Human))
-        {
-            if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+            if (/*urMouseX >= 0 && */urMouseX < (Globals::SCurAppWidth >> 1) &&/* urMouseY >= 0 &&*/
+                urMouseY < Globals::SCurAppHeight)   // If the controller is pointing at the left half of the screen
             {
-                _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
-                ++_uyCurrentPlayer %= _vectorpPlayers.size();
+                _eStateCurrent = EState::STATE_INGAME; // Start the game
 
-                // If the game is won or there is a draw go to the corresponding state
-                if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
-                    _eStateCurrent = EState::STATE_END;
-                else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
-                    while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+                // Create an AI player
+                _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
+                    _settingsGlobal.GetAIDifficulty()));
+                _pSdlThreadAI = SDL_CreateThread(RunAI, nullptr);
             }
-        }
-        break;
-    }
-    case EState::STATE_END:
-    {
-        Reset();
+            else if (urMouseX >= (Globals::SCurAppWidth >> 1) && urMouseX < Globals::SCurAppWidth &&
+                /*urMouseY >= 0 && */urMouseY < Globals::SCurAppHeight) // If the controller is pointing at the right half of the screen
+            {
+                _eStateCurrent = EState::STATE_INGAME; // Start the game
 
-        break;
-    }
-    }
+                // Create another human player
+                Human* pSecondPlayer{new Human(Grid::EPlayerMark::PLAYER2)};
+                _vectorpPlayers.push_back(pSecondPlayer);
+            }
+            break;
+        }
+        case EState::STATE_INGAME:
+        {
+            if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(Human))
+            {
+                if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
+                {
+                    _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
+                    ++_uyCurrentPlayer %= _vectorpPlayers.size();
+
+                    // If the game is won or there is a draw go to the corresponding state
+                    if (_grid.CheckWinner() != Grid::EPlayerMark::EMPTY || _grid.IsFull())
+                        _eStateCurrent = EState::STATE_END;
+                    else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
+                        while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+                }
+            }
+            break;
+        }
+        case EState::STATE_END:
+        {
+            Reset();
+
+            break;
+        }
+        }
+    #endif
 }
 
 

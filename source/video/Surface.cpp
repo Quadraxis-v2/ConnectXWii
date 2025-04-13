@@ -60,7 +60,6 @@ Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSd
         uiGmask, uiBmask, uiAmask)) == nullptr)
         throw std::runtime_error(SDL_GetError());
 
-    SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, pSdlSurfaceTemp->format->alpha);
     _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
     SDL_FreeSurface(pSdlSurfaceTemp);
 
@@ -81,11 +80,7 @@ Surface::Surface(const std::string& CsFilePath) : _pSdlSurface{nullptr}
         throw std::ios_base::failure(IMG_GetError());
 
     /* Convert the loaded surface to the same format as the display */
-    if (pSdlSurfaceTemp->format->Amask)     // Surface has an alpha channel
-    {
-        SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, pSdlSurfaceTemp->format->alpha);
-        _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
-    }
+    if (pSdlSurfaceTemp->format->Amask) _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp); // Surface has an alpha channel
     else 
     {
         SDL_SetColorKey(pSdlSurfaceTemp, SDL_RLEACCEL, pSdlSurfaceTemp->format->colorkey);

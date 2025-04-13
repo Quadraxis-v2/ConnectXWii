@@ -19,8 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 
-#include <SDL_timer.h>
-
 #include "../../include/video/Time.hpp"
 
 
@@ -33,7 +31,7 @@ Time& Time::GetInstance()
 
 void Time::OnLoop() 
 {
-    uint32_t uiTime = SDL_GetTicks();
+    uint32_t uiTime{GetTime()};
 
     _urNumFrames = 1000 / (uiTime - _uiLastTime);
     _fDeltaTime = ((uiTime - _uiLastTime) / 1000.0f);

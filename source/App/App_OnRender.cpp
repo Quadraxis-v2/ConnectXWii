@@ -40,6 +40,7 @@ void App::OnRender()
     case EState::STATE_START:  // In the starting state we just draw the starting surface
     {
         _surfaceDisplay.OnDraw(_surfaceStart);
+        _surfaceDisplay.OnDraw(_surfaceYoshi, 0, _animationYoshi.GetCurrentFrame() * 64, 64, 64, 290, 220);
         break;
     }
     case EState::STATE_INGAME: // Inside the game we draw the grid and as many markers as necessary
@@ -79,7 +80,7 @@ void App::OnRender()
     }
 
     // We need to draw the cursor because SDL-wii draws directly to video memory
-    int32_t iMouseX = 0, iMouseY = 0;
+    int32_t iMouseX{}, iMouseY{};
     SDL_GetMouseState(&iMouseX, &iMouseY);
     _surfaceDisplay.OnDraw(_surfaceCursorShadow, iMouseX - 47, iMouseY - 46);
     _surfaceDisplay.OnDraw(_surfaceCursor, iMouseX - 48, iMouseY - 48);

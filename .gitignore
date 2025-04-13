@@ -35,3 +35,6 @@
 
 # VSCode log files
 *.log
+
+# Deployment cache
+Connect?Wii*

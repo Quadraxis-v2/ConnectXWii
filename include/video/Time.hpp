@@ -22,14 +22,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 
+#include <SDL_timer.h>
+
 
 class Time 
 {
     public:
         static Time& GetInstance();
 
-        uint16_t GetFPS() const noexcept;
+        uint32_t GetTime() const noexcept;
         float GetDeltaTime() const noexcept;
+        uint16_t GetFPS() const noexcept;
 
 
         Time(const Time& CtimeOther) = delete;             /**< Copy constructor */
@@ -51,8 +54,9 @@ class Time
 };
 
 
-inline uint16_t Time::GetFPS() const noexcept { return _urNumFrames; }
+inline uint32_t Time::GetTime() const noexcept { return SDL_GetTicks(); }
 inline float Time::GetDeltaTime() const noexcept { return _fDeltaTime; }
+inline uint16_t Time::GetFPS() const noexcept { return _urNumFrames; }
 
 
 #endif

@@ -109,18 +109,22 @@ clean:
 	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 #---------------------------------------------------------------------------------
-run:
-	@[ -d $(notdir $(CURDIR)) ] || mkdir -p $(notdir $(CURDIR))
-	@cp -u $(TARGET).dol $(notdir $(CURDIR))/
-	@cp -u hbc/icon.png $(notdir $(CURDIR))/
-	@cp -u hbc/meta.xml $(notdir $(CURDIR))/
-	@zip -r $(notdir $(CURDIR)).zip $(notdir $(CURDIR))/
-	wiiload $(notdir $(CURDIR)).zip "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
-
-#---------------------------------------------------------------------------------
 test:
 	dolphin --debugger --logger --audio_emulation=LLE --exec=$(TARGET).elf
 
+#---------------------------------------------------------------------------------
+deploy:
+	@[ -d $(notdir $(CURDIR)) ] || mkdir -p $(notdir $(CURDIR))
+	@cp -u $(TARGET).dol $(notdir $(CURDIR))/
+#	@cp -u hbc/icon.png $(notdir $(CURDIR))/
+	@cp -u hbc/meta.xml $(notdir $(CURDIR))/
+	@cp -u -r data/gfx/ $(notdir $(CURDIR))/
+	@zip -r $(notdir $(CURDIR)).zip $(notdir $(CURDIR))/
+	wiiload $(notdir $(CURDIR)).zip
+
+#---------------------------------------------------------------------------------
+run:
+	wiiload $(TARGET).dol "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
 
 #---------------------------------------------------------------------------------
 else
