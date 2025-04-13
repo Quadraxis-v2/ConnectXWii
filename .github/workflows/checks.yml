@@ -52,12 +52,13 @@ jobs:
       - name: Build
         run: |
           make all
+          REPO_NAME=$(echo ${{ github.repository }} | cut -d/ -f2)
           echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d/ -f2)" >> "$GITHUB_ENV"
-          mkdir -p apps/${{ env.REPO_NAME }}
-          cp boot.dol apps/${{ env.REPO_NAME }}/
-          cp hbc/meta.xml apps/${{ env.REPO_NAME }}/
-          cp -r data/gfx/ apps/${{ env.REPO_NAME }}/
-          zip -r ${{ env.REPO_NAME }}.zip apps/
+          mkdir -p apps/$(REPO_NAME)
+          cp boot.dol apps/$(REPO_NAME)/
+          cp hbc/meta.xml apps/$(REPO_NAME)/
+          cp -r data/gfx/ apps/$(REPO_NAME)/
+          zip -r $(REPO_NAME).zip apps/
 
       - name: Upload binary
         uses: actions/upload-artifact@v4.6.2
