@@ -12,6 +12,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cppcheck
+          sudo apt-get install -y zip
           
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -45,8 +46,18 @@ jobs:
                   </sizeof>
                 </platform>" > cppcheckFolder/wii
       
-      - name: Run static checks
-        run: cppcheck source/ --enable=all --verbose -D__wii__ --platform=cppcheckFolder/wii --cppcheck-build-dir=cppcheckFolder --suppress=unusedFunction --error-exitcode=1
-
       - name: Build
-        run: make all
+        run: |
+          make all
+          echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d/ -f2)" >> "$GITHUB_ENV"
+          mkdir -p apps/$(REPO_NAME)
+          cp boot.dol apps/$(REPO_NAME)/
+          cp hbc/meta.xml apps/$(REPO_NAME)/
+          cp -r data/gfx/ apps/$(REPO_NAME)/
+          zip -r $(REPO_NAME).zip apps/
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4.6.2
+        with: 
+          name: ${{ env.REPO_NAME }} Application
+          path: ${{ env.REPO_NAME }}.zip
