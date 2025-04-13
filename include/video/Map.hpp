@@ -34,11 +34,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Map 
 {
 public:
-    Surface* GetTileset() const noexcept;
+    const Surface& GetTileset() const noexcept;
     void SetTileset(Surface& pSurfaceTileset) noexcept;
-    const std::vector<std::vector<Tile> >& GetTiles() const noexcept;
+    const std::vector<std::vector<Tile*> >& GetTiles() const noexcept;
+    const Tile& GetTileByCoordinates(uint16_t urX, uint16_t urY) const;
     uint16_t GetTileWidth() const noexcept;
     uint16_t GetTileHeight() const noexcept;
+    uint32_t GetWidth() const noexcept;
+    uint32_t GetHeight() const noexcept;
+    uint16_t GetRows() const noexcept;
+    uint16_t GetColumns() const noexcept;
 
     /**
      * @brief Construct a new Map
@@ -52,6 +57,10 @@ public:
      */
     Map(const std::string& CsFilePath, Surface& surfaceTileset);
 
+
+    ~Map() noexcept;    /*< Destructor */
+
+
     /**
      * @brief Renders the map on a surface
      * 
@@ -62,11 +71,13 @@ public:
     void OnRender(Surface& surfaceDisplay, int16_t rX, int16_t rY);
 
 private:
-    Surface* _pSurfaceTileset;                      /**< Map tileset */
-    Surface _surfaceCache;                          /**< Cache for fast rendering */
-    std::vector<std::vector<Tile> > _vector2Tiles;  /**< Matrix of all the tiles in the map */
-    uint16_t _urTileWidth;                          /**< Width of the tiles in the tileset */
-    uint16_t _urTileHeight;                         /**< Height of the tiles in the tileset */
+    Surface* _pSurfaceTileset;                          /**< Map tileset */
+    Surface _surfaceCache;                              /**< Cache for fast rendering */
+    std::vector<std::vector<Tile*> > _vector2pTiles;    /**< Matrix of all the tiles in the map */
+
+    uint16_t _urColumns;                                /**< Maximum number of tile columns in the map */
+    uint16_t _urTileWidth;                              /**< Width of the tiles in the tileset */
+    uint16_t _urTileHeight;                             /**< Height of the tiles in the tileset */
 
 
     /**
@@ -77,11 +88,15 @@ private:
 };
 
 
-inline Surface* Map::GetTileset() const noexcept { return _pSurfaceTileset; }
+inline const Surface& Map::GetTileset() const noexcept { return *_pSurfaceTileset; }
 inline void Map::SetTileset(Surface& pSurfaceTileset) noexcept { _pSurfaceTileset = &pSurfaceTileset; }
-inline const std::vector<std::vector<Tile> >& Map::GetTiles() const noexcept { return _vector2Tiles; }
+inline const std::vector<std::vector<Tile*> >& Map::GetTiles() const noexcept { return _vector2pTiles; }
 inline uint16_t Map::GetTileWidth() const noexcept { return _urTileWidth; }
 inline uint16_t Map::GetTileHeight() const noexcept { return _urTileHeight; }
+inline uint32_t Map::GetWidth() const noexcept { return _surfaceCache.GetWidth(); }
+inline uint32_t Map::GetHeight() const noexcept { return _surfaceCache.GetHeight(); }
+inline uint16_t Map::GetRows() const noexcept { return _vector2pTiles.size(); }
+inline uint16_t Map::GetColumns() const noexcept { return _urColumns; }
 
 
 inline void Map::OnRender(Surface& surfaceDisplay, int16_t rX, int16_t rY)

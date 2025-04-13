@@ -24,7 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sstream>
 #include <utility>
 #include <cmath>
-#include <algorithm>
 
 #include "../../include/video/Area.hpp"
 #include "../../include/video/Surface.hpp"
@@ -37,9 +36,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
 {
-    std::ifstream fileArea(CsFilePath, std::ios_base::in);  // Open the area file
+    std::ifstream fileArea{CsFilePath, std::ios_base::in};  // Open the area file
 
-    if(!fileArea) throw std::ios_base::failure("Error opening file " + CsFilePath);
+    if (!fileArea) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
     std::string sMapPath{}, sTilesetPath{};
 
@@ -56,25 +55,21 @@ Area::Area(const std::string& CsFilePath) : _htTilesets{}, _vector2pMaps{}
 
                 // Check all maps' dimensions are the same
                 Map* pMapTemp = new Map{sMapPath, *(_htTilesets.at(sTilesetPath))};
-                if (_vector2pMaps.size() > 1 && ((pMapTemp->GetTiles()[0].size() *
-                    pMapTemp->GetTileWidth() != _vector2pMaps[0][0]->GetTiles()[0].size() *
-                    _vector2pMaps[0][0]->GetTileWidth()) ||
-                    (pMapTemp->GetTiles().size() * pMapTemp->GetTileHeight() !=
-                    _vector2pMaps[0][0]->GetTiles().size() * _vector2pMaps[0][0]->GetTileWidth())))
+                if (_vector2pMaps.size() > 1 && (pMapTemp->GetRows() != _vector2pMaps[0][0]->GetRows() ||
+                    pMapTemp->GetColumns() != _vector2pMaps[0][0]->GetColumns() ||
+                    pMapTemp->GetTileWidth() != _vector2pMaps[0][0]->GetTileWidth() ||
+                    pMapTemp->GetTileHeight() != _vector2pMaps[0][0]->GetTileHeight()))
                     throw std::runtime_error("Map dimensions differ");
 
                 _vector2pMaps[_vector2pMaps.size() - 1].push_back(pMapTemp);    // Insert the map in the last row
             }
-
-            if (_vector2pMaps[_vector2pMaps.size() - 1].size() != _vector2pMaps[0].size())  // Check all rows have the same number of maps
-                throw std::ios_base::failure("Error in area contents");
         }
         catch (...) // Clean memory in case of error
         {
             for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin();
                 i != _htTilesets.end(); ++i) delete i->second;
 
-            for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin();
+            for (std::vector<std::vector<Map*> >::iterator i = _vector2pMaps.begin();
                 i != _vector2pMaps.end(); ++i)
                 for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 
@@ -92,7 +87,7 @@ Area::~Area() noexcept
     for (std::unordered_map<std::string, Surface*>::iterator i = _htTilesets.begin();   // Delete tileset surfaces
         i != _htTilesets.end(); ++i) delete i->second;
 
-    for (std::vector<std::vector<Map*>>::iterator i = _vector2pMaps.begin();    // Delete maps
+    for (std::vector<std::vector<Map*> >::iterator i = _vector2pMaps.begin();    // Delete maps
         i != _vector2pMaps.end(); ++i)
         for (std::vector<Map*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 }
@@ -102,35 +97,56 @@ Area::~Area() noexcept
  * @brief Renders the area on a surface
  *
  * @param surfaceDisplay the surface that the area will be rendered on
- * @param rCameraX the X coordinate from where the rendering will start
- * @param rCameraY the Y coordinate from where the rendering will start
+ * @param iCameraX the X coordinate from where the rendering will start
+ * @param iCameraY the Y coordinate from where the rendering will start
  */
-void Area::OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY)
+void Area::OnRender(Surface& surfaceDisplay, int32_t iCameraX, int32_t iCameraY)
 {
-    // Width and height of maps, in pixels
-    uint16_t urMapWidth = _vector2pMaps[0][0]->GetTiles()[0].size() * _vector2pMaps[0][0]->GetTileWidth();
-    uint16_t urMapHeight = _vector2pMaps[0][0]->GetTiles().size() * _vector2pMaps[0][0]->GetTileHeight();
-
     // Top left map in the matrix that will be rendered
-    int16_t rTopLeftMapX = rCameraX / urMapWidth;
-    int16_t rTopLeftMapY = rCameraY / urMapHeight;
+    int16_t rTopLeftMapX = iCameraX / static_cast<int32_t>(_vector2pMaps[0][0]->GetWidth());
+    int16_t rTopLeftMapY = iCameraY / static_cast<int32_t>(_vector2pMaps[0][0]->GetHeight());
 
-    // Number of maps that fit in the viewport
-    uint16_t urCameraColumns = std::ceil(surfaceDisplay.GetWidth() / urMapWidth) + 1;
-    uint16_t urCameraRows = std::ceil(surfaceDisplay.GetHeight() / urMapHeight) + 1;
+    // Number of maps that fit in the destination surface
+    uint16_t urCameraRows = 
+        std::ceil(static_cast<float>(surfaceDisplay.GetHeight()) / _vector2pMaps[0][0]->GetHeight()) + 1;
+    uint16_t urCameraColumns = 
+        std::ceil(static_cast<float>(surfaceDisplay.GetWidth()) / _vector2pMaps[0][0]->GetWidth()) + 1;
 
     // Render all necessary maps
-    for (int16_t i = std::max(rTopLeftMapY, static_cast<int16_t>(0));
-        i < static_cast<int16_t>(_vector2pMaps.size()) && i < rTopLeftMapY + urCameraRows; ++i)
+    for (uint32_t i = std::max(static_cast<int32_t>(rTopLeftMapY), 0); i < _vector2pMaps.size() &&
+        static_cast<int32_t>(i) < rTopLeftMapY + urCameraRows; ++i)
     {
-        for (int16_t j = std::max(rTopLeftMapX, static_cast<int16_t>(0));
-            j < static_cast<int16_t>(_vector2pMaps[0].size()) && i < rTopLeftMapX + urCameraColumns; ++j)
+        for (uint32_t j = std::max(static_cast<int32_t>(rTopLeftMapX), 0); j < _vector2pMaps[i].size() &&
+            static_cast<int32_t>(j) < rTopLeftMapX + urCameraColumns; ++j)
         {
             // Position where a map will be rendered
-            int16_t rMapX = j * urMapWidth - rCameraX;
-            int16_t rMapY = i * urMapHeight - rCameraY;
+            int16_t rMapX = j * _vector2pMaps[0][0]->GetWidth() - iCameraX;
+            int16_t rMapY = i * _vector2pMaps[0][0]->GetHeight() - iCameraY;
 
             _vector2pMaps[i][j]->OnRender(surfaceDisplay, rMapX, rMapY);
         }
     }
+}
+
+
+const Map& Area::GetMapByCoordinates(uint32_t uiX, uint32_t uiY) const
+{
+    uint16_t urRow = uiY / _vector2pMaps[0][0]->GetHeight();
+    uint16_t urColumn = uiX / _vector2pMaps[0][0]->GetWidth();
+
+    if (urRow >= _vector2pMaps.size() || urColumn >= _vector2pMaps[urRow].size())
+        throw std::out_of_range("Coordinates out of area bounds");
+
+    return *(_vector2pMaps[urRow][urColumn]);
+}
+
+
+const Tile& Area::GetTileByCoordinates(uint32_t uiX, uint32_t uiY) const
+{
+    Map mapTarget = GetMapByCoordinates(uiX, uiY);
+
+    uiX %= mapTarget.GetWidth();
+    uiY %= mapTarget.GetHeight();
+
+    return mapTarget.GetTileByCoordinates(uiX, uiY);
 }

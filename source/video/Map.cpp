@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <sstream>
 #include <algorithm>
+#include <stdexcept>
 
 #include <SDL_video.h>
 
@@ -42,11 +43,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param urTileHeight the height of the tiles in the tileset
  */
 Map::Map(const std::string& CsFilePath, Surface& surfaceTileset) : _pSurfaceTileset{&surfaceTileset},
-    _surfaceCache{}, _vector2Tiles{}, _urTileWidth{}, _urTileHeight{}
+    _surfaceCache{}, _vector2pTiles{}, _urColumns{}, _urTileWidth{}, _urTileHeight{}
 {
-    std::ifstream fileTileset(CsFilePath, std::ios_base::in);   // Open the map file
+    std::ifstream fileTileset{CsFilePath, std::ios_base::in};   // Open the map file
 
-    if(!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
+    if (!fileTileset) throw std::ios_base::failure("Error opening file " + CsFilePath);
 
     std::string sLine{};
     std::getline(fileTileset, sLine);
@@ -55,27 +56,48 @@ Map::Map(const std::string& CsFilePath, Surface& surfaceTileset) : _pSurfaceTile
 
     uint16_t urTileCount = (surfaceTileset.GetWidth() / _urTileWidth) *     // How many tiles the tileset has
         (surfaceTileset.GetHeight() / _urTileHeight);
-    uint16_t urMaxColumns{};    // The longest row of the map
     Tile tileTemp{};
 
-    for ( ; std::getline(fileTileset, sLine); )   // Grab a row
+    try
     {
-        isStreamLine = std::istringstream{sLine};
-        _vector2Tiles.push_back(std::vector<Tile>{});   // Insert new row of tiles in the map
-        while (isStreamLine >> tileTemp)    // Grab a tile
+        for ( ; std::getline(fileTileset, sLine); )   // Grab a row
         {
-            if (tileTemp.GetTileID() >= urTileCount)
-                throw std::ios_base::failure("Tile ID exceeds number of tiles");
+            isStreamLine = std::istringstream{sLine};
+            _vector2pTiles.push_back(std::vector<Tile*>{});   // Insert new row of tiles in the map
+            
+            while (isStreamLine >> tileTemp)    // Grab a tile
+            {
+                if (tileTemp.GetTileID() >= urTileCount)
+                    throw std::ios_base::failure("Tile ID exceeds number of tiles");
 
-            _vector2Tiles[_vector2Tiles.size() - 1].push_back(tileTemp);    // Insert the tile in the last row
+                _vector2pTiles[GetRows() - 1].push_back(new Tile{tileTemp});    // Insert the tile in the last row
+            }
+            
+            _urColumns = std::max(static_cast<uint16_t>(_vector2pTiles[GetRows() - 1].size()), _urColumns);
         }
-        urMaxColumns = std::max(static_cast<uint16_t>(_vector2Tiles[_vector2Tiles.size() - 1].size()),
-            urMaxColumns);
-    }
 
-    _surfaceCache = Surface{urMaxColumns * _urTileWidth,
-        static_cast<int32_t>(_vector2Tiles.size() * _urTileHeight)};
-    OnCache();  // Caches the initial state of the map
+        _surfaceCache = Surface{_urColumns * _urTileWidth, GetRows() * _urTileHeight};
+        OnCache();  // Caches the initial state of the map
+    }
+    catch(...)  // Clean memory in case of error
+    {
+        for (std::vector<std::vector<Tile*> >::iterator i = _vector2pTiles.begin(); // Delete tiles
+            i != _vector2pTiles.end(); ++i)
+            for (std::vector<Tile*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
+
+        throw;
+    }
+}
+
+
+/**
+ * @brief Destructor
+ */
+Map::~Map() noexcept
+{
+    for (std::vector<std::vector<Tile*> >::iterator i = _vector2pTiles.begin(); // Delete tiles
+        i != _vector2pTiles.end(); ++i)
+        for (std::vector<Tile*>::iterator j = i->begin(); j != i->end(); ++j) delete *j;
 }
 
 
@@ -86,15 +108,15 @@ void Map::OnCache()
 {
     uint16_t urTilesetColumns = _pSurfaceTileset->GetWidth() / _urTileWidth;    // How many tiles there are in a row of the tileset
 
-    for(uint16_t i = 0; i < _vector2Tiles.size(); ++i)
+    for(uint16_t i = 0; i < GetRows(); ++i)
     {
-        for(uint16_t j = 0; j < _vector2Tiles[i].size(); ++j)
+        for(uint16_t j = 0; j < _vector2pTiles[i].size(); ++j)
         {
-            if(_vector2Tiles[i][j].GetTileType() != Tile::ETileType::NONE)  // Render only non-empty tiles
+            if(_vector2pTiles[i][j]->GetTileType() != Tile::ETileType::NONE)  // Render only non-empty tiles
             {
                 // Position of the tile in the tileset
-                uint16_t urTilesetX = _vector2Tiles[i][j].GetTileID() % urTilesetColumns * _urTileWidth;
-                uint16_t urTilesetY = _vector2Tiles[i][j].GetTileID() / urTilesetColumns * _urTileHeight;
+                uint16_t urTilesetX = _vector2pTiles[i][j]->GetTileID() % urTilesetColumns * _urTileWidth;
+                uint16_t urTilesetY = _vector2pTiles[i][j]->GetTileID() / urTilesetColumns * _urTileHeight;
 
                 // Position where the tile will be rendered
                 int16_t rTilePosX = j * _urTileWidth;
@@ -105,4 +127,16 @@ void Map::OnCache()
             }
         }
     }
+}
+
+
+const Tile& Map::GetTileByCoordinates(uint16_t urX, uint16_t urY) const
+{
+    uint16_t urRow = urY / _urTileHeight;
+    uint16_t urColumn = urX / _urTileWidth;
+
+    if (urRow >= _vector2pTiles.size() || urColumn >= _vector2pTiles[urRow].size())
+        throw std::out_of_range("Coordinates out of map bounds");
+
+    return *(_vector2pTiles[urRow][urColumn]);
 }

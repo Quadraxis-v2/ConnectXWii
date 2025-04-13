@@ -35,6 +35,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Area 
 {
     public:
+        const std::vector<std::vector<Map*> >& GetMaps() const noexcept;
+        const Map& GetMapByCoordinates(uint32_t uiX, uint32_t uiY) const;
+        const Tile& GetTileByCoordinates(uint32_t uiX, uint32_t uiY) const;
+
+
         /**
          * @brief Construct a new Area
          * 
@@ -44,20 +49,24 @@ class Area
 
         ~Area() noexcept;   /**< Destructor */
 
+
         /**
          * @brief Renders the area on a surface
          * 
          * @param surfaceDisplay the surface that the area will be rendered on
-         * @param rCameraX the X coordinate from where the rendering will start
-         * @param rCameraY the Y coordinate from where the rendering will start
+         * @param iCameraX the X coordinate from where the rendering will start
+         * @param iCameraY the Y coordinate from where the rendering will start
          */
-        void OnRender(Surface& surfaceDisplay, int16_t rCameraX, int16_t rCameraY);
+        void OnRender(Surface& surfaceDisplay, int32_t iCameraX, int32_t iCameraY);
 
     private:
-        std::unordered_map<std::string, Surface*> _htTilesets;  /**z Dictionary of tilesets that the maps can share */
+        std::unordered_map<std::string, Surface*> _htTilesets;  /**< Dictionary of tilesets that the maps can share */
         std::vector<std::vector<Map*> > _vector2pMaps;          /**< Matrix of maps */
 
 };
+
+
+inline const std::vector<std::vector<Map*> >& Area::GetMaps() const noexcept { return _vector2pMaps; }
 
 
 #endif
