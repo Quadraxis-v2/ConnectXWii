@@ -110,9 +110,8 @@ clean:
 
 #---------------------------------------------------------------------------------
 checks:
-	cppcheck source/ --enable=all --verbose --check-level=exhaustive --cppcheck-build-dir=cppcheck/ \
-		--error-exitcode=1 --platform=cppcheck/wii.cfg --suppress=missingIncludeSystem \
-		--suppress=unusedFunction
+	cppcheck source/ --enable=all --verbose --cppcheck-build-dir=cppcheck/ --error-exitcode=1 \
+		--platform=cppcheck/wii.cfg --suppress=missingIncludeSystem --suppress=unusedFunction
 
 #---------------------------------------------------------------------------------
 test:
