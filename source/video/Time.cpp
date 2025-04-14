@@ -29,15 +29,29 @@ Time& Time::GetInstance()
 }
 
 
+/**
+ * @brief Handles all the time processing between frames
+ */
 void Time::OnLoop() 
 {
     uint32_t uiTime{GetTime()};
 
-    _urNumFrames = 1000 / (uiTime - _uiLastTime);
+    if (_uiOldTime + 1000 < uiTime)     // A full second has elapsed
+    {
+        _uiOldTime = uiTime;
+        _urNumFrames = _urFrameCount;   // Get the number of frames in the past second
+        _urFrameCount = 0;
+    }
+
     _fDeltaTime = ((uiTime - _uiLastTime) / 1000.0f);
     _uiLastTime = uiTime;
+
+    _urFrameCount++;    // An additional frame has passed
 }
 
 
-Time::Time() noexcept : _uiLastTime{}, _fDeltaTime{}, _urNumFrames{} 
+/**
+ * @brief Default constructor
+ */
+Time::Time() noexcept : _uiOldTime{}, _uiLastTime{}, _fDeltaTime{}, _urNumFrames{}, _urFrameCount{}
 {}

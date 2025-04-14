@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * @param CePlayerMark the mark that the player will use
  */
-Human::Human(const Grid::EPlayerMark& CePlayerMark) : Player{CePlayerMark}, _htJoysticks{} {}
+Human::Human(const Grid::EPlayerMark& CePlayerMark) : Player(CePlayerMark), _htJoysticks{} {}
 
 
 /**

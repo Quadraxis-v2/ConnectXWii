@@ -23,6 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <string>
 
+#include "Globals.hpp"
+
 
 /**
  * @brief Class for managing application settings
@@ -30,9 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Settings
 {
 public:
-    static std::string SCsDefaultPath;   /**< Default path for storing the application's settings */
-
-
     /* Getters and setters */
     uint8_t GetBoardWidth() const noexcept;
     void SetBoardWidth(uint8_t yBoardWidth) noexcept;
@@ -52,7 +51,7 @@ public:
      * @brief Creates an object with the default settings
      */
     explicit Settings(uint8_t uyBoardWidth = 7, uint8_t uyBoardHeight = 6, uint8_t uyCellsToWin = 4,
-        uint8_t uyAIDifficulty = 4, const std::string& sCustomPath = "/apps/ConnectXWii/gfx/custom",
+        uint8_t uyAIDifficulty = 4, const std::string& sCustomPath = Globals::SCsGraphicsCustomPath,
         bool bEnableLogging = false) noexcept;
 
     /**
@@ -69,12 +68,12 @@ public:
     void Save(const std::string& CsPath) const;
 
 private:
-    uint8_t _uyBoardWidth;
-    uint8_t _uyBoardHeight;
-    uint8_t _uyCellsToWin;
-    uint8_t _uyAIDifficulty;
-    std::string _sCustomPath;
-    bool _bEnableLogging;
+    uint8_t _uyBoardWidth;      /**< Game board width */
+    uint8_t _uyBoardHeight;     /**< Game board height */
+    uint8_t _uyCellsToWin;      /**< Number of game pieces to win */
+    uint8_t _uyAIDifficulty;    /**< AI exploration depth */
+    std::string _sCustomPath;   /**< Custom path for sprites */
+    bool _bEnableLogging;       /**< Enable logging to external device */
     
 };
 

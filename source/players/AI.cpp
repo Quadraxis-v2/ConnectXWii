@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param CePlayerMark the mark assigned to this player
  * @param uySearchLimit the depth of levels that the AI will explore
  */
-AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{CePlayerMark},
+AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player(CePlayerMark),
     _uySearchLimit{uySearchLimit} {}
 
 

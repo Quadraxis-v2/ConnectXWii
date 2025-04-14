@@ -294,8 +294,8 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
             int32_t iMouseX = 0, iMouseY = 0;
             SDL_GetMouseState(&iMouseX, &iMouseY);
 
-            if (iMouseX >= 0 && iMouseX < (Globals::SCurAppWidth >> 1) && iMouseY >= 0 &&
-                iMouseY < Globals::SCurAppHeight)   // If the controller is pointing at the left half of the screen
+            if (iMouseX >= 0 && iMouseX < (_surfaceDisplay.GetWidth() >> 1) && iMouseY >= 0 &&
+                iMouseY < _surfaceDisplay.GetHeight())   // If the controller is pointing at the left half of the screen
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
@@ -304,8 +304,8 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                     _settingsGlobal.GetAIDifficulty()));
                 _pSdlThreadAI = SDL_CreateThread(RunAI, nullptr);
             }
-            else if (iMouseX >= (Globals::SCurAppWidth >> 1) && iMouseX < Globals::SCurAppWidth &&
-                iMouseY >= 0 && iMouseY < Globals::SCurAppHeight) // If the controller is pointing at the right half of the screen
+            else if (iMouseX >= (_surfaceDisplay.GetWidth() >> 1) && iMouseX < _surfaceDisplay.GetWidth() &&
+                iMouseY >= 0 && iMouseY < _surfaceDisplay.GetHeight()) // If the controller is pointing at the right half of the screen
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
@@ -371,8 +371,8 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
             int32_t iMouseX = 0, iMouseY = 0;
             SDL_GetMouseState(&iMouseX, &iMouseY);
 
-            if (iMouseX >= 0 && iMouseX < Globals::SCurAppWidth && iMouseY >= 0 &&
-                iMouseY < Globals::SCurAppHeight) Reset();
+            if (iMouseX >= 0 && iMouseX < _surfaceDisplay.GetWidth() && iMouseY >= 0 &&
+                iMouseY < _surfaceDisplay.GetHeight()) Reset();
 
             break;
         }

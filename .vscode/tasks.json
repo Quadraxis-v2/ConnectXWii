@@ -39,6 +39,39 @@
             }
         },
         {
+            "label": "Run",
+            "type": "shell",
+            "command": "make",
+            "args": ["run"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Deploy",
+            "type": "shell",
+            "command": "make",
+            "args": ["deploy"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Run checks",
+            "type": "shell",
+            "command": "make",
+            "args": ["checks"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "none",
+                "isDefault": false
+            }
+        },
+        {
             "label": "Clean",
             "type": "shell",
             "command": "make",
@@ -48,6 +81,6 @@
                 "kind": "none",
                 "isDefault": true
             }
-        },
+        }
     ]
 }

@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * @param uyIndex the index fot the new controller
  */
-WiiController::WiiController(uint8_t uyIndex) : SDL_Wii_Joystick{uyIndex} 
+WiiController::WiiController(uint8_t uyIndex) : SDL_Wii_Joystick(uyIndex) 
 { 
     if (uyIndex > WiiController::SCuyMaxWiiControllers - 1) 
         throw std::out_of_range("Controller not available"); 

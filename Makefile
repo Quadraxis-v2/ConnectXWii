@@ -96,7 +96,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) \
 export LIBPATHS	:= -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-.PHONY: $(BUILD) all clean run test
+.PHONY: all clean checks test deploy run
 
 #---------------------------------------------------------------------------------
 all:
@@ -107,6 +107,12 @@ all:
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+
+#---------------------------------------------------------------------------------
+checks:
+	cppcheck source/ --enable=all --verbose --check-level=exhaustive --cppcheck-build-dir=cppcheck/ \
+		--error-exitcode=1 --platform=cppcheck/wii.cfg --suppress=missingIncludeSystem \
+		--suppress=unusedFunction
 
 #---------------------------------------------------------------------------------
 test:

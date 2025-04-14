@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  * @param uyIndex the index for the new controller
  */
-GameCubeController::GameCubeController(uint8_t uyIndex) : SDL_Wii_Joystick{uyIndex + 4}
+GameCubeController::GameCubeController(uint8_t uyIndex) : SDL_Wii_Joystick(uyIndex + 4)
 {
     if (uyIndex > GameCubeController::SCuyMaxGameCubeControllers - 1) 
         throw std::out_of_range("Controller not available"); 

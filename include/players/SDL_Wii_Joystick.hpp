@@ -47,12 +47,12 @@ public:
      */
     explicit SDL_Wii_Joystick(int32_t yIndex);
 
-    virtual ~SDL_Wii_Joystick() = default; /**< Destructor */
+    virtual ~SDL_Wii_Joystick() override = default; /**< Destructor */
 
 };
 
 
-inline SDL_Wii_Joystick::SDL_Wii_Joystick(int32_t yIndex) : Joystick{yIndex} {}
+inline SDL_Wii_Joystick::SDL_Wii_Joystick(int32_t yIndex) : Joystick(yIndex) {}
 
 
 inline int16_t SDL_Wii_Joystick::GetLeftStickHorizontal() const noexcept 

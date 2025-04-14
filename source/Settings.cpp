@@ -23,11 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ios>
 #include <algorithm>
 #include <jansson.h>
+
 #include "../include/Settings.hpp"
-
-
-/** Default path for storing the application's settings */
-std::string Settings::SCsDefaultPath{"apps/ConnectXWii/settings.json"};
+#include "../include/Globals.hpp"
 
 
 /**
@@ -44,8 +42,10 @@ Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsT
  *
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{7}, _uyBoardHeight{6}, _uyCellsToWin{4},
-	_uyAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}, _bEnableLogging{false}
+Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyBoardWidth}, 
+	_uyBoardHeight{Globals::SCuyBoardHeight}, _uyCellsToWin{Globals::SCuyCellsToWin}, 
+	_uyAIDifficulty{Globals::SCuyAIDifficulty}, _sCustomPath{Globals::SCsGraphicsCustomPath}, 
+	_bEnableLogging{Globals::SCbEnableLogging}
 {
     json_t* pJsonRoot{nullptr};			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler

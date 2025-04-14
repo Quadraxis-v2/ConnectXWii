@@ -99,7 +99,7 @@ private:
 
     App();    /**< Default constructor */
 
-    virtual ~App() noexcept;    /**< Destructor */
+    virtual ~App() noexcept override;    /**< Destructor */
 
 
     /**

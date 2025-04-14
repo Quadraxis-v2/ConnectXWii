@@ -50,6 +50,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/EventListener.hpp"
 #include "../../include/video/Surface.hpp"
 #include "../../include/Settings.hpp"
+#include "../../include/Globals.hpp"
 #include "../../include/Grid.hpp"
 #include "../../include/players/Joystick.hpp"
 #include "../../include/players/Player.hpp"
@@ -67,7 +68,7 @@ App& App::GetInstance()
 /**
  * @brief Default constructor
  */
-App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
+App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
     _loggerApp{"App", "apps/ConnectXWii/log.txt"}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
     _bStopThreads{false}, _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{},
     _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{},
@@ -115,7 +116,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 
 	_vectorpPlayers.push_back(pPlayerMain);
 
-    try { _settingsGlobal = Settings{Settings::SCsDefaultPath}; }   // Load settings
+    try { _settingsGlobal = Settings{Globals::SCsSettingsDefaultPath}; }   // Load settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     _grid = Grid{_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
@@ -123,44 +124,53 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 
     // Retrieve resources from the filesystem
     try
-    { _surfaceStart = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()}; }
+    { _surfaceStart = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface{"apps/ConnectXWii/gfx/start.png"}; }
+    { _surfaceStart = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/start.png").lexically_normal().string()); }
     try
-    { _surfaceGrid = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()}; }
+    { _surfaceGrid = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface{"apps/ConnectXWii/gfx/grid.png"}; }
+    { _surfaceGrid = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/grid.png").lexically_normal().string()); }
     try
-    { _surfaceMarker1 = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()}; }
+    { _surfaceMarker1 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker1 = Surface{"apps/ConnectXWii/gfx/player1.bmp"}; }
+    { _surfaceMarker1 = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/player1.bmp").lexically_normal().string()); }
     try
-    { _surfaceMarker2 = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()}; }
+    { _surfaceMarker2 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker2 = Surface{"apps/ConnectXWii/gfx/player2.bmp"}; }
+    { _surfaceMarker2 = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/player2.bmp").lexically_normal().string()); }
     try
-    { _surfaceWinPlayer1 = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()}; }
+    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface{"apps/ConnectXWii/gfx/winPlayer1.png"}; }
+    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/winPlayer1.png").lexically_normal().string()); }
     try
-    { _surfaceWinPlayer2 = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()}; }
+    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface{"apps/ConnectXWii/gfx/winPlayer2.png"}; }
+    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/winPlayer2.png").lexically_normal().string()); }
     try
-    { _surfaceDraw = Surface{std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()}; }
+    { _surfaceDraw = Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface{"apps/ConnectXWii/gfx/draw.png"}; }
+    { _surfaceDraw = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/draw.png").lexically_normal().string()); }
 
-    try { _surfaceCursor = Surface{"apps/ConnectXWii/gfx/generic_point.png"}; }
+    try { _surfaceCursor = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/generic_point.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure) {}
-    try { _surfaceCursorShadow = Surface{"apps/ConnectXWii/gfx/shadow_point.png"}; }
+    try { _surfaceCursorShadow = Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/shadow_point.png").lexically_normal().string()); }
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     _surfaceYoshi = Surface("apps/ConnectXWii/gfx/yoshi.bmp");
@@ -180,7 +190,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
  */
 App::~App() noexcept
 {
-    try { _settingsGlobal.Save(Settings::SCsDefaultPath); }     // Save settings
+    try { _settingsGlobal.Save(Globals::SCsSettingsDefaultPath); }     // Save settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     /* Signal threads to stop */

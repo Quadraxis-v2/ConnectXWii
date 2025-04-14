@@ -1,6 +1,6 @@
 /*
 Globals.hpp --- Global variables
-Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+Copyright (C) 2025  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
@@ -21,13 +21,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _GLOBALS_HPP_
 
 #include <cstdint>
+#include <string>
 
 
+/**
+ * @brief Class for saving global constants and defaults
+ */
 class Globals
 {
 public:
-    static const uint16_t SCurAppWidth = 640;   /**< Pixel width of the application */
-    static const uint16_t SCurAppHeight = 480;  /**< Pixel height of the application */
+    static const uint16_t SCurAppWidth{640};   /**< Preferred pixel width of the application */
+    static const uint16_t SCurAppHeight{480};  /**< Preferred pixel height of the application */
+
+    static const std::string SCsLogDefaultPath;         /**< Default path for storing the application's log */
+    static const std::string SCsSettingsDefaultPath;    /**< Default path for storing the application's settings */
+    static const std::string SCsGraphicsDefaultPath;    /**< Default path for storing the application's graphics */
+
+    static const uint8_t SCuyBoardWidth{7};         /**< Default board width */
+    static const uint8_t SCuyBoardHeight{6};        /**< Default board height */
+    static const uint8_t SCuyCellsToWin{4};         /**< Default number of game pieces to win */
+    static const uint8_t SCuyAIDifficulty{4};       /**< Default AI exploration depth */
+    static const std::string SCsGraphicsCustomPath; /**< Default custom path for storing the application's graphics */
+    static const bool SCbEnableLogging{false};      /**< Default logging configuration */
 
 };
 

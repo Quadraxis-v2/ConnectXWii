@@ -83,13 +83,34 @@ int32_t main(int32_t argc, char** argv)
 			throw std::runtime_error(SDL_GetError());
 		}
 
+		uiSDLInitFlags = SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/;
+		const SDL_VideoInfo* CpSdlVideoInfoBest{SDL_GetVideoInfo()};
+		if (CpSdlVideoInfoBest->hw_available) uiSDLInitFlags |= SDL_HWSURFACE;
+
+		int32_t iWidth{Globals::SCurAppWidth}, iHeight{Globals::SCurAppHeight};
+		#ifdef __wii__
+			const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
+			iWidth = CpGXRMode->fbWidth;
+			iHeight = CpGXRMode->xfbHeight;
+		#endif
+
+		if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+		{
+			#ifdef __wii__
+				iHeight = CpGXRMode->efbHeight;
+			#else
+				iHeight = 480;
+			#endif
+			if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags)) 
+				throw std::runtime_error("Video mode not supported");
+		}
+
+		if (!SDL_SetVideoMode(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+			throw std::runtime_error(SDL_GetError());
+
 		int32_t iInitFlags = IMG_InitFlags::IMG_INIT_JPG | IMG_InitFlags::IMG_INIT_PNG;
 		if (IMG_Init(iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_image support");
-
-		if ((SDL_SetVideoMode(Globals::SCurAppWidth, Globals::SCurAppHeight, 16,
-			SDL_HWSURFACE | SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/)) == nullptr)
-			throw std::runtime_error(SDL_GetError());
 
 		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
 			throw std::runtime_error(Mix_GetError());
@@ -126,23 +147,23 @@ int32_t main(int32_t argc, char** argv)
 		// Initialise the video system
 		VIDEO_Init();
 
-		// This function initialises the attached controllers
+		// Initialise the attached controllers
 		WPAD_Init();
 		PAD_Init();
 		
 		// Obtain the preferred video mode from the system
 		// This will correspond to the settings in the Wii menu
-		GXRModeObj* pGXRmode{VIDEO_GetPreferredMode(nullptr)};
+		GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
 
 		// Allocate memory for the display in the uncached region
-		void* pXfb{MEM_K0_TO_K1(SYS_AllocateFramebuffer(pGXRmode))};
+		void* pXfb{MEM_K0_TO_K1(SYS_AllocateFramebuffer(CpGXRMode))};
 
 		// Initialise the console, required for printf
-		console_init(pXfb, 20, 20, pGXRmode->fbWidth, pGXRmode->xfbHeight,
-			pGXRmode->fbWidth * VI_DISPLAY_PIX_SZ);
+		console_init(pXfb, 20, 20, CpGXRMode->fbWidth, CpGXRMode->xfbHeight,
+			CpGXRMode->fbWidth * VI_DISPLAY_PIX_SZ);
 
 		// Set up the video registers with the chosen mode
-		VIDEO_Configure(pGXRmode);
+		VIDEO_Configure(CpGXRMode);
 
 		// Tell the video hardware where our display memory is
 		VIDEO_SetNextFramebuffer(pXfb);
@@ -155,7 +176,7 @@ int32_t main(int32_t argc, char** argv)
 
 		// Wait for video setup to complete
 		VIDEO_WaitVSync();
-		if (pGXRmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
+		if (CpGXRMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
 		WPAD_SetIdleTimeout(300);
 
