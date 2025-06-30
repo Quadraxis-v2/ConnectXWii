@@ -75,13 +75,13 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
 	}
 
 	/* New fields that are added to the class must be retrieved from here */
-	pJsonField = json_object_get(pJsonSettings, "Board width");
+	pJsonField = json_object_get(pJsonSettings, "Board width (1-9)");
 	if (json_is_integer(pJsonField)) _uyBoardWidth = json_integer_value(pJsonField);
-	pJsonField = json_object_get(pJsonSettings, "Board height");
+	pJsonField = json_object_get(pJsonSettings, "Board height (1-9)");
 	if (json_is_integer(pJsonField)) _uyBoardHeight = json_integer_value(pJsonField);
     pJsonField = json_object_get(pJsonSettings, "Number of cells to win");
 	if (json_is_integer(pJsonField)) _uyCellsToWin = json_integer_value(pJsonField);
-    pJsonField = json_object_get(pJsonSettings, "AI Difficulty");
+    pJsonField = json_object_get(pJsonSettings, "AI Difficulty (3-8)");
 	if (json_is_integer(pJsonField)) _uyAIDifficulty = json_integer_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
 	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
@@ -89,8 +89,17 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
 	if (json_is_boolean(pJsonField)) _bEnableLogging = json_boolean_value(pJsonField);
 
 	/* Validation */
+	if (_uyBoardWidth < 1) _uyBoardWidth = 1;
+	else if (_uyBoardWidth > 9) _uyBoardWidth = 9;
+
+	if (_uyBoardHeight < 1) _uyBoardHeight = 1;
+	else if (_uyBoardHeight > 9) _uyBoardHeight = 9;
+
 	if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
 		_uyCellsToWin = std::max(_uyBoardWidth, _uyBoardHeight);
+
+	if (_uyAIDifficulty < 3) _uyAIDifficulty = 3;
+	else if (_uyAIDifficulty > 8) _uyAIDifficulty = 8;
 
 	// Free the objects from memory
     json_decref(pJsonRoot);
@@ -108,10 +117,10 @@ void Settings::Save(const std::string& CsPath) const
     json_t* pJsonSettings{json_object()};	// "Settings" JSON object
 
 	/* New fields that are added to the class must be dumped from here */
-    json_object_set_new(pJsonSettings, "Board width", json_integer(_uyBoardWidth));
-    json_object_set_new(pJsonSettings, "Board height", json_integer(_uyBoardHeight));
+    json_object_set_new(pJsonSettings, "Board width (1-9)", json_integer(_uyBoardWidth));
+    json_object_set_new(pJsonSettings, "Board height (1-9)", json_integer(_uyBoardHeight));
     json_object_set_new(pJsonSettings, "Number of cells to win", json_integer(_uyCellsToWin));
-    json_object_set_new(pJsonSettings, "AI Difficulty", json_integer(_uyAIDifficulty));
+    json_object_set_new(pJsonSettings, "AI Difficulty (3-8)", json_integer(_uyAIDifficulty));
 	json_object_set_new(pJsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
 	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bEnableLogging));
 

@@ -18,12 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-#include <cstdint>
-#include <stdexcept>
 #include <unordered_map>
 #include <utility>
+#include <stdexcept>
 #include <ios>
 #include <filesystem>
+#include <cstdint>
+#include <string>
+#include <algorithm>
 
 #include <SDL.h>
 #include <SDL_video.h>
@@ -36,6 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mutex.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #ifdef __wii__
     #include <cstdio>
@@ -69,118 +72,297 @@ App& App::GetInstance()
  * @brief Default constructor
  */
 App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
-    _loggerApp{"App", "apps/ConnectXWii/log.txt"}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
-    _bStopThreads{false}, _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{},
-    _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{},
-    _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{},
-    _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}, _surfaceYoshi{}, _animationYoshi{8, 100, false, 1}
+    _loggerApp{"App", Globals::SCsLogDefaultPath}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
+    _bStopThreads{false}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{},
+    _bSingleController{true}, _yPlayColumn{0}, _urInitialX{0}, _urInitialY{0}, _htSurfaces{}, 
+    _animationLoading{16, 100}, _ttfFontContinuum{nullptr}
 {
+    Surface* pSurfaceDisplay{new Surface(SDL_GetVideoSurface())};
+    _htSurfaces.insert(std::make_pair("Display", pSurfaceDisplay));
+    
     SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
     SDL_JoystickEventState(SDL_ENABLE);
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
     if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
-
+    
     #ifdef __wii__
-		// Initialise console
-        if (SDL_MUSTLOCK(static_cast<SDL_Surface*>(_surfaceDisplay)))
-        {
-            if (SDL_LockSurface(_surfaceDisplay) != -1)
-            {
-                CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
-                    _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-                std::printf("\x1b[2;0H");
-                SDL_UnlockSurface(_surfaceDisplay);
-            }
-        }
-        else
-        {
-            CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
-                _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-            std::printf("\x1b[2;0H");
-        }
-
-        // Create the main human player
-        WiiController* pJoystickWii{new WiiController{0}};
-        _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
-
-        GameCubeController* pJoystickGameCube{new GameCubeController{0}};
-        _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
-
-        Human* pPlayerMain{new Human{Grid::EPlayerMark::PLAYER1}};
-        pPlayerMain->AssociateJoystick(*pJoystickWii);
-        pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-    #else
-        Human* pPlayerMain{new Human{Grid::EPlayerMark::PLAYER1}};
-	#endif
-
-	_vectorpPlayers.push_back(pPlayerMain);
-
+        pSurfaceDisplay->Lock();    // Lock the screen for direct pixel access
+        
+        // Initialise console
+        CON_Init(pSurfaceDisplay->GetPixels(), 20, 20, pSurfaceDisplay->GetWidth() - 20,
+            pSurfaceDisplay->GetHeight() - 20, pSurfaceDisplay->GetWidth() * VI_DISPLAY_PIX_SZ);
+        std::printf("\x1b[2;0H");
+        
+        pSurfaceDisplay->Unlock();
+    #endif
+    
     try { _settingsGlobal = Settings{Globals::SCsSettingsDefaultPath}; }   // Load settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     _grid = Grid{_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
         _settingsGlobal.GetCellsToWin()};
 
-    // Retrieve resources from the filesystem
-    try
-    { _surfaceStart = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/start.png").lexically_normal().string()); }
-    try
-    { _surfaceGrid = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/grid.png").lexically_normal().string()); }
-    try
-    { _surfaceMarker1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker1 = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/player1.bmp").lexically_normal().string()); }
-    try
-    { _surfaceMarker2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker2 = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/player2.bmp").lexically_normal().string()); }
-    try
-    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/winPlayer1.png").lexically_normal().string()); }
-    try
-    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/winPlayer2.png").lexically_normal().string()); }
-    try
-    { _surfaceDraw = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/draw.png").lexically_normal().string()); }
+    /* Retrieve resources from the filesystem */
 
-    try { _surfaceCursor = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/generic_point.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
-    try { _surfaceCursorShadow = Surface(std::filesystem::path(
-        Globals::SCsGraphicsDefaultPath + "/shadow_point.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
+    /* Surfaces */
 
-    _surfaceYoshi = Surface("apps/ConnectXWii/gfx/yoshi.bmp");
-    _surfaceYoshi.SetTransparentPixel(255, 0, 255);
+    try
+    { _htSurfaces.insert(std::make_pair("Start", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Start", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/start.png").lexically_normal().string()))); }
 
-    // Take the background out of the marker pictures
-    _surfaceMarker1.SetTransparentPixel(255, 0, 255);
-    _surfaceMarker2.SetTransparentPixel(255, 0, 255);
+    try
+    { _htSurfaces.insert(std::make_pair("DefaultHome", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/68370.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("DefaultHome", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/DefaultHome.png").lexically_normal().string()))); }
 
-    EventManager::GetInstance().AttachListener(*this);   // Receive events
+    try
+    { _htSurfaces.insert(std::make_pair("DefaultButton", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/DefaultButton.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("DefaultButton", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/DefaultButton.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("HoverButton", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/HoverButton.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("HoverButton", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/HoverButton.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("Settings", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/settings.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Settings", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/settings.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("Background", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/background.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Background", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/background.png").lexically_normal().string()))); }
+
+    Surface* pSurfaceMarker1{nullptr};
+    try
+    { pSurfaceMarker1 = new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/blackfill.png").lexically_normal().string()); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { pSurfaceMarker1 = new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/redfill.png").lexically_normal().string()); }
+    _htSurfaces.insert(std::make_pair("Player1", pSurfaceMarker1));
+
+    Surface* pSurfaceMarker2{nullptr};
+    try
+    { pSurfaceMarker2 = new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/redfill.png").lexically_normal().string()); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { pSurfaceMarker2 = new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/redfill.png").lexically_normal().string()); }
+    _htSurfaces.insert(std::make_pair("Player2", pSurfaceMarker2));
+
+    Surface* pSurfaceEmptyCell{nullptr};
+    try
+    { pSurfaceEmptyCell = new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/emptyfill.png").lexically_normal().string()); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { pSurfaceEmptyCell = new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/emptyfill.png").lexically_normal().string()); }
+    _htSurfaces.insert(std::make_pair("Empty", pSurfaceEmptyCell));
+
+    try
+    { _htSurfaces.insert(std::make_pair("Hourglass", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/hourglass.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Hourglass", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/hourglass.png").lexically_normal().string()))); }
+        
+    try
+    { _htSurfaces.insert(std::make_pair("Prompt", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/Prompt.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Prompt", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/Prompt.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("DefaultYes", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/DefaultYes.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("DefaultYes", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/DefaultYes.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("HoverYes", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/HoverYes.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("HoverYes", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/HoverYes.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("WinPlayer1", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/blackwins.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("WinPlayer1", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/winPlayer1.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("WinPlayer2", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/redwins.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("WinPlayer2", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/winPlayer2.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("Draw", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/emptywins.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Draw", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/draw.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("CursorPlayer1", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/blackchecker.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("CursorPlayer2", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/blackchecker.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("CursorPlayer2", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/redchecker.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("Cursor", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/redchecker.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("CursorHand", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/generic_point.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("CursorHand", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/generic_point.png").lexically_normal().string()))); }
+
+    try
+    { _htSurfaces.insert(std::make_pair("CursorShadow", new Surface(std::filesystem::path(
+        _settingsGlobal.GetCustomPath() + "/shadow_point.png").lexically_normal().string()))); }
+    catch (const std::ios_base::failure& CiosBaseFailure)
+    { _htSurfaces.insert(std::make_pair("CursorShadow", new Surface(std::filesystem::path(
+        Globals::SCsGraphicsDefaultPath + "/shadow_point.png").lexically_normal().string()))); }
+
+    // Adjust the grid cells and markers
+    uint16_t urScale{static_cast<uint16_t>(std::min(
+        pSurfaceDisplay->GetWidth() / pSurfaceEmptyCell->GetWidth() / _settingsGlobal.GetBoardWidth(),
+        pSurfaceDisplay->GetHeight() / pSurfaceEmptyCell->GetHeight() / _settingsGlobal.GetBoardHeight()))};
+        
+    pSurfaceEmptyCell->Scale(urScale, urScale);
+    pSurfaceMarker1->Scale(urScale, urScale);
+    pSurfaceMarker2->Scale(urScale, urScale);
+
+    uint8_t uyBoardWidth{_settingsGlobal.GetBoardWidth()};
+    _urInitialX = (pSurfaceDisplay->GetWidth() >> 1) - ((uyBoardWidth >> 1) * pSurfaceEmptyCell->GetWidth());
+    if (uyBoardWidth % 2 != 0) _urInitialX -= pSurfaceEmptyCell->GetWidth() >> 1;
+
+    uint8_t uyBoardHeight{_settingsGlobal.GetBoardHeight()};
+    _urInitialY = (pSurfaceDisplay->GetHeight() >> 1) - ((uyBoardHeight >> 1) * pSurfaceEmptyCell->GetHeight());
+    if (uyBoardHeight % 2 != 0) _urInitialY -= pSurfaceEmptyCell->GetHeight() >> 1;
+
+    /* Fonts and texts */
+
+    _ttfFontContinuum = TTF_OpenFontIndex("/apps/ConnectXWii/fonts/continuum/contm.ttf", 16, 0);
+    if (!_ttfFontContinuum) throw std::ios_base::failure(TTF_GetError());
+
+    SDL_Color sdlColorSingle{};
+    sdlColorSingle.r = 252;
+    sdlColorSingle.g = 3;
+    sdlColorSingle.b = 3;
+
+    SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, "Single Player (vs AI)", sdlColorSingle)};
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextSingle", new Surface(pSdlSurfaceTemp)));
+
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "2 Players", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextMulti", new Surface(pSdlSurfaceTemp)));
+
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Settings", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextSettings", new Surface(pSdlSurfaceTemp)));
+
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Board width", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextWidth", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+        std::to_string(_settingsGlobal.GetBoardWidth()).c_str(), sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextWidthValue", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Board height", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextHeight", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+        std::to_string(_settingsGlobal.GetBoardHeight()).c_str(), sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextHeightValue", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Win length", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextStreak", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+        std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextStreakValue", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "AI Difficulty", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextDifficulty", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+        std::to_string(_settingsGlobal.GetAIDifficulty()).c_str(), sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextDifficultyValue", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Enable logging (dev)", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextLogging", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Are you sure you want to quit?", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextPrompt", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "Yes", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextYes", new Surface(pSdlSurfaceTemp)));
+    
+    pSdlSurfaceTemp = TTF_RenderUTF8_Blended(_ttfFontContinuum, "No", sdlColorSingle);
+    if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+    _htSurfaces.insert(std::make_pair("TextNo", new Surface(pSdlSurfaceTemp)));
+
+    // Create the main human player
+    #ifdef __wii__
+        WiiController* pJoystickWii{new WiiController{0}};
+        _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
+
+        GameCubeController* pJoystickGameCube{new GameCubeController{0}};
+        _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
+
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        pPlayerMain->AssociateJoystick(*pJoystickWii);
+        pPlayerMain->AssociateJoystick(*pJoystickGameCube);
+    #else
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+	#endif
+
+	_vectorpPlayers.push_back(pPlayerMain);
+
+    // Receive events
+    EventManager::GetInstance().AttachListener(*this);
 }
 
 
@@ -211,22 +393,11 @@ App::~App() noexcept
         delete *i;
 
     /* Delete surfaces */
-    SDL_FreeSurface(_surfaceStart);
-    _surfaceStart._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceGrid);
-    _surfaceGrid._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceMarker1);
-    _surfaceMarker1._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceMarker2);
-    _surfaceMarker2._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceWinPlayer1);
-    _surfaceWinPlayer1._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceWinPlayer2);
-    _surfaceWinPlayer2._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceDraw);
-    _surfaceDraw._pSdlSurface = nullptr;
+    for (std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
+        i != _htSurfaces.end(); ++i) if (i->first != "Display") delete i->second;   // The display surface must be freed by SDL_Quit
 
-    SDL_FreeSurface(_surfaceYoshi);
+    // Unload text libraries
+    if (TTF_WasInit()) TTF_Quit();
 
     // Unload sound libraries
     while (Mix_Init(0)) Mix_Quit();
@@ -235,9 +406,7 @@ App::~App() noexcept
     // Unload image libraries
     IMG_Quit();
 
-    // The display surface must be freed by SDL_Quit
     SDL_Quit();
-    _surfaceDisplay._pSdlSurface = nullptr;
 }
 
 
@@ -278,9 +447,6 @@ void App::Reset()
 
     _bStopThreads = false;
 
-    SDL_DestroySemaphore(_pSdlSemaphoreAI);
-    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
-
     // Delete joysticks
     for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
         i != _htJoysticks.end(); ++i) delete i->second;
@@ -290,6 +456,10 @@ void App::Reset()
     for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
         delete *i;
     _vectorpPlayers = std::vector<Player*>{};
+
+    // Recreate semaphore
+    SDL_DestroySemaphore(_pSdlSemaphoreAI);
+    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
 
     // Clear grid
     _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),

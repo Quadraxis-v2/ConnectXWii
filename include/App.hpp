@@ -23,11 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
+
 #include <SDL.h>
 #include <SDL_video.h>
 #include <SDL_events.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
+#include <SDL_ttf.h>
+
 #include "EventListener.hpp"
 #include "Settings.hpp"
 #include "Logger.hpp"
@@ -35,7 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Grid.hpp"
 #include "players/Joystick.hpp"
 #include "players/Player.hpp"
-
 #include "video/Animation.hpp"
 
 /**
@@ -44,7 +46,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class App : public EventListener    // Receive events in this class
 {
 public:
-    enum EState {STATE_START, STATE_INGAME, STATE_END};    /**< Application states for the state machine */
+    enum EState {STATE_START, STATE_SETTINGS, STATE_INGAME, STATE_PROMPT, STATE_END};    /**< Application states for the state machine */
 
 
     friend int32_t SDLCALL RunAI(void* pData);
@@ -75,17 +77,6 @@ private:
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
 
-    Surface _surfaceDisplay;        /**< The main display surface */
-    Surface _surfaceStart;          /**< Picture for the start screen */
-    Surface _surfaceGrid;           /**< Picture of the grid */
-    Surface _surfaceMarker1;        /**< Picture of the red marker for the grid */
-    Surface _surfaceMarker2;        /**< Picture of the yellow marker for the grid */
-    Surface _surfaceWinPlayer1;     /**< Picture for the end screen when red wins */
-    Surface _surfaceWinPlayer2;     /**< Picture for the end screen when yellow wins */
-    Surface _surfaceDraw;           /**< Picture for the end screen when there is a draw */
-    Surface _surfaceCursor;         /**< Picture for the cursor */
-    Surface _surfaceCursorShadow;   /**< Picture for the shadow of the cursor */
-
     Grid _grid;                             /**< Main playing grid */
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
     std::vector<Player*> _vectorpPlayers;   /**< The current players in the game */
@@ -93,8 +84,12 @@ private:
     bool _bSingleController;                /** The main controller can be used for all players */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
-    Surface _surfaceYoshi;
-    Animation _animationYoshi;
+    uint16_t _urInitialX, _urInitialY;
+
+    std::unordered_map<std::string, Surface*> _htSurfaces;
+    Animation _animationLoading;
+
+    TTF_Font* _ttfFontContinuum;
     
 
     App();    /**< Default constructor */
@@ -260,7 +255,7 @@ private:
      * @param uyWhich the joystick device index
      * @param uyButton the joystick button index
      */
-    virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept override;
+    virtual void OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) override;
 
     /**
      * @brief Handles joystick button release events
@@ -306,6 +301,9 @@ private:
      * @param pData2 a user-defined data pointer
      */
     virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept override;
+
+
+    void RenderGrid(Surface& pSurfaceDisplay) const;
 
 };
 

@@ -48,8 +48,7 @@ Logger::Logger(const std::string& CsName, const std::string& CsPath) : _sName{Cs
 void Logger::Log(const std::string& CsMessage, LogLevel logLevel) const
 {
 	// Get local system time
-	std::time_t timeNow{std::time(nullptr)};
-	//std::time_t timeNow{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
+	std::time_t timeNow{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
 	std::tm* pTmLocalTime{std::localtime(&timeNow)};
 
 	// Build the log message
@@ -58,7 +57,7 @@ void Logger::Log(const std::string& CsMessage, LogLevel logLevel) const
 		" - " << CsMessage;
 
 	// Log to standard error output
-	std::fprintf(stderr, "%s\r", ossLog.str().c_str());
+	std::fprintf(stderr, "%s\n", ossLog.str().c_str());
 
 	// Log to a file in external storage
     std::ofstream ofstreamLog{_sLogPath, std::ios_base::out | std::ios_base::app};

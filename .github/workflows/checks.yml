@@ -33,14 +33,10 @@ jobs:
       - name: Build
         run: |
           make all
-          mkdir -p apps/${{ env.REPO_NAME }}
-          cp boot.dol apps/${{ env.REPO_NAME }}
-          cp hbc/meta.xml apps/${{ env.REPO_NAME }}
-          cp -r data/gfx/ apps/${{ env.REPO_NAME }}
-          zip -r ${{ env.REPO_NAME }}.zip apps/
+          make package
 
       - name: Upload binary
         uses: actions/upload-artifact@v4.6.2
         with: 
-          name: ${{ env.REPO_NAME }} Application
+          name: ${{ env.REPO_NAME }}
           path: ${{ env.REPO_NAME }}.zip

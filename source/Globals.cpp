@@ -24,17 +24,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 /** Default path for storing the application's settings */
-const std::string Globals::SCsSettingsDefaultPath{std::filesystem::path("apps/ConnectXWii/settings.json")
+const std::string Globals::SCsSettingsDefaultPath{std::filesystem::path("/apps/ConnectXWii/settings.json")
     .lexically_normal().string()};
 
 /** Default path for storing the application's log */
-const std::string Globals::SCsLogDefaultPath{std::filesystem::path("apps/ConnectXWii/log.txt")
+const std::string Globals::SCsLogDefaultPath{std::filesystem::path("/apps/ConnectXWii/log.txt")
     .lexically_normal().string()};
 
 /**< Default path for storing the application's graphics */
-const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("apps/ConnectXWii/gfx")
+const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("/apps/ConnectXWii/gfx")
     .lexically_normal().string()};
 
 /**< Default custom path for storing the application's graphics */
-const std::string Globals::SCsGraphicsCustomPath{std::filesystem::path("apps/ConnectXWii/gfx/custom")
+const std::string Globals::SCsGraphicsCustomPath{std::filesystem::path("/apps/ConnectXWii/gfx/custom")
     .lexically_normal().string()};

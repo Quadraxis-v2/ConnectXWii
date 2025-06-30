@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_image.h>
 #include <SDL_video.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 
 #ifdef __wii__
 	#include <string>
@@ -89,6 +90,7 @@ int32_t main(int32_t argc, char** argv)
 
 		int32_t iWidth{Globals::SCurAppWidth}, iHeight{Globals::SCurAppHeight};
 		#ifdef __wii__
+			VIDEO_Init();
 			const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
 			iWidth = CpGXRMode->fbWidth;
 			iHeight = CpGXRMode->xfbHeight;
@@ -119,6 +121,9 @@ int32_t main(int32_t argc, char** argv)
 
 		if (Mix_Init(iInitFlags) != iInitFlags)
 			throw std::runtime_error("Error initialising SDL_mixer support");
+
+		if (!TTF_WasInit() && TTF_Init() == -1)
+			throw std::runtime_error("Error initialising SDL_ttf support");
 
 		App::GetInstance().OnExecute();
 	}

@@ -80,17 +80,19 @@ void App::OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode)
     {
         //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
         {
+            Surface* pSurfaceDisplay{_htSurfaces.at("Display")};
+
             switch (sdlKeySymbol)
             {
             case SDLK_LEFT:
                 if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) * (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                SDL_WarpMouse(_yPlayColumn * (pSurfaceDisplay->GetWidth() / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) * (pSurfaceDisplay->GetHeight() / _grid.GetHeight()));
                 break;
             case SDLK_RIGHT:
                 if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) * (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                SDL_WarpMouse(_yPlayColumn * (pSurfaceDisplay->GetWidth() / _grid.GetWidth()),
+                    _grid.GetNextCell(_yPlayColumn) * (pSurfaceDisplay->GetHeight() / _grid.GetHeight()));
                 break;
             default: break;
             }
@@ -126,13 +128,17 @@ void App::OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) {}
 void App::OnMouseMove(uint16_t urMouseX, uint16_t urMouseY, int16_t rRelX, int16_t rRelY,
     bool bLeft, bool bRight, bool bMiddle) noexcept
 {
-    switch (_eStateCurrent)
-    {
-    case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
-        _yPlayColumn = urMouseX / (_surfaceDisplay.GetWidth() / _grid.GetWidth());
-        break;
-    default: break;
-    }
+    #ifndef __wii__
+        switch (_eStateCurrent)
+        {
+        case EState::STATE_START:
+            break;
+        case EState::STATE_INGAME:  // Select the column in the grid that the mouse is pointing at
+            _yPlayColumn = urMouseX / ((*_htSurfaces.at("Display")).GetWidth() / _grid.GetWidth());
+            break;
+        default: break;
+        }
+    #endif
 }
 
 
@@ -280,8 +286,12 @@ void App::OnJoyBall(uint8_t uyWhich, uint8_t uyBall, int16_t rRelativeX, int16_t
  * @param uyWhich the joystick device index
  * @param uyButton the joystick button index
  */
-void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
+void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
 {
+    // Get the position of the main Wiimote's IR
+    int32_t iMouseX{}, iMouseY{};
+    SDL_GetMouseState(&iMouseX, &iMouseY);
+
     switch (_eStateCurrent)
     {
     case EState::STATE_START:  // In the starting state we handle the clicks on any of the gamemodes
@@ -290,12 +300,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         {
         case 0: // Button A press
         {
-            // Get the position of the main Wiimote's IR
-            int32_t iMouseX = 0, iMouseY = 0;
-            SDL_GetMouseState(&iMouseX, &iMouseY);
-
-            if (iMouseX >= 0 && iMouseX < (_surfaceDisplay.GetWidth() >> 1) && iMouseY >= 0 &&
-                iMouseY < _surfaceDisplay.GetHeight())   // If the controller is pointing at the left half of the screen
+            if (iMouseX >= 240 && iMouseX < 374 && iMouseY >= 150 && iMouseY < 224)
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
@@ -304,8 +309,7 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
                     _settingsGlobal.GetAIDifficulty()));
                 _pSdlThreadAI = SDL_CreateThread(RunAI, nullptr);
             }
-            else if (iMouseX >= (_surfaceDisplay.GetWidth() >> 1) && iMouseX < _surfaceDisplay.GetWidth() &&
-                iMouseY >= 0 && iMouseY < _surfaceDisplay.GetHeight()) // If the controller is pointing at the right half of the screen
+            else if (iMouseX >= 240 && iMouseX < 374 && iMouseY >= 230 && iMouseY < 304)
             {
                 _eStateCurrent = EState::STATE_INGAME; // Start the game
 
@@ -322,25 +326,159 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
 
                 _vectorpPlayers.push_back(pSecondPlayer);
             }
+            else if (iMouseX >= 240 && iMouseX < 374 && iMouseY >= 310 && iMouseY < 384) 
+                _eStateCurrent = EState::STATE_SETTINGS;
+            else if (iMouseX >= 50 && iMouseX < 138 && iMouseY >= 380 && iMouseY < 468) _bRunning = false;
 
             break;
         }
-        case 6: _bRunning = false; break;   // HOME button closes the game
         }
+        break;
+    }
+    case EState::STATE_SETTINGS:
+    {
+        SDL_Color sdlColorSingle{};
+        sdlColorSingle.r = 252;
+        sdlColorSingle.g = 3;
+        sdlColorSingle.b = 3;
+
+        if (iMouseX >= 50 && iMouseX < 138 && iMouseY >= 380 && iMouseY < 468)
+        {
+            _settingsGlobal.Save(Globals::SCsSettingsDefaultPath);
+            _eStateCurrent = EState::STATE_START;
+        }
+        else if (iMouseX >= 320 && iMouseX < 397 && iMouseY >= 75 && iMouseY < 152 && 
+            _settingsGlobal.GetBoardWidth() > 1)
+        {
+            _settingsGlobal.SetBoardWidth(_settingsGlobal.GetBoardWidth() - 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetBoardWidth()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextWidthValue");
+            _htSurfaces["TextWidthValue"] = new Surface(pSdlSurfaceTemp);
+
+            if (_settingsGlobal.GetBoardWidth() < _settingsGlobal.GetCellsToWin() && 
+                _settingsGlobal.GetBoardHeight() < _settingsGlobal.GetCellsToWin())
+            {
+                _settingsGlobal.SetCellsToWin(_settingsGlobal.GetBoardWidth());
+                SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                    std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
+                if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+                delete _htSurfaces.at("TextStreakValue");
+                _htSurfaces["TextStreakValue"] = new Surface(pSdlSurfaceTemp);
+            }
+        }
+        else if (iMouseX >= 440 && iMouseX < 517 && iMouseY >= 75 && iMouseY < 152 && 
+            _settingsGlobal.GetBoardWidth() < 9)
+        {
+            _settingsGlobal.SetBoardWidth(_settingsGlobal.GetBoardWidth() + 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetBoardWidth()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextWidthValue");
+            _htSurfaces["TextWidthValue"] = new Surface(pSdlSurfaceTemp);
+        }
+        else if (iMouseX >= 320 && iMouseX < 397 && iMouseY >= 164 && iMouseY < 241 && 
+            _settingsGlobal.GetBoardHeight() > 1)
+        {
+            _settingsGlobal.SetBoardHeight(_settingsGlobal.GetBoardHeight() - 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetBoardHeight()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextHeightValue");
+            _htSurfaces["TextHeightValue"] = new Surface(pSdlSurfaceTemp);
+
+            if (_settingsGlobal.GetBoardWidth() < _settingsGlobal.GetCellsToWin() && 
+                _settingsGlobal.GetBoardHeight() < _settingsGlobal.GetCellsToWin())
+            {
+                _settingsGlobal.SetCellsToWin(_settingsGlobal.GetBoardHeight());
+                SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                    std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
+                if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+                delete _htSurfaces.at("TextStreakValue");
+                _htSurfaces["TextStreakValue"] = new Surface(pSdlSurfaceTemp);
+            }
+        }
+        else if (iMouseX >= 440 && iMouseX < 517 && iMouseY >= 164 && iMouseY < 241 && 
+            _settingsGlobal.GetBoardHeight() < 9) 
+        {
+            _settingsGlobal.SetBoardHeight(_settingsGlobal.GetBoardHeight() + 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetBoardHeight()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextHeightValue");
+            _htSurfaces["TextHeightValue"] = new Surface(pSdlSurfaceTemp);
+        }
+        else if (iMouseX >= 320 && iMouseX < 397 && iMouseY >= 253 && iMouseY < 330 && 
+            _settingsGlobal.GetCellsToWin() > 1) 
+        {
+            _settingsGlobal.SetCellsToWin(_settingsGlobal.GetCellsToWin() - 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextStreakValue");
+            _htSurfaces["TextStreakValue"] = new Surface(pSdlSurfaceTemp);
+        }
+        else if (iMouseX >= 440 && iMouseX < 517 && iMouseY >= 253 && iMouseY < 330 && 
+            _settingsGlobal.GetCellsToWin() < std::max(
+                _settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight())) 
+        {
+            _settingsGlobal.SetCellsToWin(_settingsGlobal.GetCellsToWin() + 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextStreakValue");
+            _htSurfaces["TextStreakValue"] = new Surface(pSdlSurfaceTemp);
+        }
+        else if (iMouseX >= 320 && iMouseX < 397 && iMouseY >= 342 && iMouseY < 419 && 
+            _settingsGlobal.GetAIDifficulty() > 1) 
+        {
+            _settingsGlobal.SetAIDifficulty(_settingsGlobal.GetAIDifficulty() - 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetAIDifficulty()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextDifficultyValue");
+            _htSurfaces["TextDifficultyValue"] = new Surface(pSdlSurfaceTemp);
+        }
+        else if (iMouseX >= 440 && iMouseX < 517 && iMouseY >= 342 && iMouseY < 419 && 
+            _settingsGlobal.GetAIDifficulty() < 8) 
+        {
+            _settingsGlobal.SetAIDifficulty(_settingsGlobal.GetAIDifficulty() + 1);
+            SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
+                std::to_string(_settingsGlobal.GetAIDifficulty()).c_str(), sdlColorSingle)};
+            if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
+
+            delete _htSurfaces.at("TextDifficultyValue");
+            _htSurfaces["TextDifficultyValue"] = new Surface(pSdlSurfaceTemp);
+        }
+
         break;
     }
     case EState::STATE_INGAME: // Inside the game we handle the click on the cells of the grid
     {
-        // SDL-wii doesn't support Wiimotes #2, #3 & #4 for now
         switch (uyButton)
         {
         case 0: // Button A
         {
+            if (iMouseX >= 50 && iMouseX < 138 && iMouseY >= 380 && iMouseY < 468) 
+                _eStateCurrent = EState::STATE_PROMPT;
+
             if (const Human* CpHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
             {
                 if (CpHuman->GetJoysticks().contains(uyWhich) ||
                     ((uyWhich == 0 || uyWhich == 4) && _bSingleController))
                 {
+                    _yPlayColumn = (iMouseX - _urInitialX) / 48;
+
                     if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                     {
                         _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
@@ -356,8 +494,23 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
             }
             break;
         }
-        case 1: Reset();            break;
-        case 6: _bRunning = false;  break;   // HOME button closes the game
+        }
+        break;
+    }
+    case EState::STATE_PROMPT:
+    {
+        switch (uyButton)
+        {
+        case 0: // Button A
+        {
+            if (iMouseY >= 240 && iMouseY < 277)
+            {
+                if (iMouseX >= 250 && iMouseX < 293) Reset();
+                else if (iMouseX >= 350 && iMouseX < 393)  _eStateCurrent = EState::STATE_INGAME;
+            }
+
+            break;
+        }
         }
         break;
     }
@@ -367,16 +520,10 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton) noexcept
         {
         case 0: // Button A
         {
-            // Get the position of the main Wiimote's IR
-            int32_t iMouseX = 0, iMouseY = 0;
-            SDL_GetMouseState(&iMouseX, &iMouseY);
-
-            if (iMouseX >= 0 && iMouseX < _surfaceDisplay.GetWidth() && iMouseY >= 0 &&
-                iMouseY < _surfaceDisplay.GetHeight()) Reset();
+            if (iMouseX >= 50 && iMouseX < 138 && iMouseY >= 380 && iMouseY < 468) Reset();
 
             break;
         }
-        case 6: _bRunning = false; break;   // HOME button closes the game
         }
         break;
     }
@@ -408,19 +555,21 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
     {
         //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
         {
+            Surface* pSurfaceDisplay{_htSurfaces.at("Display")};
+
             switch (uyValue)
             {
             case SDL_HAT_LEFT:
                 if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (pSurfaceDisplay->GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                    (pSurfaceDisplay->GetHeight() / _grid.GetHeight()));
                 break;
             case SDL_HAT_RIGHT:
                 if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                SDL_WarpMouse(_yPlayColumn * (_surfaceDisplay.GetWidth() / _grid.GetWidth()),
+                SDL_WarpMouse(_yPlayColumn * (pSurfaceDisplay->GetWidth() / _grid.GetWidth()),
                     _grid.GetNextCell(_yPlayColumn) *
-                    (_surfaceDisplay.GetHeight() / _grid.GetHeight()));
+                    (pSurfaceDisplay->GetHeight() / _grid.GetHeight()));
                 break;
             default: break;
             }

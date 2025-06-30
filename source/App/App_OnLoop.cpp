@@ -25,5 +25,5 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 void App::OnLoop() noexcept
 {
-    _animationYoshi.OnAnimate();
+    _animationLoading.OnAnimate();
 }

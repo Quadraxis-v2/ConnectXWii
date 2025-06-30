@@ -43,44 +43,38 @@
             "type": "shell",
             "command": "make",
             "args": ["run"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Deploy",
-            "type": "shell",
-            "command": "make",
-            "args": ["deploy"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            }
+            "dependsOn": ["Build"],
+            "problemMatcher": []
         },
         {
             "label": "Run checks",
             "type": "shell",
             "command": "make",
             "args": ["checks"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "none",
-                "isDefault": false
-            }
+            "problemMatcher": []
+        },
+        {
+            "label": "Package",
+            "type": "shell",
+            "command": "make",
+            "args": ["package"],
+            "dependsOn": ["Build"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Deploy",
+            "type": "shell",
+            "command": "make",
+            "args": ["deploy"],
+            "dependsOn": ["Package"],
+            "problemMatcher": []
         },
         {
             "label": "Clean",
             "type": "shell",
             "command": "make",
             "args": ["clean"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "none",
-                "isDefault": true
-            }
+            "problemMatcher": []
         }
     ]
 }
