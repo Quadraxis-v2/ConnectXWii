@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
+#include <string>
 
 #include <SDL.h>
 #include <SDL_video.h>
@@ -38,6 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Grid.hpp"
 #include "players/Joystick.hpp"
 #include "players/Player.hpp"
+#include "video/Button.hpp"
 #include "video/Animation.hpp"
 
 /**
@@ -87,6 +89,7 @@ private:
     uint16_t _urInitialX, _urInitialY;
 
     std::unordered_map<std::string, Surface*> _htSurfaces;
+    std::unordered_map<std::string, Button*> _htButtons;
     Animation _animationLoading;
 
     TTF_Font* _ttfFontContinuum;
@@ -303,6 +306,11 @@ private:
     virtual void OnUser(uint8_t uyType, int32_t iCode, void* pData1, void* pData2) noexcept override;
 
 
+    void LoadGame();
+    void LoadSettings();
+    Surface* LoadTexture(const std::string& CsPath) const;
+    Surface* GenerateText(const std::string& CsMessage, TTF_Font* ttfFontText, 
+        const SDL_Color& CsdlColorText) const;
     void RenderGrid(Surface& pSurfaceDisplay) const;
 
 };

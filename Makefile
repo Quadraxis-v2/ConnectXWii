@@ -107,7 +107,7 @@ all:
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol $(notdir $(CURDIR)).zip
 
 #---------------------------------------------------------------------------------
 checks:
@@ -120,13 +120,14 @@ test:
 
 #---------------------------------------------------------------------------------
 package:
-	@[ -d $(notdir $(CURDIR)) ] || mkdir -p $(notdir $(CURDIR))
-	@cp -u $(TARGET).dol $(notdir $(CURDIR))/
-#	@cp -u hbc/icon.png $(notdir $(CURDIR))/
-	@cp -u hbc/meta.xml $(notdir $(CURDIR))/
-	@cp -u -r data/gfx/ $(notdir $(CURDIR))/
-	@cp -u -r data/fonts/ $(notdir $(CURDIR))/
-	@zip -r $(notdir $(CURDIR)).zip $(notdir $(CURDIR))/
+	@[ -d apps/$(notdir $(CURDIR)) ] || mkdir -p apps/$(notdir $(CURDIR))
+	@cp -u $(TARGET).dol apps/$(notdir $(CURDIR))/
+#	@cp -u hbc/icon.png apps/$(notdir $(CURDIR))/
+	@cp -u hbc/meta.xml apps/$(notdir $(CURDIR))/
+	@cp -u -r data/gfx/ apps/$(notdir $(CURDIR))/
+	@cp -u -r data/fonts/ apps/$(notdir $(CURDIR))/
+	@zip -r $(notdir $(CURDIR)).zip apps/
+	@rm -fr apps
 
 #---------------------------------------------------------------------------------
 deploy:

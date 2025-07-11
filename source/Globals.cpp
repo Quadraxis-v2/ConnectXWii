@@ -32,9 +32,12 @@ const std::string Globals::SCsLogDefaultPath{std::filesystem::path("/apps/Connec
     .lexically_normal().string()};
 
 /**< Default path for storing the application's graphics */
-const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("/apps/ConnectXWii/gfx")
+const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("/apps/ConnectXWii/gfx/")
+    .lexically_normal().string()};
+
+const std::string Globals::SCsFontsDefaultPath{std::filesystem::path("/apps/ConnectXWii/fonts/")
     .lexically_normal().string()};
 
 /**< Default custom path for storing the application's graphics */
-const std::string Globals::SCsGraphicsCustomPath{std::filesystem::path("/apps/ConnectXWii/gfx/custom")
+const std::string Globals::SCsGraphicsCustomPath{std::filesystem::path("/apps/ConnectXWii/gfx/custom/")
     .lexically_normal().string()};

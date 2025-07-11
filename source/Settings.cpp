@@ -32,9 +32,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @brief Creates an object with the default settings
  */
 Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsToWin,
-	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bLogging) noexcept : 
+	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bIsDev) noexcept : 
 	_uyBoardWidth{uyBoardWidth}, _uyBoardHeight{uyBoardHeight}, _uyCellsToWin{uyCellsToWin},
-	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bEnableLogging{bLogging} {}
+	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bIsDev{bIsDev} {}
 
 
 /**
@@ -42,10 +42,10 @@ Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsT
  *
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyBoardWidth}, 
-	_uyBoardHeight{Globals::SCuyBoardHeight}, _uyCellsToWin{Globals::SCuyCellsToWin}, 
-	_uyAIDifficulty{Globals::SCuyAIDifficulty}, _sCustomPath{Globals::SCsGraphicsCustomPath}, 
-	_bEnableLogging{Globals::SCbEnableLogging}
+Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyBoardWidthDefault}, 
+	_uyBoardHeight{Globals::SCuyBoardHeightDefault}, _uyCellsToWin{Globals::SCuyCellsToWinDefault}, 
+	_uyAIDifficulty{Globals::SCuyAIDifficultyDefault}, _sCustomPath{Globals::SCsGraphicsCustomPath}, 
+	_bIsDev{Globals::SCbIsDev}
 {
     json_t* pJsonRoot{nullptr};			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
@@ -75,31 +75,32 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
 	}
 
 	/* New fields that are added to the class must be retrieved from here */
-	pJsonField = json_object_get(pJsonSettings, "Board width (1-9)");
+	pJsonField = json_object_get(pJsonSettings, "Board width");
 	if (json_is_integer(pJsonField)) _uyBoardWidth = json_integer_value(pJsonField);
-	pJsonField = json_object_get(pJsonSettings, "Board height (1-9)");
+	pJsonField = json_object_get(pJsonSettings, "Board height");
 	if (json_is_integer(pJsonField)) _uyBoardHeight = json_integer_value(pJsonField);
     pJsonField = json_object_get(pJsonSettings, "Number of cells to win");
 	if (json_is_integer(pJsonField)) _uyCellsToWin = json_integer_value(pJsonField);
-    pJsonField = json_object_get(pJsonSettings, "AI Difficulty (3-8)");
+    pJsonField = json_object_get(pJsonSettings, "AI Difficulty");
 	if (json_is_integer(pJsonField)) _uyAIDifficulty = json_integer_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
 	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Enable logging");
-	if (json_is_boolean(pJsonField)) _bEnableLogging = json_boolean_value(pJsonField);
+	if (json_is_boolean(pJsonField)) _bIsDev = json_boolean_value(pJsonField);
 
 	/* Validation */
-	if (_uyBoardWidth < 1) _uyBoardWidth = 1;
-	else if (_uyBoardWidth > 9) _uyBoardWidth = 9;
+	if (_uyBoardWidth < Globals::SCuyBoardWidthMin) _uyBoardWidth = Globals::SCuyBoardWidthMin;
+	else if (_uyBoardWidth > Globals::SCuyBoardWidthMax) _uyBoardWidth = Globals::SCuyBoardWidthMax;
 
-	if (_uyBoardHeight < 1) _uyBoardHeight = 1;
-	else if (_uyBoardHeight > 9) _uyBoardHeight = 9;
+	if (_uyBoardHeight < Globals::SCuyBoardHeightMin) _uyBoardHeight = Globals::SCuyBoardHeightMin;
+	else if (_uyBoardHeight > Globals::SCuyBoardHeightMax) _uyBoardHeight = Globals::SCuyBoardHeightMax;
 
-	if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
+	if (_uyCellsToWin < Globals::SCuyCellsToWinMin) _uyCellsToWin = Globals::SCuyCellsToWinMin;
+	else if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
 		_uyCellsToWin = std::max(_uyBoardWidth, _uyBoardHeight);
 
-	if (_uyAIDifficulty < 3) _uyAIDifficulty = 3;
-	else if (_uyAIDifficulty > 8) _uyAIDifficulty = 8;
+	if (_uyAIDifficulty < Globals::SCuyAIDifficultyMin) _uyAIDifficulty = Globals::SCuyAIDifficultyMin;
+	else if (_uyAIDifficulty > Globals::SCuyAIDifficultyMax) _uyAIDifficulty = Globals::SCuyAIDifficultyMax;
 
 	// Free the objects from memory
     json_decref(pJsonRoot);
@@ -111,18 +112,18 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
  *
  * @param CsPath the path where the settings are to be stored
  */
-void Settings::Save(const std::string& CsPath) const
+void Settings::Dump(const std::string& CsPath) const
 {
     json_t* pJsonRoot{json_object()};		// Root object of the JSON file
     json_t* pJsonSettings{json_object()};	// "Settings" JSON object
 
 	/* New fields that are added to the class must be dumped from here */
-    json_object_set_new(pJsonSettings, "Board width (1-9)", json_integer(_uyBoardWidth));
-    json_object_set_new(pJsonSettings, "Board height (1-9)", json_integer(_uyBoardHeight));
+    json_object_set_new(pJsonSettings, "Board width", json_integer(_uyBoardWidth));
+    json_object_set_new(pJsonSettings, "Board height", json_integer(_uyBoardHeight));
     json_object_set_new(pJsonSettings, "Number of cells to win", json_integer(_uyCellsToWin));
-    json_object_set_new(pJsonSettings, "AI Difficulty (3-8)", json_integer(_uyAIDifficulty));
+    json_object_set_new(pJsonSettings, "AI Difficulty", json_integer(_uyAIDifficulty));
 	json_object_set_new(pJsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
-	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bEnableLogging));
+	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bIsDev));
 
 	// Attach the settings to the root
     json_object_set_new(pJsonRoot, "Settings", pJsonSettings);
