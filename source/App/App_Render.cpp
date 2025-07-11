@@ -90,14 +90,6 @@ void App::OnRender()
     {
         // Draw buttons
         Surface* pSurfaceButtons{_htSurfaces.at("DefaultHome")};
-        const Button* CpButtonMinusWidth{_htButtons.at("MinusWidth")};
-        const Button* CpButtonPlusWidth{_htButtons.at("PlusWidth")};
-        const Button* CpButtonMinusHeight{_htButtons.at("MinusHeight")};
-        const Button* CpButtonPlusHeight{_htButtons.at("PlusHeight")};
-        const Button* CpButtonMinusStreak{_htButtons.at("MinusStreak")};
-        const Button* CpButtonPlusStreak{_htButtons.at("PlusStreak")};
-        const Button* CpButtonMinusDifficulty{_htButtons.at("MinusDifficulty")};
-        const Button* CpButtonPlusDifficulty{_htButtons.at("PlusDifficulty")};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
         _htSurfaces.at("Settings")->OnDraw(*pSurfaceDisplay);
@@ -106,12 +98,14 @@ void App::OnRender()
         _htSurfaces.at("TextWidth")->OnDraw(*pSurfaceDisplay, 170, 100);
         if (_settingsGlobal.GetBoardWidth() > Globals::SCuyBoardWidthMin) 
         {
+            const Button* CpButtonMinusWidth{_htButtons.at("MinusWidth")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusWidth->GetTopLeft().fX, 
                 CpButtonMinusWidth->GetTopLeft().fY, 157, 129, 77, 77);
         }
         _htSurfaces.at("TextWidthValue")->OnDraw(*pSurfaceDisplay, 410, 100);
         if (_settingsGlobal.GetBoardWidth() < Globals::SCuyBoardWidthMax)
         {
+            const Button* CpButtonPlusWidth{_htButtons.at("PlusWidth")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusWidth->GetTopLeft().fX, 
                 CpButtonPlusWidth->GetTopLeft().fY, 30, 129, 77, 77);
         }
@@ -119,12 +113,14 @@ void App::OnRender()
         _htSurfaces.at("TextHeight")->OnDraw(*pSurfaceDisplay, 170, 190);
         if (_settingsGlobal.GetBoardHeight() > Globals::SCuyBoardHeightMin) 
         {
+            const Button* CpButtonMinusHeight{_htButtons.at("MinusHeight")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusHeight->GetTopLeft().fX, 
                 CpButtonMinusHeight->GetTopLeft().fY, 157, 129, 77, 77);
         }
         _htSurfaces.at("TextHeightValue")->OnDraw(*pSurfaceDisplay, 410, 190);
         if (_settingsGlobal.GetBoardHeight() < Globals::SCuyBoardHeightMax) 
         {
+            const Button* CpButtonPlusHeight{_htButtons.at("PlusHeight")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusHeight->GetTopLeft().fX, 
                 CpButtonPlusHeight->GetTopLeft().fY, 30, 129, 77, 77);
         }
@@ -132,6 +128,7 @@ void App::OnRender()
         _htSurfaces.at("TextStreak")->OnDraw(*pSurfaceDisplay, 170, 275);
         if (_settingsGlobal.GetCellsToWin() > Globals::SCuyCellsToWinMin) 
         {
+            const Button* CpButtonMinusStreak{_htButtons.at("MinusStreak")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
             CpButtonMinusStreak->GetTopLeft().fX, CpButtonMinusStreak->GetTopLeft().fY, 157, 129, 77, 77);
         }
@@ -139,6 +136,7 @@ void App::OnRender()
         if (_settingsGlobal.GetCellsToWin() < std::max(_settingsGlobal.GetBoardWidth(), 
             _settingsGlobal.GetBoardHeight()))
         {
+            const Button* CpButtonPlusStreak{_htButtons.at("PlusStreak")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusStreak->GetTopLeft().fX, 
                 CpButtonPlusStreak->GetTopLeft().fY, 30, 129, 77, 77);
         }
@@ -146,12 +144,14 @@ void App::OnRender()
         _htSurfaces.at("TextDifficulty")->OnDraw(*pSurfaceDisplay, 170, 375);
         if (_settingsGlobal.GetAIDifficulty() > Globals::SCuyAIDifficultyMin) 
         {
+            const Button* CpButtonMinusDifficulty{_htButtons.at("MinusDifficulty")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusDifficulty->GetTopLeft().fX, 
                 CpButtonMinusDifficulty->GetTopLeft().fY, 157, 129, 77, 77);
         }
         _htSurfaces.at("TextDifficultyValue")->OnDraw(*pSurfaceDisplay, 410, 375);
         if (_settingsGlobal.GetAIDifficulty() < Globals::SCuyAIDifficultyMax) 
         {
+            const Button* CpButtonPlusDifficulty{_htButtons.at("PlusDifficulty")};
             pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusDifficulty->GetTopLeft().fX, 
                 CpButtonPlusDifficulty->GetTopLeft().fY, 30, 129, 77, 77);
         }
