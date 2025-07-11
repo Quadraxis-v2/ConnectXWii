@@ -32,7 +32,7 @@ public:
     const std::string& GetName() const noexcept;
     void SetName(const std::string& CsName) noexcept;
     const std::string& GetLogPath() const noexcept;
-    void SetLogPath(const std::string CsLogPath) noexcept;
+    void SetLogPath(const std::string& CsLogPath) noexcept;
 
     /**
      * @brief Construct a new Logger object and erases the contents of CsPath if it exists
@@ -98,7 +98,7 @@ private:
 inline const std::string& Logger::GetName() const noexcept { return _sName; }
 inline void Logger::SetName(const std::string& CsName) noexcept { _sName = CsName; }
 inline const std::string& Logger::GetLogPath() const noexcept { return _sLogPath; }
-inline void Logger::SetLogPath(const std::string CsLogPath) noexcept { _sLogPath = CsLogPath; }
+inline void Logger::SetLogPath(const std::string& CsLogPath) noexcept { _sLogPath = CsLogPath; }
 
 
 inline void Logger::Debug(const std::string& CsMessage) const { Log(CsMessage, LogLevel::DEBUG); }

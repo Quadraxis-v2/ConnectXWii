@@ -32,8 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Surface
 {
 public:
-    friend class App;
-
+    /* Getters and setters */
     SDL_PixelFormat* GetPixelFormat() const noexcept;
     int32_t GetWidth() const noexcept;
     int32_t GetHeight() const noexcept;
@@ -42,26 +41,16 @@ public:
 
 
     /**
-     * @brief Construct a new void Surface
-     * 
-     * @param iWidth the width of the surface
-     * @param iHeight the height of the surface
-     * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
-     */
-    explicit Surface(int32_t iWidth = 0, int32_t iHeight = 0, 
-        uint8_t uyBitsPerPixel = SDL_GetVideoSurface()->format->BitsPerPixel);
-
-
-    /**
-     * @brief Constructor from a bitmap image in the filesystem
+     * @brief Constructor from an image in the filesystem
      *
      * @param CsFilePath the path to the bitmap image
      */
-    explicit Surface(const std::string& CsFilePath);
+    explicit Surface(const std::string& CsFilePath, uint8_t uyAlpha = SDL_ALPHA_OPAQUE, 
+        int16_t rColourKeyRed = -1, int16_t rColourKeyGreen = -1, int16_t rColourKeyBlue = -1);
 
     /**
      * @brief Conversion constructor from raw SDL Surface
-     * 
+     *
      * @param pSdlSurface the raw surface
      */
     explicit Surface(SDL_Surface* pSdlSurface) noexcept;
@@ -77,29 +66,43 @@ public:
     Surface& operator =(SDL_Surface* pSdlSurface) noexcept; /**< Conversion and assignment from raw surface */
     operator SDL_Surface*() const noexcept;                 /**< Conversion operator to raw surface */
 
-    /**
-     * @brief Blits an entire surface into this surface
-     *
-     * @param CsdlSurfaceSource the source surface
-     * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
-     * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
-     */
-    void OnDraw(const Surface& CsdlSurfaceSource, int16_t rDestinationX = 0, int16_t rDestinationY = 0);
 
     /**
-     * @brief Blits part of a surface into this surface
-     *
-     * @param CsdlSurfaceSource the source surface
-     * @param rSourceX the X component of the origin coordinate of the portion of the source surface
-     * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
-     * @param urSourceWidth the width in pixels of the portion of this surface that will be blitted
-     * @param urSourceHeight the height in pixels of the portion of the source surface that will be blitted
-     * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
-     * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
+     * @brief Locks the surface for direct pixel access
      */
-    void OnDraw(const Surface& CsdlSurfaceSource, int16_t rSourceX, int16_t rSourceY,
-        uint16_t urSourceWidth, uint16_t urSourceHeight, int16_t rDestinationX = 0, 
-        int16_t rDestinationY = 0);
+    void Lock() noexcept;
+
+    /**
+     * @brief Unlocks the surface after direct pixel access
+     */
+    void Unlock() noexcept;
+
+
+    /**
+     * @brief Retrieves the value of the pixel at (urX, urY)
+     *
+     * @param urX the X coordinate of the pixel
+     * @param urY the Y coordinate of the pixel
+     * @param puyRed the red RGB component of the pixel
+     * @param puyGreen the green RGB component of the pixel
+     * @param puyBlue the blue RGB component of the pixel
+     * @param puyAlpha the alpha component of the pixel
+     */
+    void ReadPixel(uint16_t urX, uint16_t urY, uint8_t* puyRed, uint8_t* puyGreen, uint8_t* puyBlue, 
+        uint8_t* puyAlpha);
+
+
+    /**
+     * @brief Sets the pixel at (urX, urY) to the given value
+     *
+     * @param urX the X coordinate of the pixel
+     * @param urY the Y coordinate of the pixel
+     * @param uyRed the red RGB component of the pixel
+     * @param uyGreen the green RGB component of the pixel
+     * @param uyBlue the blue RGB component of the pixel
+     */
+    void DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
+
 
     /**
      * @brief Makes a color in this surface be transparent. If the color requested is not found, the most
@@ -111,21 +114,46 @@ public:
      */
     void SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
 
+
+    /**
+     * @brief Upscales a surface
+     *
+     * @param urScaleX the scale factor for the X axis
+     * @param urScaleY the scale factor for the Y axis
+     */
+    void Scale(uint16_t urScaleX, uint16_t urScaleY);
+
+
+    /**
+     * @brief Blits part of this surface into another surface
+     *
+     * @param sdlSurfaceDestination the destination surface
+     * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
+     * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
+     * @param rSourceX the X component of the origin coordinate of the portion of the source surface
+     * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
+     * @param rSourceWidth the width in pixels of the portion of this surface that will be blitted
+     * @param rSourceHeight the height in pixels of the portion of this surface that will be blitted
+     */
+    void OnDraw(Surface& sdlSurfaceDestination, int16_t rDestinationX = 0, int16_t rDestinationY = 0,
+        int16_t rSourceX = 0, int16_t rSourceY = 0, int16_t rSourceWidth = -1, int16_t rSourceHeight = -1);
+
 private:
+    std::string _sPath;     /**< The path to the image in the filesystem */
     SDL_Surface* _pSdlSurface;  /**< The raw surface */
 
 };
 
 
-inline SDL_PixelFormat* Surface::GetPixelFormat() const noexcept 
+inline SDL_PixelFormat* Surface::GetPixelFormat() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->format : nullptr); }
-inline int32_t Surface::GetWidth() const noexcept 
+inline int32_t Surface::GetWidth() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->w : 0); }
-inline int32_t Surface::GetHeight() const noexcept 
+inline int32_t Surface::GetHeight() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->h : 0); }
-inline uint16_t Surface::GetPitch() const noexcept 
+inline uint16_t Surface::GetPitch() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->pitch : 0); }
-inline void* Surface::GetPixels() const noexcept 
+inline void* Surface::GetPixels() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->pixels : nullptr); }
 
 

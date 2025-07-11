@@ -35,3 +35,11 @@
 
 # VSCode log files
 *.log
+
+# Deployment cache
+Connect?Wii/
+Connect?Wii.zip
+
+# Cppcheck
+cppcheck/*
+!cppcheck/wii.cfg

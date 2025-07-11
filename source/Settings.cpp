@@ -23,20 +23,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ios>
 #include <algorithm>
 #include <jansson.h>
+
 #include "../include/Settings.hpp"
-
-
-/** Default path for storing the application's settings */
-std::string Settings::SCsDefaultPath{"apps/ConnectXWii/settings.json"};
+#include "../include/Globals.hpp"
 
 
 /**
  * @brief Creates an object with the default settings
  */
 Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsToWin,
-	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bLogging) noexcept : 
+	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bIsDev) noexcept : 
 	_uyBoardWidth{uyBoardWidth}, _uyBoardHeight{uyBoardHeight}, _uyCellsToWin{uyCellsToWin},
-	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bEnableLogging{bLogging} {}
+	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bIsDev{bIsDev} {}
 
 
 /**
@@ -44,8 +42,10 @@ Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsT
  *
  * @param CsFilePath the path to the JSON file holding the settings
  */
-Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{7}, _uyBoardHeight{6}, _uyCellsToWin{4},
-	_uyAIDifficulty{4}, _sCustomPath{"/apps/ConnectXWii/gfx/custom"}, _bEnableLogging{false}
+Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyBoardWidthDefault}, 
+	_uyBoardHeight{Globals::SCuyBoardHeightDefault}, _uyCellsToWin{Globals::SCuyCellsToWinDefault}, 
+	_uyAIDifficulty{Globals::SCuyAIDifficultyDefault}, _sCustomPath{Globals::SCsGraphicsCustomPath}, 
+	_bIsDev{Globals::SCbIsDev}
 {
     json_t* pJsonRoot{nullptr};			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
@@ -86,11 +86,21 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{7}, _uyBoardHe
 	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
 	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Enable logging");
-	if (json_is_boolean(pJsonField)) _bEnableLogging = json_boolean_value(pJsonField);
+	if (json_is_boolean(pJsonField)) _bIsDev = json_boolean_value(pJsonField);
 
 	/* Validation */
-	if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
+	if (_uyBoardWidth < Globals::SCuyBoardWidthMin) _uyBoardWidth = Globals::SCuyBoardWidthMin;
+	else if (_uyBoardWidth > Globals::SCuyBoardWidthMax) _uyBoardWidth = Globals::SCuyBoardWidthMax;
+
+	if (_uyBoardHeight < Globals::SCuyBoardHeightMin) _uyBoardHeight = Globals::SCuyBoardHeightMin;
+	else if (_uyBoardHeight > Globals::SCuyBoardHeightMax) _uyBoardHeight = Globals::SCuyBoardHeightMax;
+
+	if (_uyCellsToWin < Globals::SCuyCellsToWinMin) _uyCellsToWin = Globals::SCuyCellsToWinMin;
+	else if (_uyCellsToWin > _uyBoardWidth && _uyCellsToWin > _uyBoardHeight)
 		_uyCellsToWin = std::max(_uyBoardWidth, _uyBoardHeight);
+
+	if (_uyAIDifficulty < Globals::SCuyAIDifficultyMin) _uyAIDifficulty = Globals::SCuyAIDifficultyMin;
+	else if (_uyAIDifficulty > Globals::SCuyAIDifficultyMax) _uyAIDifficulty = Globals::SCuyAIDifficultyMax;
 
 	// Free the objects from memory
     json_decref(pJsonRoot);
@@ -102,7 +112,7 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{7}, _uyBoardHe
  *
  * @param CsPath the path where the settings are to be stored
  */
-void Settings::Save(const std::string& CsPath) const
+void Settings::Dump(const std::string& CsPath) const
 {
     json_t* pJsonRoot{json_object()};		// Root object of the JSON file
     json_t* pJsonSettings{json_object()};	// "Settings" JSON object
@@ -113,7 +123,7 @@ void Settings::Save(const std::string& CsPath) const
     json_object_set_new(pJsonSettings, "Number of cells to win", json_integer(_uyCellsToWin));
     json_object_set_new(pJsonSettings, "AI Difficulty", json_integer(_uyAIDifficulty));
 	json_object_set_new(pJsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
-	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bEnableLogging));
+	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bIsDev));
 
 	// Attach the settings to the root
     json_object_set_new(pJsonRoot, "Settings", pJsonSettings);

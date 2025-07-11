@@ -23,6 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <string>
 
+#include "Globals.hpp"
+
 
 /**
  * @brief Class for managing application settings
@@ -30,9 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class Settings
 {
 public:
-    static std::string SCsDefaultPath;   /**< Default path for storing the application's settings */
-
-
     /* Getters and setters */
     uint8_t GetBoardWidth() const noexcept;
     void SetBoardWidth(uint8_t yBoardWidth) noexcept;
@@ -44,16 +43,19 @@ public:
     void SetAIDifficulty(uint8_t yAIDifficulty) noexcept;
     const std::string& GetCustomPath() const noexcept;
     void SetCustomPath(const std::string& CsCustomPath) noexcept;
-    bool GetHasLogging() const noexcept;
-    void SetHasLogging(bool bHasLogging) noexcept;
+    bool GetIsDev() const noexcept;
+    void SetIsDev(bool bHasLogging) noexcept;
 
 
     /**
      * @brief Creates an object with the default settings
      */
-    explicit Settings(uint8_t uyBoardWidth = 7, uint8_t uyBoardHeight = 6, uint8_t uyCellsToWin = 4,
-        uint8_t uyAIDifficulty = 4, const std::string& sCustomPath = "/apps/ConnectXWii/gfx/custom",
-        bool bEnableLogging = false) noexcept;
+    explicit Settings(uint8_t uyBoardWidth = Globals::SCuyBoardWidthDefault, 
+        uint8_t uyBoardHeight = Globals::SCuyBoardHeightDefault, 
+        uint8_t uyCellsToWin = Globals::SCuyCellsToWinDefault,
+        uint8_t uyAIDifficulty = Globals::SCuyAIDifficultyDefault, 
+        const std::string& sCustomPath = Globals::SCsGraphicsCustomPath, 
+        bool bIsDev = Globals::SCbIsDev) noexcept;
 
     /**
      * @brief Constructs a new object by reading a settings file
@@ -66,15 +68,15 @@ public:
      * @brief Saves the settings on disk
      * @param CsPath the path where the settings are to be stored
      */
-    void Save(const std::string& CsPath) const;
+    void Dump(const std::string& CsPath) const;
 
 private:
-    uint8_t _uyBoardWidth;
-    uint8_t _uyBoardHeight;
-    uint8_t _uyCellsToWin;
-    uint8_t _uyAIDifficulty;
-    std::string _sCustomPath;
-    bool _bEnableLogging;
+    uint8_t _uyBoardWidth;      /**< Game board width */
+    uint8_t _uyBoardHeight;     /**< Game board height */
+    uint8_t _uyCellsToWin;      /**< Number of game pieces to win */
+    uint8_t _uyAIDifficulty;    /**< AI exploration depth */
+    std::string _sCustomPath;   /**< Custom path for sprites */
+    bool _bIsDev;               /**< Enable dev tools */
     
 };
 
@@ -90,7 +92,7 @@ inline void Settings::SetAIDifficulty(uint8_t yAIDifficulty) noexcept { _uyAIDif
 inline const std::string& Settings::GetCustomPath() const noexcept { return _sCustomPath; }
 inline void Settings::SetCustomPath(const std::string& CsCustomPath) noexcept 
 { _sCustomPath = CsCustomPath; }
-inline bool Settings::GetHasLogging() const noexcept { return _bEnableLogging; }
-inline void Settings::SetHasLogging(bool bHasLogging) noexcept { _bEnableLogging = bHasLogging; }
+inline bool Settings::GetIsDev() const noexcept { return _bIsDev; }
+inline void Settings::SetIsDev(bool bIsDev) noexcept { _bIsDev = bIsDev; }
 
 #endif

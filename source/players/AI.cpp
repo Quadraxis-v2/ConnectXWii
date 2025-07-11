@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param CePlayerMark the mark assigned to this player
  * @param uySearchLimit the depth of levels that the AI will explore
  */
-AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player{CePlayerMark},
+AI::AI(const Grid::EPlayerMark& CePlayerMark, uint8_t uySearchLimit) : Player(CePlayerMark),
     _uySearchLimit{uySearchLimit} {}
 
 
@@ -160,7 +160,7 @@ int32_t AI::Heuristic(const Grid& Cgrid) const noexcept
                 ePlayerMarkLast = Cgrid[Cgrid.GetHeight() - 1][i];
                 uySamePlayerMarkCount = 1;
                 uyEmptyCellCount = 0;
-                quPlayerMarks = std::queue<Grid::EPlayerMark>{};
+                quPlayerMarks = std::queue<Grid::EPlayerMark>();
                 quPlayerMarks.push(ePlayerMarkLast);
 
                 for (int8_t j = Cgrid.GetHeight() - 2;

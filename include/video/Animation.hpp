@@ -33,8 +33,8 @@ class Animation
 public:
     uint8_t GetMaxFrames() const noexcept;
     void SetMaxFrames(uint8_t uyMaxFrames) noexcept;
-    uint16_t GetFrameRate() const noexcept;
-    void SetFrameRate(uint16_t urFrameRate) noexcept;
+    uint16_t GetInterval() const noexcept;
+    void SetInterval(uint16_t urInterval) noexcept;
     bool IsOscillate() const noexcept;
     void SetOscillate(bool bOscillate) noexcept;
     uint8_t GetCurrentFrame() const noexcept;
@@ -47,23 +47,23 @@ public:
      * @brief Construct a new Animation
      * 
      * @param uyMaxFrames the number of frames the animation has
-     * @param urFrameRate the time between frame changes, in milliseconds
+     * @param urInterval the time between frame changes, in milliseconds
      * @param bOscillate signals if the animation goes back and forth
      * @param yFrameIncrement the distance between frames in the animation
      */
-    Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate = false, 
+    Animation(uint8_t uyMaxFrames, uint16_t urInterval, bool bOscillate = false, 
         int8_t yFrameIncrement = 1) noexcept;
 
 
     /**
-     * @brief Goes automatically to the next frame if enough time has passed
+     * @brief Goes to the next frame if enough time has passed
      */
     void OnAnimate() noexcept;
 
 
 private:
     uint8_t _uyMaxFrames;       /**< The number of frames of the animation */
-    uint16_t _urFrameRate;      /**< The time between frame changes, in milliseconds */
+    uint16_t _urInterval;       /**< The time between frame changes, in milliseconds */
     bool _bOscillate;           /**< Signals if the animation goes back and forth */
     int8_t _yCurrentFrame;      /**< The current frame that the animation is in */
     int8_t _yFrameIncrement;    /**< The distance between frames in the animation */
@@ -74,8 +74,8 @@ private:
 
 inline uint8_t Animation::GetMaxFrames() const noexcept { return _uyMaxFrames; }
 inline void Animation::SetMaxFrames(uint8_t uyMaxFrames) noexcept { _uyMaxFrames = uyMaxFrames; }
-inline uint16_t Animation::GetFrameRate() const noexcept { return _urFrameRate; }
-inline void Animation::SetFrameRate(uint16_t urFrameRate) noexcept { _urFrameRate = urFrameRate; }
+inline uint16_t Animation::GetInterval() const noexcept { return _urInterval; }
+inline void Animation::SetInterval(uint16_t urInterval) noexcept { _urInterval = urInterval; }
 inline bool Animation::IsOscillate() const noexcept { return _bOscillate; }
 inline void Animation::SetOscillate(bool bOscillate) noexcept { _bOscillate = bOscillate; }
 inline uint8_t Animation::GetCurrentFrame() const noexcept { return _yCurrentFrame; }

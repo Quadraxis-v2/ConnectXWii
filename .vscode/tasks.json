@@ -39,15 +39,42 @@
             }
         },
         {
+            "label": "Run",
+            "type": "shell",
+            "command": "make",
+            "args": ["run"],
+            "dependsOn": ["Build"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run checks",
+            "type": "shell",
+            "command": "make",
+            "args": ["checks"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Package",
+            "type": "shell",
+            "command": "make",
+            "args": ["package"],
+            "dependsOn": ["Build"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Deploy",
+            "type": "shell",
+            "command": "make",
+            "args": ["deploy"],
+            "dependsOn": ["Package"],
+            "problemMatcher": []
+        },
+        {
             "label": "Clean",
             "type": "shell",
             "command": "make",
             "args": ["clean"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "none",
-                "isDefault": true
-            }
-        },
+            "problemMatcher": []
+        }
     ]
 }

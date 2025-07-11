@@ -25,9 +25,9 @@ INCLUDES	:=	include include/audio include/players include/video
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` \
-			`sdl-config --cflags` `$(PREFIX)pkg-config libturbojpeg zlib jansson SDL_image \
-			SDL_mixer --cflags`
+CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` `sdl-config --cflags` \
+			`$(PREFIX)pkg-config libturbojpeg zlib jansson freetype2 SDL_image \
+			SDL_mixer SDL_ttf --cflags`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -35,8 +35,9 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`$(PREFIX)pkg-config libturbojpeg zlib jansson SDL_image SDL_mixer --libs` \
-			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse -lbte -lfat -logc -lm
+LIBS	:=	`$(PREFIX)pkg-config SDL_ttf SDL_mixer SDL_image freetype2 jansson zlib libturbojpeg --libs` \
+			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse \
+			-lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -96,7 +97,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES), -iquote $(CURDIR)/$(dir)) \
 export LIBPATHS	:= -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-.PHONY: $(BUILD) all clean run test
+.PHONY: all clean checks test package deploy run
 
 #---------------------------------------------------------------------------------
 all:
@@ -106,16 +107,35 @@ all:
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol $(notdir $(CURDIR)).zip
 
 #---------------------------------------------------------------------------------
-run:
-	wiiload $(TARGET).dol "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
+checks:
+	cppcheck source/ --enable=all --verbose --cppcheck-build-dir=cppcheck/ --error-exitcode=1 \
+		--platform=cppcheck/wii.cfg --suppress=missingIncludeSystem --suppress=unusedFunction
 
 #---------------------------------------------------------------------------------
 test:
 	dolphin --debugger --logger --audio_emulation=LLE --exec=$(TARGET).elf
 
+#---------------------------------------------------------------------------------
+package:
+	@[ -d apps/$(notdir $(CURDIR)) ] || mkdir -p apps/$(notdir $(CURDIR))
+	@cp -u $(TARGET).dol apps/$(notdir $(CURDIR))/
+#	@cp -u hbc/icon.png apps/$(notdir $(CURDIR))/
+	@cp -u hbc/meta.xml apps/$(notdir $(CURDIR))/
+	@cp -u -r data/gfx/ apps/$(notdir $(CURDIR))/
+	@cp -u -r data/fonts/ apps/$(notdir $(CURDIR))/
+	@zip -r $(notdir $(CURDIR)).zip apps/
+	@rm -fr apps
+
+#---------------------------------------------------------------------------------
+deploy:
+	wiiload $(notdir $(CURDIR)).zip
+
+#---------------------------------------------------------------------------------
+run:
+	wiiload $(TARGET).dol "sd:/apps/$(notdir $(CURDIR))/$(TARGET).dol"
 
 #---------------------------------------------------------------------------------
 else

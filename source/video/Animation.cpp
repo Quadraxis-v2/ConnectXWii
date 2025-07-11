@@ -24,18 +24,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_timer.h>
 
 #include "../../include/video/Animation.hpp"
+#include "../../include/video/Time.hpp"
 
 
 /**
  * @brief Construct a new Animation
  * 
  * @param uyMaxFrames the number of frames the animation has
- * @param urFrameRate the time between frame changes, in milliseconds
+ * @param urInterval the time between frame changes, in milliseconds
  * @param bOscillate signals if the animation goes back and forth
  * @param yFrameIncrement the distance between frames in the animation
  */
-Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate, 
-    int8_t yFrameIncrement) noexcept : _uyMaxFrames{uyMaxFrames}, _urFrameRate{urFrameRate}, 
+Animation::Animation(uint8_t uyMaxFrames, uint16_t urInterval, bool bOscillate, 
+    int8_t yFrameIncrement) noexcept : _uyMaxFrames{uyMaxFrames}, _urInterval{urInterval}, 
     _bOscillate{bOscillate}, _yCurrentFrame{0}, _yFrameIncrement{yFrameIncrement}, _uiOldTime{0}
 {}
 
@@ -45,16 +46,14 @@ Animation::Animation(uint8_t uyMaxFrames, uint16_t urFrameRate, bool bOscillate,
  */
 void Animation::OnAnimate() noexcept
 {
-    if(_uiOldTime + _urFrameRate > SDL_GetTicks()) return;
- 
-    _uiOldTime = SDL_GetTicks();
+    if(_uiOldTime + _urInterval > Time::GetInstance().GetTime()) return;
 
-    _yCurrentFrame += _yFrameIncrement;
+    if(_bOscillate && ((_yFrameIncrement > 0 && _yCurrentFrame + _yFrameIncrement >= _uyMaxFrames) || 
+        (_yFrameIncrement < 0 && _yCurrentFrame + _yFrameIncrement < 0))) 
+        _yFrameIncrement = -_yFrameIncrement;
 
-    if(_bOscillate && ((_yFrameIncrement > 0 && _yCurrentFrame >= _uyMaxFrames - 1) || 
-        (_yFrameIncrement < 0 && _yCurrentFrame <= 0))) _yFrameIncrement = -_yFrameIncrement;
-    
-    _yCurrentFrame = (_yCurrentFrame % _uyMaxFrames + _uyMaxFrames) % _uyMaxFrames;
+    _yCurrentFrame = (_yCurrentFrame + _yFrameIncrement) % _uyMaxFrames;
+    _uiOldTime = Time::GetInstance().GetTime();
 }
  
 

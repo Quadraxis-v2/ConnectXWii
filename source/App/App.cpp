@@ -18,15 +18,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-#include <cstdint>
-#include <stdexcept>
-#include <unordered_map>
-#include <utility>
 #include <ios>
-#include <filesystem>
+#include <cstdint>
+#include <utility>
+#include <stdexcept>
+#include <algorithm>
+#include <string>
 
 #include <SDL.h>
+#include <SDL_config.h>
+#include <SDL_error.h>
 #include <SDL_video.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
 #include <SDL_joystick.h>
@@ -34,27 +39,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_timer.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
 
 #ifdef __wii__
+    #include <sstream>
     #include <cstdio>
+
+    #include <ogc/system.h>
+    #include <fat.h>
+    #include <ogc/video.h>
+    #include <ogc/gx_struct.h>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
-    #include <ogc/lwp.h>
+    #include <wiiuse/wpad.h>
+	#include <ogc/pad.h>
+
     #include "../../include/players/WiiController.hpp"
     #include "../../include/players/GameCubeController.hpp"
-    #include "../../include/players/Human.hpp"
 #endif
 
 #include "../../include/App.hpp"
-#include "../../include/EventListener.hpp"
-#include "../../include/video/Surface.hpp"
-#include "../../include/Settings.hpp"
-#include "../../include/Grid.hpp"
-#include "../../include/players/Joystick.hpp"
-#include "../../include/players/Player.hpp"
+#include "../../include/Globals.hpp"
+#include "../../include/players/Human.hpp"
+#include "../../include/video/Vector3.hpp"
 #include "../../include/EventManager.hpp"
+
+
+#ifdef __wii__
+    void EmergencyInitialise();
+#endif
 
 
 App& App::GetInstance()
@@ -67,107 +79,175 @@ App& App::GetInstance()
 /**
  * @brief Default constructor
  */
-App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
-    _loggerApp{"App", "apps/ConnectXWii/log.txt"}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
-    _bStopThreads{false}, _surfaceDisplay{SDL_GetVideoSurface()}, _surfaceStart{}, _surfaceGrid{},
-    _surfaceMarker1{}, _surfaceMarker2{}, _surfaceWinPlayer1{}, _surfaceWinPlayer2{}, _surfaceDraw{},
-    _surfaceCursor{}, _surfaceCursorShadow{}, _grid{}, _htJoysticks{}, _vectorpPlayers{},
-    _uyCurrentPlayer{0}, _bSingleController{true}, _yPlayColumn{0}
+App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
+    _loggerApp{"App", Globals::SCsLogDefaultPath}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
+    _bStopThreads{false}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{},
+    _bSingleController{true}, _yPlayColumn{0}, _urInitialX{0}, _urInitialY{0}, _htSurfaces{}, _htButtons{}, 
+    _animationLoading{16, 100}, _ttfFontContinuum{nullptr}
 {
+    std::ios_base::sync_with_stdio();
+
+	uint32_t uiSDLInitFlags = SDL_INIT_EVERYTHING;
+
+	#ifdef SDL_CDROM_DISABLED
+		uiSDLInitFlags &= ~SDL_INIT_CDROM; // SDL-wii does not support CDROMs
+	#endif
+
+	#ifdef __wii__
+		SYS_STDIO_Report(false);	// Redirect stderr and stdlog
+	#endif
+
+    try
+    {
+        if (SDL_Init(uiSDLInitFlags) == -1)
+        {
+            #ifdef __wii__
+                if (!fatInitDefault())	// libfat is initialised in SDL_wii
+                {
+                    std::ostringstream ossError{SDL_GetError()};
+                    ossError << " - Error initialising libfat";
+                    throw std::ios_base::failure(ossError.str());
+                }
+            #endif
+            throw std::runtime_error(SDL_GetError());
+        }
+
+        uiSDLInitFlags = SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/;
+        const SDL_VideoInfo* CpSdlVideoInfoBest{SDL_GetVideoInfo()};
+        if (CpSdlVideoInfoBest->hw_available) uiSDLInitFlags |= SDL_HWSURFACE;
+
+        
+        #ifdef __wii__
+            VIDEO_Init();
+            const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
+            int32_t iWidth{CpGXRMode->fbWidth}, iHeight{CpGXRMode->xfbHeight};
+        #else
+            int32_t iWidth{Globals::SCurAppWidth}, iHeight{Globals::SCurAppHeight};
+        #endif
+
+        if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+        {
+            #ifdef __wii__
+                iHeight = CpGXRMode->efbHeight;
+                if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, 
+                    uiSDLInitFlags)) throw std::runtime_error("Video mode not supported");
+            #else
+                throw std::runtime_error("Video mode not supported");
+            #endif
+        }
+
+        if (!SDL_SetVideoMode(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+            throw std::runtime_error(SDL_GetError());
+    }
+    catch (const std::exception& Cexception) 
+    {
+        #ifdef __wii__
+            EmergencyInitialise();
+        #endif
+        
+        throw;
+    }
+
+    int32_t iInitFlags = IMG_InitFlags::IMG_INIT_JPG | IMG_InitFlags::IMG_INIT_PNG;
+    if (IMG_Init(iInitFlags) != iInitFlags)
+        throw std::runtime_error("Error initialising SDL_image support");
+
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+        throw std::runtime_error(Mix_GetError());
+
+    iInitFlags = MIX_InitFlags::MIX_INIT_OGG;
+
+    if (Mix_Init(iInitFlags) != iInitFlags)
+        throw std::runtime_error("Error initialising SDL_mixer support");
+
+    if (!TTF_WasInit() && TTF_Init() == -1)
+        throw std::runtime_error("Error initialising SDL_ttf support");
+
+    Surface* pSurfaceDisplay{new Surface(SDL_GetVideoSurface())};
+    _htSurfaces.insert(std::make_pair("Display", pSurfaceDisplay));
+    
     SDL_ShowCursor(SDL_DISABLE);    // Default cursor is rendered directly to video memory
     SDL_JoystickEventState(SDL_ENABLE);
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
     if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
-
+    
     #ifdef __wii__
-		// Initialise console
-        if (SDL_MUSTLOCK(static_cast<SDL_Surface*>(_surfaceDisplay)))
-        {
-            if (SDL_LockSurface(_surfaceDisplay) != -1)
-            {
-                CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
-                    _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-                std::printf("\x1b[2;0H");
-                SDL_UnlockSurface(_surfaceDisplay);
-            }
-        }
-        else
-        {
-            CON_Init(_surfaceDisplay.GetPixels(), 20, 20, _surfaceDisplay.GetWidth(),
-                _surfaceDisplay.GetHeight(), _surfaceDisplay.GetWidth() * VI_DISPLAY_PIX_SZ);
-            std::printf("\x1b[2;0H");
-        }
+        pSurfaceDisplay->Lock();    // Lock the screen for direct pixel access
+        
+        // Initialise console
+        CON_Init(pSurfaceDisplay->GetPixels(), 20, 20, pSurfaceDisplay->GetWidth() - 20,
+            pSurfaceDisplay->GetHeight() - 20, pSurfaceDisplay->GetWidth() * VI_DISPLAY_PIX_SZ);
+        
+        pSurfaceDisplay->Unlock();
 
-        // Correct main thread's priority
-        LWP_SetThreadPriority(LWP_THREAD_NULL, 65);
-
-        // Create the main human player
-        WiiController* pJoystickWii = new WiiController(0);
+        WiiController* pJoystickWii{new WiiController{0}};
         _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
 
-        GameCubeController* pJoystickGameCube = new GameCubeController(0);
+        GameCubeController* pJoystickGameCube{new GameCubeController{0}};
         _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
 
-        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
+        pPlayerMain->AssociateJoystick(*pJoystickWii);
         pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-
-        _vectorpPlayers.push_back(pPlayerMain);
+    #else
+        Human* pPlayerMain{new Human(Grid::EPlayerMark::PLAYER1)};
 	#endif
 
-    try { _settingsGlobal = Settings(Settings::SCsDefaultPath); }   // Load settings
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
+	_vectorpPlayers.push_back(pPlayerMain);
+    
+    try { _settingsGlobal = Settings{Globals::SCsSettingsDefaultPath}; }   // Load settings
+    catch (...) {}
 
-    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
-        _settingsGlobal.GetCellsToWin());
+    /* Retrieve resources from the filesystem */
 
-    // Retrieve resources from the filesystem
     try
-    { _surfaceStart = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/start.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceStart = Surface("apps/ConnectXWii/gfx/start.png"); }
-    try
-    { _surfaceGrid = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/grid.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceGrid = Surface("apps/ConnectXWii/gfx/grid.png"); }
-    try
-    { _surfaceMarker1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player1.bmp").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker1 = Surface("apps/ConnectXWii/gfx/player1.bmp"); }
-    try
-    { _surfaceMarker2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/player2.bmp").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceMarker2 = Surface("apps/ConnectXWii/gfx/player2.bmp"); }
-    try
-    { _surfaceWinPlayer1 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer1.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer1 = Surface("apps/ConnectXWii/gfx/winPlayer1.png"); }
-    try
-    { _surfaceWinPlayer2 = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/winPlayer2.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceWinPlayer2 = Surface("apps/ConnectXWii/gfx/winPlayer2.png"); }
-    try
-    { _surfaceDraw = Surface(std::filesystem::path(
-        _settingsGlobal.GetCustomPath() + "/draw.png").lexically_normal().string()); }
-    catch (const std::ios_base::failure& CiosBaseFailure)
-    { _surfaceDraw = Surface("apps/ConnectXWii/gfx/draw.png"); }
+    {
+        // Surfaces
 
-    try { _surfaceCursor = Surface("apps/ConnectXWii/gfx/generic_point.png"); }
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
-    try { _surfaceCursorShadow = Surface("apps/ConnectXWii/gfx/shadow_point.png"); }
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
+        _htSurfaces.insert(std::make_pair("Start", LoadTexture("start.png")));
+        _htSurfaces.insert(std::make_pair("DefaultHome", LoadTexture("68370.png")));
+        _htSurfaces.insert(std::make_pair("DefaultButton", LoadTexture("defaultbutton.png")));
+        _htSurfaces.insert(std::make_pair("HoverButton", LoadTexture("hoverbutton.png")));
+        _htSurfaces.insert(std::make_pair("CursorHand", LoadTexture("cursorhand.png")));
+        _htSurfaces.insert(std::make_pair("CursorShadow", LoadTexture("cursorshadow.png")));
 
-    // Take the background out of the marker pictures
-    _surfaceMarker1.SetTransparentPixel(255, 0, 255);
-    _surfaceMarker2.SetTransparentPixel(255, 0, 255);
+        // Fonts and texts
 
-    EventManager::GetInstance().AttachListener(*this);   // Receive events
+        _ttfFontContinuum = TTF_OpenFontIndex((Globals::SCsFontsDefaultPath + "continuum/contm.ttf").c_str(), 16, 0);
+        if (!_ttfFontContinuum) throw std::ios_base::failure(TTF_GetError());
+
+        SDL_Color sdlColorText{};
+        sdlColorText.r = 252;
+        sdlColorText.g = 3;
+        sdlColorText.b = 3;
+
+        _htSurfaces.insert(std::make_pair("TextSingle", GenerateText("Single Player (vs AI)", 
+            _ttfFontContinuum, sdlColorText)));
+        _htSurfaces.insert(std::make_pair("TextMulti", GenerateText("2 Players", 
+            _ttfFontContinuum, sdlColorText)));
+        _htSurfaces.insert(std::make_pair("TextSettings", GenerateText("Settings", 
+            _ttfFontContinuum, sdlColorText)));
+    }
+    catch(...)
+    {
+        /* Delete surfaces */
+        for (std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
+            i != _htSurfaces.end(); ++i) if (i->first != "Display") delete i->second;   // The display surface must be freed by SDL_Quit
+        
+        if (_ttfFontContinuum) TTF_CloseFont(_ttfFontContinuum);
+
+        throw;
+    }
+
+    /* Create main buttons */
+    _htButtons.insert(std::make_pair("SinglePlayer", new Button(Vector3(240, 150), Vector3(393, 223))));
+    _htButtons.insert(std::make_pair("MultiPlayer", new Button(Vector3(240, 230), Vector3(393, 303))));
+    _htButtons.insert(std::make_pair("Settings", new Button(Vector3(240, 310), Vector3(393, 383))));
+    _htButtons.insert(std::make_pair("Exit", new Button(Vector3(50, 380), Vector3(122, 452))));
+
+    // Receive events
+    EventManager::GetInstance().AttachListener(*this);
 }
 
 
@@ -177,7 +257,7 @@ App::App() : EventListener{}, _bRunning{true}, _eStateCurrent{EState::STATE_STAR
  */
 App::~App() noexcept
 {
-    try { _settingsGlobal.Save(Settings::SCsDefaultPath); }     // Save settings
+    try { _settingsGlobal.Dump(Globals::SCsSettingsDefaultPath); }     // Save settings
     catch (const std::ios_base::failure& CiosBaseFailure) {}
 
     /* Signal threads to stop */
@@ -198,20 +278,18 @@ App::~App() noexcept
         delete *i;
 
     /* Delete surfaces */
-    SDL_FreeSurface(_surfaceStart);
-    _surfaceStart._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceGrid);
-    _surfaceGrid._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceMarker1);
-    _surfaceMarker1._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceMarker2);
-    _surfaceMarker2._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceWinPlayer1);
-    _surfaceWinPlayer1._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceWinPlayer2);
-    _surfaceWinPlayer2._pSdlSurface = nullptr;
-    SDL_FreeSurface(_surfaceDraw);
-    _surfaceDraw._pSdlSurface = nullptr;
+    for (std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
+        i != _htSurfaces.end(); ++i) if (i->first != "Display") delete i->second;   // The display surface must be freed by SDL_Quit
+
+    /* Delete buttons */
+    for (std::unordered_map<std::string, Button*>::iterator i = _htButtons.begin(); 
+        i != _htButtons.end(); ++i) delete i->second;
+
+    // Close fonts
+    TTF_CloseFont(_ttfFontContinuum);
+
+    // Unload text libraries
+    if (TTF_WasInit()) TTF_Quit();
 
     // Unload sound libraries
     while (Mix_Init(0)) Mix_Quit();
@@ -220,9 +298,7 @@ App::~App() noexcept
     // Unload image libraries
     IMG_Quit();
 
-    // The display surface must be freed by SDL_Quit
     SDL_Quit();
-    _surfaceDisplay._pSdlSurface = nullptr;
 }
 
 
@@ -246,50 +322,43 @@ void App::OnExecute()
 }
 
 
-/**
- * @brief Resets the application to the initial values
- */
-void App::Reset()
-{
-    _eStateCurrent = STATE_START;
-    _uyCurrentPlayer = 0;
+#ifdef __wii__
+    void EmergencyInitialise()
+    {
+        // Initialise the video system
+        VIDEO_Init();
 
-    /* Terminate threads */
-    _bStopThreads = true;
+        // Initialise the attached controllers
+        WPAD_Init();
+        PAD_Init();
+        
+        // Obtain the preferred video mode from the system
+        // This will correspond to the settings in the Wii menu
+        GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
 
-    while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
-    SDL_WaitThread(_pSdlThreadAI, nullptr);
-    _pSdlThreadAI = nullptr;
+        // Allocate memory for the display in the uncached region
+        void* pXfb{MEM_K0_TO_K1(SYS_AllocateFramebuffer(CpGXRMode))};
 
-    _bStopThreads = false;
+        // Initialise the console, required for printf
+        CON_Init(pXfb, 20, 20, CpGXRMode->fbWidth - 20, CpGXRMode->xfbHeight - 20,
+            CpGXRMode->fbWidth * VI_DISPLAY_PIX_SZ);
 
-    SDL_DestroySemaphore(_pSdlSemaphoreAI);
-    if ((_pSdlSemaphoreAI = SDL_CreateSemaphore(0)) == nullptr) throw std::runtime_error(SDL_GetError());
+        // Set up the video registers with the chosen mode
+        VIDEO_Configure(CpGXRMode);
 
-    // Delete joysticks
-    for (std::unordered_map<uint8_t, Joystick*>::iterator i = _htJoysticks.begin();
-        i != _htJoysticks.end(); ++i) delete i->second;
-    _htJoysticks = std::unordered_map<uint8_t, Joystick*>{};
+        // Tell the video hardware where our display memory is
+        VIDEO_SetNextFramebuffer(pXfb);
 
-    // Delete players
-    for (std::vector<Player*>::iterator i = _vectorpPlayers.begin(); i != _vectorpPlayers.end(); ++i)
-        delete *i;
-    _vectorpPlayers = std::vector<Player*>{};
+        // Make the display visible
+        VIDEO_SetBlack(false);
 
-    // Clear grid
-    _grid = Grid(_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(),
-        _settingsGlobal.GetCellsToWin());
+        // Flush the video register changes to the hardware
+        VIDEO_Flush();
 
-    #ifdef __wii__
-        /* Create a new main player */
-        WiiController* pJoystickWii = new WiiController(0);
-        _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
+        // Wait for video setup to complete
+        VIDEO_WaitVSync();
+        if (CpGXRMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
-        GameCubeController* pJoystickGameCube = new GameCubeController(0);
-        _htJoysticks.insert(std::make_pair(pJoystickGameCube->GetIndex(), pJoystickGameCube));
-
-        Human* pPlayerMain = new Human(*pJoystickWii, Grid::EPlayerMark::PLAYER1);
-        pPlayerMain->AssociateJoystick(*pJoystickGameCube);
-        _vectorpPlayers.push_back(pPlayerMain);
-    #endif
-}
+        WPAD_SetIdleTimeout(300);
+    }
+#endif

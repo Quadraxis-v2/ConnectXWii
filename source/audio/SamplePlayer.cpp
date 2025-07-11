@@ -78,7 +78,7 @@ void SamplePlayer::Play(int32_t iDuration, int32_t iFadeInTime, int32_t iLoops)
     {
         if ((_iChannel = Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, iDuration)) == -1)
         {
-            if (std::strcmp(Mix_GetError(), "No free channels available") == 0) // Try to allocate new sample channel
+            if (!std::strcmp(Mix_GetError(), "No free channels available")) // Try to allocate new sample channel
             {
                 Mix_AllocateChannels(Mix_AllocateChannels(-1) + 1);
                 if ((_iChannel = 

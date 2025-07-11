@@ -1,6 +1,6 @@
 /*
-App_OnLoop.cpp --- App processing
-Copyright (C) 2022  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
+App_Loop.cpp --- App processing
+Copyright (C) 2025  Juan de la Cruz Caravaca Guerrero (Quadraxis_v2)
 juan.dlcruzcg@gmail.com
 
 This program is free software: you can redistribute it and/or modify
@@ -23,5 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /**
  * @brief Handles all the data updates between frames
  */
-void App::OnLoop() const noexcept
-{}
+void App::OnLoop() noexcept
+{
+    _animationLoading.OnAnimate();
+}
