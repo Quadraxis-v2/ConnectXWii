@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _APP_HPP_
 
 #include <cstdint>
+#include <random>
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -41,6 +42,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "players/Player.hpp"
 #include "video/Button.hpp"
 #include "video/Animation.hpp"
+#include "audio/Sample.hpp"
+#include "audio/SamplePlayer.hpp"
 
 /**
  * @brief Main application class
@@ -79,6 +82,9 @@ private:
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
 
+    std::random_device _randomDeviceGenerator;
+    std::uniform_int_distribution<int32_t> _uniformDistribution;
+
     Grid _grid;                             /**< Main playing grid */
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
     std::vector<Player*> _vectorpPlayers;   /**< The current players in the game */
@@ -86,11 +92,13 @@ private:
     bool _bSingleController;                /** The main controller can be used for all players */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
-    uint16_t _urInitialX, _urInitialY;
+    int16_t _rInitialX, _rInitialY;
 
     std::unordered_map<std::string, Surface*> _htSurfaces;
+    std::unordered_map<std::string, Animation*> _htAnimations;
     std::unordered_map<std::string, Button*> _htButtons;
-    Animation _animationLoading;
+    std::unordered_map<std::string, Sample*> _htSamples;
+    SamplePlayer _samplePlayerGlobal;
 
     TTF_Font* _ttfFontContinuum;
     

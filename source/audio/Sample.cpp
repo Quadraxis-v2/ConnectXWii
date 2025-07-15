@@ -55,7 +55,7 @@ Sample::Sample(Mix_Chunk* pMixChunk) noexcept : _pMixChunk{pMixChunk}
  * 
  * @param CsampleOther the sound sample to be copied
  */
-Sample::Sample(const Sample& CsampleOther) noexcept : _pMixChunk{new Mix_Chunk{}}
+Sample::Sample(const Sample& CsampleOther) noexcept : _pMixChunk{new Mix_Chunk()}
 {
     _pMixChunk->allocated = CsampleOther._pMixChunk->allocated;
     _pMixChunk->alen = CsampleOther._pMixChunk->alen;

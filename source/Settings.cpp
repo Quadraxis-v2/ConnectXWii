@@ -54,7 +54,7 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
 
 	if ((pJsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
 	{
-		std::ostringstream ossError{jsonError.source};
+		std::ostringstream ossError{jsonError.source, std::ios_base::ate};
 		ossError << ": " << jsonError.text << " - Line: " << jsonError.line << ", Column: " <<
 			jsonError.column; 
 		throw std::ios_base::failure(ossError.str());
@@ -85,7 +85,7 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
 	if (json_is_integer(pJsonField)) _uyAIDifficulty = json_integer_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
 	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
-	pJsonField = json_object_get(pJsonSettings, "Enable logging");
+	pJsonField = json_object_get(pJsonSettings, "Enable dev tools");
 	if (json_is_boolean(pJsonField)) _bIsDev = json_boolean_value(pJsonField);
 
 	/* Validation */
@@ -123,7 +123,7 @@ void Settings::Dump(const std::string& CsPath) const
     json_object_set_new(pJsonSettings, "Number of cells to win", json_integer(_uyCellsToWin));
     json_object_set_new(pJsonSettings, "AI Difficulty", json_integer(_uyAIDifficulty));
 	json_object_set_new(pJsonSettings, "Custom path for sprites", json_string(_sCustomPath.c_str()));
-	json_object_set_new(pJsonSettings, "Enable logging", json_boolean(_bIsDev));
+	json_object_set_new(pJsonSettings, "Enable dev tools", json_boolean(_bIsDev));
 
 	// Attach the settings to the root
     json_object_set_new(pJsonRoot, "Settings", pJsonSettings);

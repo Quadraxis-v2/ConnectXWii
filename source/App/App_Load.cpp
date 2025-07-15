@@ -110,9 +110,9 @@ void App::Reset()
 
     // Reload texts
     SDL_Color sdlColorText{};
-        sdlColorText.r = 252;
-        sdlColorText.g = 3;
-        sdlColorText.b = 3;
+    sdlColorText.r = 252;
+    sdlColorText.g = 3;
+    sdlColorText.b = 3;
 
     _htSurfaces.insert(std::make_pair("TextSingle", GenerateText("Single Player (vs AI)", 
         _ttfFontContinuum, sdlColorText)));
@@ -120,6 +120,11 @@ void App::Reset()
         _ttfFontContinuum, sdlColorText)));
     _htSurfaces.insert(std::make_pair("TextSettings", GenerateText("Settings", 
         _ttfFontContinuum, sdlColorText)));
+
+    // Reload animations
+    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin(); 
+        j != _htAnimations.end(); ++j) delete j->second;
+    _htAnimations.clear();
 
     // Reload buttons
     for (std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin(); 
@@ -129,7 +134,22 @@ void App::Reset()
     _htButtons.insert(std::make_pair("SinglePlayer", new Button(Vector3(240, 150), Vector3(393, 223))));
     _htButtons.insert(std::make_pair("MultiPlayer", new Button(Vector3(240, 230), Vector3(393, 303))));
     _htButtons.insert(std::make_pair("Settings", new Button(Vector3(240, 310), Vector3(393, 383))));
-    _htButtons.insert(std::make_pair("Exit", new Button(Vector3(50, 380), Vector3(122, 452))));
+    _htButtons.insert(std::make_pair("Exit", new Button(Vector3(25, 380), Vector3(97, 452))));
+
+    // Reload music
+    std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
+    while (k != _htSamples.end()) 
+    {
+        if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
+            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+        {
+            _samplePlayerGlobal.SetSample(k->second);
+            _samplePlayerGlobal.Stop();
+            delete k->second;
+            k = _htSamples.erase(k);
+        }
+        else ++k;
+    }
 
     _uyCurrentPlayer = 0;
     _eStateCurrent = EState::STATE_START;
@@ -184,14 +204,14 @@ void App::LoadGame()
     _htSurfaces.insert(std::make_pair("PlayerMarker2", pSurfaceTemp));
 
     uint8_t uyBoardWidth{_settingsGlobal.GetBoardWidth()};
-    _urInitialX = (CpSurfaceDisplay->GetWidth() >> 1) - 
+    _rInitialX = (CpSurfaceDisplay->GetWidth() >> 1) - 
         ((uyBoardWidth >> 1) * pSurfaceTemp->GetWidth());
-    if (uyBoardWidth % 2 != 0) _urInitialX -= pSurfaceTemp->GetWidth() >> 1;
+    if (uyBoardWidth % 2 != 0) _rInitialX -= pSurfaceTemp->GetWidth() >> 1;
 
     uint8_t uyBoardHeight{_settingsGlobal.GetBoardHeight()};
-    _urInitialY = (CpSurfaceDisplay->GetHeight() >> 1) - 
+    _rInitialY = (CpSurfaceDisplay->GetHeight() >> 1) - 
         ((uyBoardHeight >> 1) * pSurfaceTemp->GetHeight());
-    if (uyBoardHeight % 2 != 0) _urInitialY -= pSurfaceTemp->GetHeight() >> 1;
+    if (uyBoardHeight % 2 != 0) _rInitialY -= pSurfaceTemp->GetHeight() >> 1;
 
     // Reload texts
 
@@ -204,6 +224,14 @@ void App::LoadGame()
             _ttfFontContinuum, sdlColorText)));
     _htSurfaces.insert(std::make_pair("TextYes", GenerateText("Yes", _ttfFontContinuum, sdlColorText)));
     _htSurfaces.insert(std::make_pair("TextNo", GenerateText("No", _ttfFontContinuum, sdlColorText)));
+
+    // Reload animations
+    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin(); 
+        j != _htAnimations.end(); ++j) delete j->second;
+    _htAnimations.clear();
+    
+    _htAnimations.insert(std::make_pair("Loading", new Animation(16, 100)));
+    _htAnimations.insert(std::make_pair("Win", new Animation(2, 500)));
 
     // Reload buttons
     std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin();
@@ -219,6 +247,23 @@ void App::LoadGame()
 
     _htButtons.insert(std::make_pair("Yes", new Button(Vector3(250, 240), Vector3(292, 276))));
     _htButtons.insert(std::make_pair("No", new Button(Vector3(350, 240), Vector3(392, 276))));
+
+    // Reload music
+    std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
+    while (k != _htSamples.end()) 
+    {
+        if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
+            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+        {
+            delete k->second;
+            k = _htSamples.erase(k);
+        }
+        else ++k;
+    }
+    Sample* pSampleTemp{new Sample(Globals::SCsAudioDefaultPath + "waitingloop.wav")};
+    _htSamples.insert(std::make_pair("WaitingLoop", pSampleTemp));
+
+    // Create grid and jump to state
 
     _grid = Grid{_settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight(), // Create grid
         _settingsGlobal.GetCellsToWin()};
@@ -288,6 +333,19 @@ void App::LoadSettings()
     _htButtons.insert(std::make_pair("PlusStreak", new Button(Vector3(440, 253), Vector3(517, 330))));
     _htButtons.insert(std::make_pair("MinusDifficulty", new Button(Vector3(320, 342), Vector3(396, 419))));
     _htButtons.insert(std::make_pair("PlusDifficulty", new Button(Vector3(440, 342), Vector3(517, 419))));
+
+    // Reload music
+    std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
+    while (k != _htSamples.end()) 
+    {
+        if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
+            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+        {
+            delete k->second;
+            k = _htSamples.erase(k);
+        }
+        else ++k;
+    }
 
     _eStateCurrent = EState::STATE_SETTINGS;
 }

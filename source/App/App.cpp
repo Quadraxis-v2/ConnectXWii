@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 #include <SDL.h>
 #include <SDL_config.h>
@@ -41,17 +42,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_mutex.h>
 
 #ifdef __wii__
-    #include <sstream>
-    #include <cstdio>
-
     #include <ogc/system.h>
     #include <fat.h>
     #include <ogc/video.h>
     #include <ogc/gx_struct.h>
     #include <ogc/consol.h>
     #include <ogc/video_types.h>
-    #include <wiiuse/wpad.h>
-	#include <ogc/pad.h>
 
     #include "../../include/players/WiiController.hpp"
     #include "../../include/players/GameCubeController.hpp"
@@ -62,11 +58,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/players/Human.hpp"
 #include "../../include/video/Vector3.hpp"
 #include "../../include/EventManager.hpp"
-
-
-#ifdef __wii__
-    void EmergencyInitialise();
-#endif
 
 
 App& App::GetInstance()
@@ -81,9 +72,10 @@ App& App::GetInstance()
  */
 App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
     _loggerApp{"App", Globals::SCsLogDefaultPath}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
-    _bStopThreads{false}, _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{},
-    _bSingleController{true}, _yPlayColumn{0}, _urInitialX{0}, _urInitialY{0}, _htSurfaces{}, _htButtons{}, 
-    _animationLoading{16, 100}, _ttfFontContinuum{nullptr}
+    _bStopThreads{false}, _randomDeviceGenerator{}, _uniformDistribution{1, 6}, _grid{}, _htJoysticks{}, 
+    _vectorpPlayers{}, _uyCurrentPlayer{}, _bSingleController{true}, _yPlayColumn{0}, _rInitialX{0}, 
+    _rInitialY{0}, _htSurfaces{}, _htAnimations{}, _htButtons{}, _htSamples{}, _samplePlayerGlobal{nullptr}, 
+    _ttfFontContinuum{nullptr}
 {
     std::ios_base::sync_with_stdio();
 
@@ -97,56 +89,45 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 		SYS_STDIO_Report(false);	// Redirect stderr and stdlog
 	#endif
 
-    try
+    if (SDL_Init(uiSDLInitFlags) == -1)
     {
-        if (SDL_Init(uiSDLInitFlags) == -1)
-        {
-            #ifdef __wii__
-                if (!fatInitDefault())	// libfat is initialised in SDL_wii
-                {
-                    std::ostringstream ossError{SDL_GetError()};
-                    ossError << " - Error initialising libfat";
-                    throw std::ios_base::failure(ossError.str());
-                }
-            #endif
-            throw std::runtime_error(SDL_GetError());
-        }
-
-        uiSDLInitFlags = SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/;
-        const SDL_VideoInfo* CpSdlVideoInfoBest{SDL_GetVideoInfo()};
-        if (CpSdlVideoInfoBest->hw_available) uiSDLInitFlags |= SDL_HWSURFACE;
-
-        
         #ifdef __wii__
-            VIDEO_Init();
-            const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
-            int32_t iWidth{CpGXRMode->fbWidth}, iHeight{CpGXRMode->xfbHeight};
+            if (!fatInitDefault())	// libfat is initialised in SDL_wii
+            {
+                std::ostringstream ossError{SDL_GetError(), std::ios_base::ate};
+                ossError << " - Error initialising libfat";
+                throw std::ios_base::failure(ossError.str());
+            }
+        #endif
+        throw std::runtime_error(SDL_GetError());
+    }
+
+    uiSDLInitFlags = SDL_DOUBLEBUF /*| SDL_FULLSCREEN*/;
+    const SDL_VideoInfo* CpSdlVideoInfoBest{SDL_GetVideoInfo()};
+    if (CpSdlVideoInfoBest->hw_available) uiSDLInitFlags |= SDL_HWSURFACE;
+
+    
+    #ifdef __wii__
+        VIDEO_Init();
+        const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
+        int32_t iWidth{CpGXRMode->fbWidth}, iHeight{CpGXRMode->xfbHeight};
+    #else
+        int32_t iWidth{Globals::SCurAppWidth}, iHeight{Globals::SCurAppHeight};
+    #endif
+
+    if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+    {
+        #ifdef __wii__
+            iHeight = CpGXRMode->efbHeight;
+            if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, 
+                uiSDLInitFlags)) throw std::runtime_error("Video mode not supported");
         #else
-            int32_t iWidth{Globals::SCurAppWidth}, iHeight{Globals::SCurAppHeight};
+            throw std::runtime_error("Video mode not supported");
         #endif
-
-        if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
-        {
-            #ifdef __wii__
-                iHeight = CpGXRMode->efbHeight;
-                if (!SDL_VideoModeOK(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, 
-                    uiSDLInitFlags)) throw std::runtime_error("Video mode not supported");
-            #else
-                throw std::runtime_error("Video mode not supported");
-            #endif
-        }
-
-        if (!SDL_SetVideoMode(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
-            throw std::runtime_error(SDL_GetError());
     }
-    catch (const std::exception& Cexception) 
-    {
-        #ifdef __wii__
-            EmergencyInitialise();
-        #endif
-        
-        throw;
-    }
+
+    if (!SDL_SetVideoMode(iWidth, iHeight, CpSdlVideoInfoBest->vfmt->BitsPerPixel, uiSDLInitFlags))
+        throw std::runtime_error(SDL_GetError());
 
     int32_t iInitFlags = IMG_InitFlags::IMG_INIT_JPG | IMG_InitFlags::IMG_INIT_PNG;
     if (IMG_Init(iInitFlags) != iInitFlags)
@@ -214,7 +195,8 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 
         // Fonts and texts
 
-        _ttfFontContinuum = TTF_OpenFontIndex((Globals::SCsFontsDefaultPath + "continuum/contm.ttf").c_str(), 16, 0);
+        _ttfFontContinuum = TTF_OpenFontIndex((Globals::SCsFontsDefaultPath + 
+            "continuum/contm.ttf").c_str(), 16, 0);
         if (!_ttfFontContinuum) throw std::ios_base::failure(TTF_GetError());
 
         SDL_Color sdlColorText{};
@@ -228,6 +210,43 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
             _ttfFontContinuum, sdlColorText)));
         _htSurfaces.insert(std::make_pair("TextSettings", GenerateText("Settings", 
             _ttfFontContinuum, sdlColorText)));
+
+        // Music
+
+        Sample* pSampleTemp{new Sample(Globals::SCsAudioDefaultPath + "thinking.wav")};
+        _htSamples.insert(std::make_pair("Music", pSampleTemp));
+        _samplePlayerGlobal.SetSample(pSampleTemp);
+        _samplePlayerGlobal.Play(-1, 2000, -1);
+
+        std::ostringstream ossTemp{};
+        for (int32_t i = 1; i <= 6; i++)
+        {
+            ossTemp << "cancel" << i;
+            _htSamples.insert(std::make_pair(ossTemp.str(), new Sample(Globals::SCsAudioDefaultPath + 
+                "sfx/" + ossTemp.str() + ".wav")));
+            ossTemp.str("");
+
+            ossTemp << "select" << i;
+            _htSamples.insert(std::make_pair(ossTemp.str(), new Sample(Globals::SCsAudioDefaultPath + 
+                "sfx/" + ossTemp.str() + ".wav")));
+            ossTemp.str("");
+
+            if (i <= 2)
+            {
+                ossTemp << "error" << i;
+                _htSamples.insert(std::make_pair(ossTemp.str(), new Sample(Globals::SCsAudioDefaultPath + 
+                    "sfx/" + ossTemp.str() + ".wav")));
+                ossTemp.str("");
+            }
+
+            if (i <= 3)
+            {
+                ossTemp << "open" << i;
+                _htSamples.insert(std::make_pair(ossTemp.str(), new Sample(Globals::SCsAudioDefaultPath + 
+                    "sfx/" + ossTemp.str() + ".wav")));
+                ossTemp.str("");
+            }
+        }
     }
     catch(...)
     {
@@ -244,7 +263,7 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
     _htButtons.insert(std::make_pair("SinglePlayer", new Button(Vector3(240, 150), Vector3(393, 223))));
     _htButtons.insert(std::make_pair("MultiPlayer", new Button(Vector3(240, 230), Vector3(393, 303))));
     _htButtons.insert(std::make_pair("Settings", new Button(Vector3(240, 310), Vector3(393, 383))));
-    _htButtons.insert(std::make_pair("Exit", new Button(Vector3(50, 380), Vector3(122, 452))));
+    _htButtons.insert(std::make_pair("Exit", new Button(Vector3(25, 381), Vector3(97, 453))));
 
     // Receive events
     EventManager::GetInstance().AttachListener(*this);
@@ -257,9 +276,6 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
  */
 App::~App() noexcept
 {
-    try { _settingsGlobal.Dump(Globals::SCsSettingsDefaultPath); }     // Save settings
-    catch (const std::ios_base::failure& CiosBaseFailure) {}
-
     /* Signal threads to stop */
     _bStopThreads = true;
 
@@ -285,6 +301,16 @@ App::~App() noexcept
     for (std::unordered_map<std::string, Button*>::iterator i = _htButtons.begin(); 
         i != _htButtons.end(); ++i) delete i->second;
 
+    /* Delete samples */
+    for (std::unordered_map<std::string, Sample*>::iterator i = _htSamples.begin(); 
+        i != _htSamples.end(); ++i) 
+    {
+        _samplePlayerGlobal.SetSample(i->second);
+        _samplePlayerGlobal.Stop();
+        delete i->second;
+    }
+    _samplePlayerGlobal.SetSample(nullptr);
+
     // Close fonts
     TTF_CloseFont(_ttfFontContinuum);
 
@@ -298,6 +324,8 @@ App::~App() noexcept
     // Unload image libraries
     IMG_Quit();
 
+    SDL_Delay(20);
+
     SDL_Quit();
 }
 
@@ -309,7 +337,7 @@ void App::OnExecute()
 {
     SDL_Event sdlEvent{};
     const EventManager& CeventManager{EventManager::GetInstance()};
-
+    
     while(_bRunning)
     {
         while(SDL_PollEvent(&sdlEvent)) CeventManager.OnEvent(&sdlEvent);
@@ -320,45 +348,3 @@ void App::OnExecute()
         SDL_Delay(10);  // Give up some CPU to allow events to arrive
     }
 }
-
-
-#ifdef __wii__
-    void EmergencyInitialise()
-    {
-        // Initialise the video system
-        VIDEO_Init();
-
-        // Initialise the attached controllers
-        WPAD_Init();
-        PAD_Init();
-        
-        // Obtain the preferred video mode from the system
-        // This will correspond to the settings in the Wii menu
-        GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
-
-        // Allocate memory for the display in the uncached region
-        void* pXfb{MEM_K0_TO_K1(SYS_AllocateFramebuffer(CpGXRMode))};
-
-        // Initialise the console, required for printf
-        CON_Init(pXfb, 20, 20, CpGXRMode->fbWidth - 20, CpGXRMode->xfbHeight - 20,
-            CpGXRMode->fbWidth * VI_DISPLAY_PIX_SZ);
-
-        // Set up the video registers with the chosen mode
-        VIDEO_Configure(CpGXRMode);
-
-        // Tell the video hardware where our display memory is
-        VIDEO_SetNextFramebuffer(pXfb);
-
-        // Make the display visible
-        VIDEO_SetBlack(false);
-
-        // Flush the video register changes to the hardware
-        VIDEO_Flush();
-
-        // Wait for video setup to complete
-        VIDEO_WaitVSync();
-        if (CpGXRMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
-
-        WPAD_SetIdleTimeout(300);
-    }
-#endif

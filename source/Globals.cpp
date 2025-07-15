@@ -35,6 +35,9 @@ const std::string Globals::SCsLogDefaultPath{std::filesystem::path("/apps/Connec
 const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("/apps/ConnectXWii/gfx/")
     .lexically_normal().string()};
 
+const std::string Globals::SCsAudioDefaultPath{std::filesystem::path("/apps/ConnectXWii/audio/")
+    .lexically_normal().string()};
+
 const std::string Globals::SCsFontsDefaultPath{std::filesystem::path("/apps/ConnectXWii/fonts/")
     .lexically_normal().string()};
 

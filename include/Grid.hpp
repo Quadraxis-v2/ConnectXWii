@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 #include <vector>
+#include <utility>
 #include <ostream>
 
 
@@ -41,6 +42,9 @@ public:
     uint8_t GetCellsToWin() const noexcept;
     const std::vector<std::vector<EPlayerMark> >& GetCells() const noexcept;
     int8_t GetNextCell(uint8_t uyColumn) const noexcept;
+    const std::pair<uint8_t, uint8_t>& GetWinCell() const noexcept;
+    const std::pair<int8_t, int8_t>& GetWinDirection() const noexcept;
+
 
     /**
      * @brief Construct a new Grid
@@ -94,6 +98,8 @@ private:
     std::vector<int8_t> _ayNextCell;        /**< Indicates the next playable cell in a column */
     uint8_t _uyEmptyCells;                  /**< Indicates the number of empty cells remaining */
     EPlayerMark _ePlayerMarkWinner;         /**< The marker of the player who won the game, or empty */
+    std::pair<uint8_t, uint8_t> _pairWinCell;
+    std::pair<int8_t, int8_t> _pairWinDirection;
 
     /**
      * @brief Checks if a given move has won the game
@@ -114,6 +120,8 @@ inline uint8_t Grid::GetCellsToWin() const noexcept { return _uyCellsToWin; }
 inline const std::vector<std::vector<Grid::EPlayerMark> >& Grid::GetCells() const noexcept 
 { return _vector2playerMarkCells; }
 inline int8_t Grid::GetNextCell(uint8_t uyColumn) const noexcept { return _ayNextCell[uyColumn]; }
+inline const std::pair<uint8_t, uint8_t>& Grid::GetWinCell() const noexcept { return _pairWinCell; }
+inline const std::pair<int8_t, int8_t>& Grid::GetWinDirection() const noexcept { return _pairWinDirection; }
 
 
 inline const std::vector<Grid::EPlayerMark>& Grid::operator [](uint8_t uyIndex) const noexcept 

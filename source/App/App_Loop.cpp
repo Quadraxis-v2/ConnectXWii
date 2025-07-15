@@ -17,7 +17,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
 #include "../../include/App.hpp"
+#include "../../include/players/AI.hpp"
 
 
 /**
@@ -25,5 +27,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 void App::OnLoop() noexcept
 {
-    _animationLoading.OnAnimate();
+    switch (_eStateCurrent)
+    {
+    case EState::STATE_INGAME:
+    case EState::STATE_PROMPT:
+    {
+        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
+            _htAnimations.at("Loading")->OnAnimate();
+        break;
+    }
+    case EState::STATE_END: _htAnimations.at("Win")->OnAnimate(); break;
+    default: break;
+    }
 }

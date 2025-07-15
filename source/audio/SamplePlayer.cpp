@@ -29,6 +29,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/audio/Sample.hpp"
 
 
+void SamplePlayer::SetSample(Sample* pSample) noexcept 
+{
+    _pSample = pSample; 
+
+    if (pSample != nullptr)
+    {
+        // Find channel if sample was already played
+        bool bFound{false};
+        for (int32_t i = 0; !bFound && i < Mix_AllocateChannels(-1); i++)
+        {
+            if (*pSample == Mix_GetChunk(i)) 
+            {
+                _iChannel = i;
+                bFound = true;
+            }
+        }
+    }
+}
+
+
 /**
  * @brief Sets the volume
  * 
@@ -81,9 +101,8 @@ void SamplePlayer::Play(int32_t iDuration, int32_t iFadeInTime, int32_t iLoops)
             if (!std::strcmp(Mix_GetError(), "No free channels available")) // Try to allocate new sample channel
             {
                 Mix_AllocateChannels(Mix_AllocateChannels(-1) + 1);
-                if ((_iChannel = 
-                    Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, iDuration)) == -1) 
-                    throw std::runtime_error(Mix_GetError());
+                if ((_iChannel = Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, 
+                    iDuration)) == -1) throw std::runtime_error(Mix_GetError());
             }
             else throw std::runtime_error(Mix_GetError());
         }
@@ -125,13 +144,13 @@ void SamplePlayer::Pause() const noexcept
 /**
  * @brief Stops the playback
  */
-void SamplePlayer::Stop()
+void SamplePlayer::Stop(int32_t iFadeOutTime)
 { 
     if (_iChannel >= 0 && _pSample != nullptr && *_pSample == Mix_GetChunk(_iChannel) && 
         Mix_Playing(_iChannel)) 
     {
         Mix_HaltChannel(_iChannel);
-
+        
         // Set defaults on the sample channel
         SetVolume(MIX_MAX_VOLUME);
         SetPanning(255, 255);
@@ -142,10 +161,10 @@ void SamplePlayer::Stop()
         _iChannel = std::numeric_limits<int32_t>::min();    // Set the channel to an "unassigned" state
 
         // Deallocate as many unused sample channels from the top ones as possible
-        uint16_t urChannelCounter{};
+        uint16_t urChannelCounter{0};
         for (int32_t i = Mix_AllocateChannels(-1); i > MIX_CHANNELS && !Mix_Playing(i); --i) 
             ++urChannelCounter;
-
+            
         Mix_AllocateChannels(Mix_AllocateChannels(-1) - urChannelCounter);
     }
 }
@@ -198,5 +217,6 @@ void SamplePlayer::SetPosition(int8_t yAngle, uint8_t uyDistance)
 void SamplePlayer::SetReverseStereo(bool bReverse)
 {
     if (_iChannel >= 0 && _pSample != nullptr && *_pSample == Mix_GetChunk(_iChannel) &&
-        Mix_SetReverseStereo(_iChannel, bReverse) == 0) throw std::runtime_error(Mix_GetError());
+        !Mix_SetReverseStereo(_iChannel, bReverse) && std::strcmp(Mix_GetError(), 
+        "No such effect registered")) throw std::runtime_error(Mix_GetError());
 }
