@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include "../../include/App.hpp"
+#include "../../include/video/Time.hpp"
 #include "../../include/players/AI.hpp"
 
 
@@ -27,6 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 void App::OnLoop() noexcept
 {
+    Time::GetInstance().OnLoop();
+
     switch (_eStateCurrent)
     {
     case EState::STATE_INGAME:

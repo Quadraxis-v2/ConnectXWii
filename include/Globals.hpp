@@ -49,7 +49,7 @@ public:
     static const uint8_t SCuyCellsToWinDefault{4};         /**< Default number of game pieces to win */
     static const uint8_t SCuyCellsToWinMin{2};
     static const uint8_t SCuyAIDifficultyDefault{4};       /**< Default AI exploration depth */
-    static const uint8_t SCuyAIDifficultyMin{2};
+    static const uint8_t SCuyAIDifficultyMin{1};
     static const uint8_t SCuyAIDifficultyMax{7};
 
     static const std::string SCsGraphicsCustomPath; /**< Default custom path for storing the application's graphics */

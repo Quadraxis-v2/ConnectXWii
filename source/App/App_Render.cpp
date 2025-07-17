@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/video/Surface.hpp"
 #include "../../include/video/Vector3.hpp"
 #include "../../include/players/AI.hpp"
+#include "../../include/video/Time.hpp"
 
 /**
  * @brief Handles all the rendering for each frame
@@ -275,6 +276,7 @@ void App::OnRender()
     {
         std::printf("\x1b[2;0H");
         std::printf("Cursor: %i, %i\n", iMouseX, iMouseY);
+        std::printf("FPS: %u", Time::GetInstance().GetFPS());
     }
 
     SDL_Flip(*pSurfaceDisplay);  // Refreshes the screen
