@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <queue>
 #include <cmath>
+#include <sstream>
 
 #include <SDL_mutex.h>
 
@@ -361,7 +362,8 @@ int8_t AI::PlayerMark2Heuristic(const Grid::EPlayerMark& CePlayerMark) const noe
  */
 int32_t SDLCALL RunAI(void* pData)
 {
-    App& app = App::GetInstance();
+    App& app{App::GetInstance()};
+    Sample* pSampleWaiting{app._htSamples.at("WaitingLoop")};
 
     while (!(app._bStopThreads))  // Thread termination
     {
@@ -371,18 +373,42 @@ int32_t SDLCALL RunAI(void* pData)
         {
             if (const AI* CpAI = dynamic_cast<AI*>(app._vectorpPlayers[app._uyCurrentPlayer]))
             {
+                app._samplePlayerGlobal.SetSample(pSampleWaiting);
+                app._samplePlayerGlobal.Play(-1, 0, -1);
+
                 CpAI->ChooseMove(app._grid);
 
                 // If the game is won or there is a draw go to the corresponding state
                 if (app._grid.CheckWinner() != Grid::EPlayerMark::EMPTY || app._grid.IsFull())
+                {
+                    app._samplePlayerGlobal.SetSample(pSampleWaiting);
+                    app._samplePlayerGlobal.Stop();
+                    
+                    std::ostringstream ossSound{"error", std::ios_base::ate};
+                    int32_t iRandom{app._uniformDistribution(app._randomDeviceGenerator)};
+                    ossSound << (iRandom > 2 ? iRandom / 3 : iRandom);
+                    app._samplePlayerGlobal.SetSample(app._htSamples.at(ossSound.str()));
+                    app._samplePlayerGlobal.Play();
+
                     app._eStateCurrent = App::EState::STATE_END;
+                }
                 else
                 {
+                    std::ostringstream ossSound{"select", std::ios_base::ate};
+                    ossSound << app._uniformDistribution(app._randomDeviceGenerator);
+                    app._samplePlayerGlobal.SetSample(app._htSamples.at(ossSound.str()));
+                    app._samplePlayerGlobal.Play();
+
                     ++(app._uyCurrentPlayer) %= app._vectorpPlayers.size(); // Move turn
 
                     // Check if next player is another AI
                     if (typeid(*(app._vectorpPlayers[app._uyCurrentPlayer])) == typeid(AI))
                         while (SDL_SemPost(app._pSdlSemaphoreAI) == -1);
+                    else 
+                    {
+                        app._samplePlayerGlobal.SetSample(pSampleWaiting);
+                        app._samplePlayerGlobal.Stop();
+                    }
                 }
             }
         }

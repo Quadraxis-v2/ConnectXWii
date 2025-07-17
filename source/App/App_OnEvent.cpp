@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 #include <unordered_map>
+#include <sstream>
 #include <utility>
 
 #include <SDL_events.h>
@@ -305,15 +306,29 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         {
             if (_htButtons.at("SinglePlayer")->IsInside(vectorMouse))
             {
+                // Play a random sound
+                std::ostringstream ossSound{"select", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+
+                LoadGame();
+
                 // Create an AI player
                 _vectorpPlayers.push_back(new AI(Grid::EPlayerMark::PLAYER2,
                     _settingsGlobal.GetAIDifficulty()));
                 _pSdlThreadAI = SDL_CreateThread(RunAI, nullptr);
-
-                LoadGame();
             }
             else if (_htButtons.at("MultiPlayer")->IsInside(vectorMouse))
             {
+                // Play a random sound
+                std::ostringstream ossSound{"select", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+
+                LoadGame();
+
                 // Create another human player
                 WiiController* pJoystickWii{new WiiController(1)};
                 _htJoysticks.insert(std::make_pair(pJoystickWii->GetIndex(), pJoystickWii));
@@ -326,10 +341,17 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
                 pSecondPlayer->AssociateJoystick(*pJoystickGameCube);
 
                 _vectorpPlayers.push_back(pSecondPlayer);
-
-                LoadGame();
             }
-            else if (_htButtons.at("Settings")->IsInside(vectorMouse)) LoadSettings();
+            else if (_htButtons.at("Settings")->IsInside(vectorMouse)) 
+            {
+                // Play a random sound
+                std::ostringstream ossSound{"select", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+                
+                LoadSettings();
+            }
             else if (_htButtons.at("Exit")->IsInside(vectorMouse)) _bRunning = false;
 
             break;
@@ -346,12 +368,23 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
 
         if (_htButtons.at("Exit")->IsInside(vectorMouse))
         {
-            _settingsGlobal.Dump(Globals::SCsSettingsDefaultPath);
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
+            try { _settingsGlobal.Dump(Globals::SCsSettingsDefaultPath); }
+            catch(...) {}
             Reset();
         }
         else if (_htButtons.at("MinusWidth")->IsInside(vectorMouse) && 
             _settingsGlobal.GetBoardWidth() > Globals::SCuyBoardWidthMin)
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetBoardWidth(_settingsGlobal.GetBoardWidth() - 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetBoardWidth()).c_str(), sdlColorSingle)};
@@ -375,6 +408,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("PlusWidth")->IsInside(vectorMouse) && 
             _settingsGlobal.GetBoardWidth() < Globals::SCuyBoardWidthMax)
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetBoardWidth(_settingsGlobal.GetBoardWidth() + 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetBoardWidth()).c_str(), sdlColorSingle)};
@@ -386,6 +424,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("MinusHeight")->IsInside(vectorMouse) && 
             _settingsGlobal.GetBoardHeight() > Globals::SCuyBoardHeightMin)
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetBoardHeight(_settingsGlobal.GetBoardHeight() - 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetBoardHeight()).c_str(), sdlColorSingle)};
@@ -409,6 +452,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("PlusHeight")->IsInside(vectorMouse) && 
             _settingsGlobal.GetBoardHeight() < Globals::SCuyBoardHeightMax) 
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetBoardHeight(_settingsGlobal.GetBoardHeight() + 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetBoardHeight()).c_str(), sdlColorSingle)};
@@ -420,6 +468,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("MinusStreak")->IsInside(vectorMouse) && 
             _settingsGlobal.GetCellsToWin() > Globals::SCuyCellsToWinMin) 
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetCellsToWin(_settingsGlobal.GetCellsToWin() - 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
@@ -432,6 +485,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
             _settingsGlobal.GetCellsToWin() < std::max(
                 _settingsGlobal.GetBoardWidth(), _settingsGlobal.GetBoardHeight())) 
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetCellsToWin(_settingsGlobal.GetCellsToWin() + 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetCellsToWin()).c_str(), sdlColorSingle)};
@@ -443,6 +501,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("MinusDifficulty")->IsInside(vectorMouse) && 
             _settingsGlobal.GetAIDifficulty() > Globals::SCuyAIDifficultyMin) 
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetAIDifficulty(_settingsGlobal.GetAIDifficulty() - 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetAIDifficulty()).c_str(), sdlColorSingle)};
@@ -454,6 +517,11 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         else if (_htButtons.at("PlusDifficulty")->IsInside(vectorMouse) && 
             _settingsGlobal.GetAIDifficulty() < Globals::SCuyAIDifficultyMax) 
         {
+            std::ostringstream ossSound{"select", std::ios_base::ate};
+            ossSound << _uniformDistribution(_randomDeviceGenerator);
+            _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+            _samplePlayerGlobal.Play();
+
             _settingsGlobal.SetAIDifficulty(_settingsGlobal.GetAIDifficulty() + 1);
             SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(_ttfFontContinuum, 
                 std::to_string(_settingsGlobal.GetAIDifficulty()).c_str(), sdlColorSingle)};
@@ -471,16 +539,31 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         {
         case 0: // Button A
         {
-            if (_htButtons.at("Exit")->IsInside(vectorMouse)) _eStateCurrent = EState::STATE_PROMPT;
+            if (_htButtons.at("Exit")->IsInside(vectorMouse)) 
+            {
+                std::ostringstream ossSound{"open", std::ios_base::ate};
+                int32_t iRandom{_uniformDistribution(_randomDeviceGenerator)};
+                ossSound << (iRandom > 3 ? iRandom - 3 : iRandom);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+
+                _eStateCurrent = EState::STATE_PROMPT;
+            }
             else if (const Human* CpHuman = dynamic_cast<Human*>(_vectorpPlayers[_uyCurrentPlayer]))
             {
                 if (CpHuman->GetJoysticks().contains(uyWhich) ||
                     ((uyWhich == 0 || uyWhich == 4) && _bSingleController))
                 {
-                    _yPlayColumn = (iMouseX - _urInitialX) / 48;
+                    _yPlayColumn = (iMouseX - _rInitialX) / _htSurfaces.at("EmptyCell")->GetWidth();
 
+                    
                     if (_grid.IsValidMove(_yPlayColumn)) // Make the play if it's valid
                     {
+                        std::ostringstream ossSound{"select", std::ios_base::ate};
+                        ossSound << _uniformDistribution(_randomDeviceGenerator);
+                        _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                        _samplePlayerGlobal.Play();
+
                         _grid.MakeMove(_vectorpPlayers[_uyCurrentPlayer]->GetPlayerMark(), _yPlayColumn);
                         ++_uyCurrentPlayer %= _vectorpPlayers.size();
 
@@ -489,6 +572,14 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
                             _eStateCurrent = EState::STATE_END;
                         else if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
                             while (SDL_SemPost(_pSdlSemaphoreAI) == -1);
+                    }
+                    else
+                    {
+                        std::ostringstream ossSound{"error", std::ios_base::ate};
+                        int32_t iRandom{_uniformDistribution(_randomDeviceGenerator)};
+                        ossSound << (iRandom > 2 ? iRandom / 3 : iRandom);
+                        _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                        _samplePlayerGlobal.Play();
                     }
                 }
             }
@@ -503,8 +594,22 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         {
         case 0: // Button A
         {
-            if (_htButtons.at("Yes")->IsInside(vectorMouse)) Reset();
-            else if (_htButtons.at("No"))  _eStateCurrent = EState::STATE_INGAME;
+            if (_htButtons.at("Yes")->IsInside(vectorMouse)) 
+            {
+                std::ostringstream ossSound{"select", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+                Reset();
+            }
+            else if (_htButtons.at("No")->IsInside(vectorMouse))  
+            {
+                std::ostringstream ossSound{"cancel", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+                _eStateCurrent = EState::STATE_INGAME;
+            }
 
             break;
         }
@@ -517,7 +622,15 @@ void App::OnJoyButtonDown(uint8_t uyWhich, uint8_t uyButton)
         {
         case 0: // Button A
         {
-            if (_htButtons.at("Exit")->IsInside(vectorMouse)) Reset();
+            if (_htButtons.at("Exit")->IsInside(vectorMouse)) 
+            {
+                std::ostringstream ossSound{"select", std::ios_base::ate};
+                ossSound << _uniformDistribution(_randomDeviceGenerator);
+                _samplePlayerGlobal.SetSample(_htSamples.at(ossSound.str()));
+                _samplePlayerGlobal.Play();
+
+                Reset();
+            }
 
             break;
         }
@@ -550,26 +663,20 @@ void App::OnJoyHat(uint8_t uyWhich, uint8_t uyHat, uint8_t uyValue) noexcept
     {
     case EState::STATE_INGAME:
     {
-        //if (_apPlayer.at(uyWhich)->GetPlayerMark() == _ePlayerMarkCurrent)
+        //if (((uyWhich == 0 || uyWhich == 4) && _bSingleController))
         {
-            const Surface* CpSurfaceDisplay{_htSurfaces.at("Display")};
+            const Surface* CpSurfaceEmptyCell{_htSurfaces.at("EmptyCell")};
 
             switch (uyValue)
             {
-            case SDL_HAT_LEFT:
-                if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1;
-                SDL_WarpMouse(_yPlayColumn * (CpSurfaceDisplay->GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) *
-                    (CpSurfaceDisplay->GetHeight() / _grid.GetHeight()));
-                break;
-            case SDL_HAT_RIGHT:
-                if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;
-                SDL_WarpMouse(_yPlayColumn * (CpSurfaceDisplay->GetWidth() / _grid.GetWidth()),
-                    _grid.GetNextCell(_yPlayColumn) *
-                    (CpSurfaceDisplay->GetHeight() / _grid.GetHeight()));
-                break;
-            default: break;
+            case SDL_HAT_LEFT: if (--_yPlayColumn < 0) _yPlayColumn = _grid.GetWidth() - 1; break;
+            case SDL_HAT_RIGHT: if (++_yPlayColumn >= _grid.GetWidth()) _yPlayColumn = 0;   break;
+            default:                                                                        break;
             }
+
+            SDL_WarpMouse(_rInitialX + _yPlayColumn * CpSurfaceEmptyCell->GetWidth() + 
+                (CpSurfaceEmptyCell->GetWidth() >> 1), _rInitialY + _grid.GetNextCell(_yPlayColumn) * 
+                CpSurfaceEmptyCell->GetHeight() + (CpSurfaceEmptyCell->GetHeight() >> 1));
         }
         break;
     }

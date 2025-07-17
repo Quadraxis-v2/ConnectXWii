@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/video/Surface.hpp"
 #include "../../include/video/Vector3.hpp"
 #include "../../include/players/AI.hpp"
+#include "../../include/video/Time.hpp"
 
 /**
  * @brief Handles all the rendering for each frame
@@ -73,9 +74,9 @@ void App::OnRender()
             CpButtonSettings->GetTopLeft().fY);
 
         if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 276, 327, 72, 72);
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
         else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 29, 327, 72, 72);
+            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         _htSurfaces.at("TextSingle")->OnDraw(*pSurfaceDisplay, 250, 170);
         _htSurfaces.at("TextMulti")->OnDraw(*pSurfaceDisplay, 280, 250);
@@ -157,9 +158,9 @@ void App::OnRender()
         }
 
         if (CpButtonExit->IsInside(vectorMouse)) pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 276, 327, 72, 72);
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
         else pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 29, 327, 72, 72);
+            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
         _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
@@ -170,23 +171,23 @@ void App::OnRender()
     {
         RenderGrid(*pSurfaceDisplay);
 
-        Surface* pSurfaceButtons{_htSurfaces.at("DefaultHome")};
+        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
         Surface* pSurfaceCursor{nullptr};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
         if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
         {
-            _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 0, 
-                88 * _animationLoading.GetCurrentFrame(), 7, 88, 72);
+            _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 25, 
+                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7, 88, 72);
             pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
         }
         else if (_uyCurrentPlayer == 0) pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
         else if (_uyCurrentPlayer == 1) pSurfaceCursor = _htSurfaces.at("CursorPlayer2");
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 276, 327, 72, 72);
-        else pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 29, 327, 72, 72);
+        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
+        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
+            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
         pSurfaceCursor->OnDraw(*pSurfaceDisplay, iMouseX - (pSurfaceCursor->GetWidth() >> 1), 
@@ -199,7 +200,7 @@ void App::OnRender()
 
         Surface* pSurfaceDefaultYes{_htSurfaces.at("DefaultYes")};
         Surface* pSurfaceHoverYes{_htSurfaces.at("HoverYes")};
-        Surface* pSurfaceButtons{_htSurfaces.at("DefaultHome")};
+        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
         const Button* CpButtonYes{_htButtons.at("Yes")};
         const Button* CpButtonNo{_htButtons.at("No")};
         const Button* CpButtonExit{_htButtons.at("Exit")};
@@ -221,10 +222,16 @@ void App::OnRender()
         _htSurfaces.at("TextYes")->OnDraw(*pSurfaceDisplay, 260, 250);
         _htSurfaces.at("TextNo")->OnDraw(*pSurfaceDisplay, 360, 250);
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 276, 327, 72, 72);
-        else pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 29, 327, 72, 72);
+        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
+        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
+            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+
+        if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
+        {
+            _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 25, 
+                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7, 88, 72);
+        }
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
         _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
@@ -236,7 +243,7 @@ void App::OnRender()
         RenderGrid(*pSurfaceDisplay);
 
         Surface* pSurfaceWinPlayer1{_htSurfaces.at("WinPlayer1")};
-        Surface* pSurfaceButtons{_htSurfaces.at("DefaultHome")};
+        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
         int32_t iInitialX{(pSurfaceDisplay->GetWidth() >> 1) - (pSurfaceWinPlayer1->GetWidth() >> 1)};
@@ -252,10 +259,10 @@ void App::OnRender()
             _htSurfaces.at("Draw")->OnDraw(*pSurfaceDisplay, iInitialX, 50);        break;
         }
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 276, 327, 72, 72);
-        else pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 29, 327, 72, 72);
+        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
+        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
+            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
         _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
@@ -269,6 +276,7 @@ void App::OnRender()
     {
         std::printf("\x1b[2;0H");
         std::printf("Cursor: %i, %i\n", iMouseX, iMouseY);
+        std::printf("FPS: %u", Time::GetInstance().GetFPS());
     }
 
     SDL_Flip(*pSurfaceDisplay);  // Refreshes the screen
@@ -286,18 +294,50 @@ void App::RenderGrid(Surface& pSurfaceDisplay) const
     for(int32_t i = 0; i < _grid.GetHeight(); ++i)  // Search for markers and draw them
     {
         // Surface coordinate of the i'th row of the grid
-        int32_t iY{_urInitialY + i * pSurfaceMarker1->GetHeight()};
+        int32_t iY{_rInitialY + i * pSurfaceMarker1->GetHeight()};
 
         for (int32_t j = 0; j < _grid.GetWidth(); ++j)
         {
             // Surface coordinate of the j'th column of the grid
-            int32_t iX{_urInitialX + j * pSurfaceMarker1->GetWidth()};
+            int32_t iX{_rInitialX + j * pSurfaceMarker1->GetWidth()};
 
-            if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
-            else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
-            else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+            if (_eStateCurrent != EState::STATE_END)
+            {
+                if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
+                    pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
+                    pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
+                else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+            }
+            else
+            {
+                std::pair<uint8_t, uint8_t> pairWinCell{_grid.GetWinCell()};
+                std::pair<int8_t, int8_t> pairWinDirection{_grid.GetWinDirection()};
+
+                bool bIsWinner{false};
+                for (uint8_t k = 0; k < _grid.GetCellsToWin() && !bIsWinner; k++)
+                {
+                    if (i == pairWinCell.first + k * pairWinDirection.first &&
+                        j == pairWinCell.second + k * pairWinDirection.second) bIsWinner = true;
+                }
+
+                if (bIsWinner)
+                {
+                    if (_htAnimations.at("Win")->GetCurrentFrame() != 0)
+                    {
+                        if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
+                            pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                        else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
+                            pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
+                    }
+                    else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+                }
+                else if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
+                    pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
+                    pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
+                else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+            }
         }
     }
 }

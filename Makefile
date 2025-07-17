@@ -122,11 +122,12 @@ test:
 package:
 	@[ -d apps/$(notdir $(CURDIR)) ] || mkdir -p apps/$(notdir $(CURDIR))
 	@cp -u $(TARGET).dol apps/$(notdir $(CURDIR))/
-#	@cp -u hbc/icon.png apps/$(notdir $(CURDIR))/
+	@cp -u hbc/icon.png apps/$(notdir $(CURDIR))/
 	@cp -u hbc/meta.xml apps/$(notdir $(CURDIR))/
 	@cp -u -r data/gfx/ apps/$(notdir $(CURDIR))/
+	@cp -u -r data/audio/ apps/$(notdir $(CURDIR))/
 	@cp -u -r data/fonts/ apps/$(notdir $(CURDIR))/
-	@zip -r $(notdir $(CURDIR)).zip apps/
+	@zip -q -r $(notdir $(CURDIR)).zip apps/
 	@rm -fr apps
 
 #---------------------------------------------------------------------------------

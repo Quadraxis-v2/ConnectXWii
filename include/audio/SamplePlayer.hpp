@@ -78,8 +78,10 @@ public:
 
     /**
      * @brief Stops the playback
+     * 
+     * @param iFadeInTime milliseconds of time for the fadeout effect to reach silence
      */
-    void Stop();
+    void Stop(int32_t iFadeOutTime = 0);
 
 
     /**
@@ -121,7 +123,6 @@ private:
 
 
 inline Sample* SamplePlayer::GetSample() const noexcept { return _pSample; }
-inline void SamplePlayer::SetSample(Sample* pSample) noexcept { _pSample = pSample; }
 inline int32_t SamplePlayer::GetVolume() const noexcept { return _iVolume; }
 
 

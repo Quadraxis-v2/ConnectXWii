@@ -17,11 +17,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
+#include <cstdint>
 #include <vector>
 #include <stdexcept>
+#include <utility>
 #include <ostream>
-#include <cstdint>
 #include <sstream>
+
 #include "../include/Grid.hpp"
 
 
@@ -37,8 +40,8 @@ Grid::Grid(uint8_t uyWidth, uint8_t uyHeight, uint8_t uyCellsToWin) : _uyWidth{u
     _vector2playerMarkCells{std::vector<std::vector<EPlayerMark> >(_uyHeight, 
     std::vector<EPlayerMark>(_uyWidth, EMPTY))}, 
     _ayNextCell{std::vector<int8_t>(_uyWidth, _uyHeight - 1)}, 
-    _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, 
-    _ePlayerMarkWinner{EPlayerMark::EMPTY}
+    _uyEmptyCells{static_cast<uint8_t>(_uyWidth * _uyHeight)}, _ePlayerMarkWinner{EPlayerMark::EMPTY},
+    _pairWinCell{}, _pairWinDirection{}
 { 
     if (_uyCellsToWin > _uyWidth && _uyCellsToWin > _uyHeight) 
         throw std::length_error("Number of cells to win is too big"); 
@@ -87,16 +90,21 @@ bool Grid::IsValidMove(uint8_t uyPlayColumn) const noexcept
  */
 bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noexcept
 {
-    int8_t yPlayRow = _ayNextCell[yPlayColumn] + 1; // The previous row is where the previous play was made
+    int8_t yPlayRow{static_cast<int8_t>(_ayNextCell[yPlayColumn] + 1)}; // The previous row is where the previous play was made
 
     // Downwards check
-    uint8_t uyCounter = 1;
+    uint8_t uyCounter{1};
     if (yPlayRow <= _uyHeight - _uyCellsToWin)
     {
         for (uint8_t i = 1; i < _uyCellsToWin && yPlayRow + i < _uyHeight &&
             _vector2playerMarkCells[yPlayRow + i][yPlayColumn] == CePlayerMark; ++i) ++uyCounter;
 
-        if (uyCounter == _uyCellsToWin) return true;
+        if (uyCounter == _uyCellsToWin) 
+        {
+            _pairWinCell = std::make_pair(yPlayRow, yPlayColumn);
+            _pairWinDirection = std::make_pair(1, 0);
+            return true;
+        }
     }
 
     // Check the remaining directions except upwards
@@ -104,18 +112,26 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
 
     for (const int8_t* CayDirection : Ca2yDirections)
     {
-        int8_t yDirectionX = CayDirection[0];
-        int8_t yDirectionY = CayDirection[1];
+        int8_t yDirectionX{CayDirection[0]};
+        int8_t yDirectionY{CayDirection[1]};
 
         // Check one way
         uyCounter = 1;
-        for (int8_t i = 1; i < _uyCellsToWin &&
-            yPlayRow + i * yDirectionX >= 0 && yPlayRow + i * yDirectionX < _uyHeight &&
-            yPlayColumn + i * yDirectionY >= 0 && yPlayColumn + i * yDirectionY < _uyWidth &&
+        for (int8_t i = 1; i < _uyCellsToWin && yPlayRow + i * yDirectionX >= 0 && 
+            yPlayRow + i * yDirectionX < _uyHeight && yPlayColumn + i * yDirectionY >= 0 && 
+            yPlayColumn + i * yDirectionY < _uyWidth &&
             _vector2playerMarkCells[yPlayRow + i * yDirectionX][yPlayColumn + i * yDirectionY] == 
             CePlayerMark; ++i) ++uyCounter;
 
-        if (uyCounter == _uyCellsToWin) return true;
+        if (uyCounter == _uyCellsToWin) 
+        {
+            _pairWinCell = std::make_pair(yPlayRow, yPlayColumn);
+            _pairWinDirection = std::make_pair(CayDirection[0], CayDirection[1]);
+            return true;
+        }
+
+        _pairWinCell = std::make_pair(yPlayRow + (uyCounter - 1) * CayDirection[0], 
+            yPlayColumn + (uyCounter - 1) * CayDirection[1]);
 
         // Check the opposite way
         for (int8_t i = 1; i < _uyCellsToWin &&
@@ -124,7 +140,11 @@ bool Grid::IsWinnerMove(const EPlayerMark& CePlayerMark, int8_t yPlayColumn) noe
             _vector2playerMarkCells[yPlayRow - i * yDirectionX][yPlayColumn - i * yDirectionY] == 
             CePlayerMark; ++i) ++uyCounter;
 
-        if (uyCounter == _uyCellsToWin) return true;
+        if (uyCounter == _uyCellsToWin) 
+        {
+            _pairWinDirection = std::make_pair(-CayDirection[0], -CayDirection[1]);
+            return true;
+        }
     }
 
     return false;
@@ -151,18 +171,16 @@ std::ostream& operator <<(std::ostream& ostreamOut, const Grid::EPlayerMark& CeP
  */
 std::ostream& operator <<(std::ostream& ostreamOut, const Grid& Cgrid) noexcept
 {
-    const std::vector<std::vector<Grid::EPlayerMark> > a2playerMarkCells = Cgrid.GetCells();
-
-    std::ostringstream ossSeparator{"---"};
+    std::ostringstream ossSeparator{"---", std::ios_base::ate};
     for (uint8_t i = 0; i < Cgrid.GetWidth() - 1; ++i) ossSeparator << "+---";
 
     for (uint8_t i = 0; i < Cgrid.GetHeight(); ++i)
     {
         ostreamOut << ossSeparator.str() << std::endl <<
-            " " << a2playerMarkCells[i][0] << " ";
+            " " << Cgrid[i][0] << " ";
 
         for (uint8_t j = 1; j < Cgrid.GetWidth(); ++j)
-            ostreamOut << "| " << a2playerMarkCells[i][j] << " ";
+            ostreamOut << "| " << Cgrid[i][j] << " ";
 
         ostreamOut << std::endl;
     }
