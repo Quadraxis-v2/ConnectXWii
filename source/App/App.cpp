@@ -40,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_timer.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
+#include <SDL_framerate.h>
 
 #ifdef __wii__
     #include <ogc/system.h>
@@ -58,6 +59,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/players/Human.hpp"
 #include "../../include/video/Vector3.hpp"
 #include "../../include/EventManager.hpp"
+#include "../../include/video/Time.hpp"
 
 
 App& App::GetInstance()
@@ -72,10 +74,10 @@ App& App::GetInstance()
  */
 App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_START}, _settingsGlobal{},
     _loggerApp{"App", Globals::SCsLogDefaultPath}, _pSdlThreadAI{nullptr}, _pSdlSemaphoreAI{nullptr},
-    _bStopThreads{false}, _randomDeviceGenerator{}, _uniformDistribution{1, 6}, _grid{}, _htJoysticks{}, 
-    _vectorpPlayers{}, _uyCurrentPlayer{}, _bSingleController{true}, _yPlayColumn{0}, _rInitialX{0}, 
-    _rInitialY{0}, _htSurfaces{}, _htAnimations{}, _htButtons{}, _htSamples{}, _samplePlayerGlobal{nullptr}, 
-    _ttfFontContinuum{nullptr}
+    _bStopThreads{false}, _uiOldTime{}, _fFPS{}, _randomDeviceGenerator{}, _uniformDistribution{1, 6}, 
+    _grid{}, _htJoysticks{}, _vectorpPlayers{}, _uyCurrentPlayer{}, _bSingleController{true}, 
+    _yPlayColumn{0}, _rInitialX{0}, _rInitialY{0}, _htSurfaces{}, _htAnimations{}, _htButtons{}, 
+    _htSamples{}, _samplePlayerGlobal{nullptr}, _ttfFontContinuum{nullptr}
 {
     std::ios_base::sync_with_stdio();
 
@@ -108,7 +110,6 @@ App::App() : EventListener(), _bRunning{true}, _eStateCurrent{EState::STATE_STAR
 
     
     #ifdef __wii__
-        VIDEO_Init();
         const GXRModeObj* CpGXRMode{VIDEO_GetPreferredMode(nullptr)};
         int32_t iWidth{CpGXRMode->fbWidth}, iHeight{CpGXRMode->xfbHeight};
     #else
@@ -324,8 +325,6 @@ App::~App() noexcept
     // Unload image libraries
     IMG_Quit();
 
-    SDL_Delay(20);
-
     SDL_Quit();
 }
 
@@ -345,6 +344,6 @@ void App::OnExecute()
         OnLoop();
         OnRender();
 
-        SDL_Delay(10);  // Give up some CPU to allow events to arrive
+        Time::GetInstance().DelayFramerate();   // Maintain framerate stable
     }
 }

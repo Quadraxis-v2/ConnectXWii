@@ -26,8 +26,7 @@ INCLUDES	:=	include include/audio include/players include/video
 #---------------------------------------------------------------------------------
 
 CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` `sdl-config --cflags` \
-			`$(PREFIX)pkg-config libturbojpeg zlib jansson freetype2 SDL_image \
-			SDL_mixer SDL_ttf --cflags`
+			`$(PREFIX)pkg-config libturbojpeg zlib jansson freetype2 SDL_image SDL_mixer SDL_ttf SDL_gfx --cflags`
 CXXFLAGS	=	$(CFLAGS) -std=c++20
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
@@ -35,9 +34,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`$(PREFIX)pkg-config SDL_ttf SDL_mixer SDL_image freetype2 jansson zlib libturbojpeg --libs` \
-			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse \
-			-lbte -lfat -logc -lm
+LIBS	:=	`$(PREFIX)pkg-config SDL_gfx SDL_ttf SDL_mixer SDL_image freetype2 jansson zlib libturbojpeg --libs` \
+			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

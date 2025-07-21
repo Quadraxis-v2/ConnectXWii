@@ -181,10 +181,15 @@ void App::LoadGame()
     _htSurfaces.insert(std::make_pair("WinPlayer1", LoadTexture("winplayer1.png")));
     _htSurfaces.insert(std::make_pair("WinPlayer2", LoadTexture("winplayer2.png")));
     _htSurfaces.insert(std::make_pair("Draw", LoadTexture("draw.png")));
-    _htSurfaces.insert(std::make_pair("CursorPlayer1", LoadTexture("cursorplayer1.png")));
-    _htSurfaces.insert(std::make_pair("CursorPlayer2", LoadTexture("cursorplayer2.png")));
 
-    Surface* pSurfaceTemp{LoadTexture("emptycell.png")};
+    Surface* pSurfaceTemp{LoadTexture("cursorplayer1.png")};
+    pSurfaceTemp->SetTransparentPixel(255, 0, 255);
+    _htSurfaces.insert(std::make_pair("CursorPlayer1", pSurfaceTemp));
+    pSurfaceTemp = LoadTexture("cursorplayer2.png");
+    pSurfaceTemp->SetTransparentPixel(255, 0, 255);
+    _htSurfaces.insert(std::make_pair("CursorPlayer2", pSurfaceTemp));
+
+    pSurfaceTemp = LoadTexture("emptycell.png");
 
     // Adjust the grid cells and markers
     uint16_t urScale{static_cast<uint16_t>(std::min(
@@ -365,6 +370,8 @@ Surface* App::LoadTexture(const std::string& CsPath) const
         pSurfaceNew = new Surface(std::filesystem::path(Globals::SCsGraphicsDefaultPath + CsPath)
             .lexically_normal().string());
     }
+
+    pSurfaceNew->SetAlpha(SDL_ALPHA_OPAQUE);
 
     return pSurfaceNew;
 }

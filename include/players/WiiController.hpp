@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <SDL_joystick.h>
 #include <SDL_mouse.h>
+
 #include "SDL_Wii_Joystick.hpp"
 
 
@@ -32,14 +33,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class WiiController : public SDL_Wii_Joystick
 {
 public:
-    static const uint8_t SCuyMaxWiiControllers = 4; /**< Maximum number of Wii controller supported by SDL-wii */
+    static const uint8_t SCuyMaxWiiControllers{4}; /**< Maximum number of Wii controller supported by SDL-wii */
 
 
     int16_t GetRightTriggerClassic() const noexcept;
     int16_t GetLeftTriggerClassic() const noexcept;
-    int16_t GetPitch() const noexcept;
-    int16_t GetRoll() const noexcept;
-    int16_t GetYaw() const noexcept;
+    float GetPitch() const noexcept;
+    float GetRoll() const noexcept;
+    float GetYaw() const noexcept;
     bool GetButton1() const noexcept;
     bool GetButton2() const noexcept;
     bool GetButtonMinus() const noexcept;
@@ -73,55 +74,35 @@ public:
     WiiController& operator =(const WiiController& CwiiControllerOther) = delete;   /**< Copy assignment operator */
     WiiController& operator =(WiiController&& wiiControllerOther) = default;        /**< Move assignment operator */
 
+
+    float GetMotionAngle(uint32_t uiAxis) const noexcept;
+
 };
 
 
-inline int16_t WiiController::GetRightTriggerClassic() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 4); }
-inline int16_t WiiController::GetLeftTriggerClassic() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 5); }
-inline int16_t WiiController::GetPitch() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 6); }
-inline int16_t WiiController::GetRoll() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 7); }
-inline int16_t WiiController::GetYaw() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 8); }
-inline bool WiiController::GetButton1() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 2); }
-inline bool WiiController::GetButton2() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 3); }
-inline bool WiiController::GetButtonMinus() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 4); }
-inline bool WiiController::GetButtonPlus() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 5); }
-inline bool WiiController::GetButtonHOME() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 6); }
-inline bool WiiController::GetButtonZ() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 7); }
-inline bool WiiController::GetButtonC() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 8); }
-inline bool WiiController::GetButtonAClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 9); }
-inline bool WiiController::GetButtonBClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 10); }
-inline bool WiiController::GetButtonXClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 11); }
-inline bool WiiController::GetButtonYClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 12); }
-inline bool WiiController::GetButtonLClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 13); }
-inline bool WiiController::GetButtonRClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 14); }
-inline bool WiiController::GetButtonZLClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 15); }
-inline bool WiiController::GetButtonZRClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 16); }
-inline bool WiiController::GetButtonMinusClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 17); }
-inline bool WiiController::GetButtonPlusClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 18); }
-inline bool WiiController::GetButtonHOMEClassic() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 19); }
+inline int16_t WiiController::GetRightTriggerClassic() const noexcept { return GetAxis(4); }
+inline int16_t WiiController::GetLeftTriggerClassic() const noexcept { return GetAxis(5); }
+inline float WiiController::GetPitch() const noexcept { return GetMotionAngle(6); }
+inline float WiiController::GetRoll() const noexcept { return GetMotionAngle(7); }
+inline float WiiController::GetYaw() const noexcept { return GetMotionAngle(8); }
+inline bool WiiController::GetButton1() const noexcept { return GetButton(2); }
+inline bool WiiController::GetButton2() const noexcept { return GetButton(3); }
+inline bool WiiController::GetButtonMinus() const noexcept { return GetButton(4); }
+inline bool WiiController::GetButtonPlus() const noexcept { return GetButton(5); }
+inline bool WiiController::GetButtonHOME() const noexcept { return GetButton(6); }
+inline bool WiiController::GetButtonZ() const noexcept { return GetButton(7); }
+inline bool WiiController::GetButtonC() const noexcept { return GetButton(8); }
+inline bool WiiController::GetButtonAClassic() const noexcept { return GetButton(9); }
+inline bool WiiController::GetButtonBClassic() const noexcept { return GetButton(10); }
+inline bool WiiController::GetButtonXClassic() const noexcept { return GetButton(11); }
+inline bool WiiController::GetButtonYClassic() const noexcept { return GetButton(12); }
+inline bool WiiController::GetButtonLClassic() const noexcept { return GetButton(13); }
+inline bool WiiController::GetButtonRClassic() const noexcept { return GetButton(14); }
+inline bool WiiController::GetButtonZLClassic() const noexcept { return GetButton(15); }
+inline bool WiiController::GetButtonZRClassic() const noexcept { return GetButton(16); }
+inline bool WiiController::GetButtonMinusClassic() const noexcept { return GetButton(17); }
+inline bool WiiController::GetButtonPlusClassic() const noexcept { return GetButton(18); }
+inline bool WiiController::GetButtonHOMEClassic() const noexcept { return GetButton(19); }
 
 
 #endif

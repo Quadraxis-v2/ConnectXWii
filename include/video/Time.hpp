@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 
 #include <SDL_timer.h>
+#include <SDL_framerate.h>
 
 
 /**
@@ -50,9 +51,9 @@ class Time
         /**
          * @brief Gets the number of frames per second
          * 
-         * @return uint16_t the number of frames in the past second
+         * @return float the number of frames in the past second
          */
-        uint16_t GetFPS() const noexcept;
+        float GetFPS() const noexcept;
 
 
         Time(const Time& CtimeOther) = delete;             /**< Copy constructor */
@@ -64,24 +65,31 @@ class Time
         /**
          * @brief Handles all the time processing between frames
          */
-        void OnLoop();
+        void OnLoop() noexcept;
+
+        /**
+         * @brief Delay execution to maintain a constant framerate
+         */
+        void DelayFramerate() noexcept;
 
     private:
-        uint32_t _uiOldTime;        /**< The absolute time in milliseconds until the start of the current second */
-        uint32_t _uiLastTime;       /**< The absolute time in milliseconds since the start of the application */
+        float _fNumFrames;          /**< The current frames per second */
         float _fDeltaTime;          /**< The time in seconds since the last frame */
-        uint16_t _urNumFrames;      /**< The number of frames in the past second */
-        uint16_t _urFrameCount;     /**< The number of frames in the current second */
+
+        uint32_t _uiLastTime;       /**< The absolute time in milliseconds since the start of the application */
+        FPSmanager _fpsManager;     /**< Controls the framerate */
 
 
-        Time() noexcept;  /**< Default constructor */
+        Time();  /**< Default constructor */
 
 };
 
 
 inline uint32_t Time::GetTime() const noexcept { return SDL_GetTicks(); }
 inline float Time::GetDeltaTime() const noexcept { return _fDeltaTime; }
-inline uint16_t Time::GetFPS() const noexcept { return _urNumFrames; }
+inline float Time::GetFPS() const noexcept { return _fNumFrames; }
+
+inline void Time::DelayFramerate() noexcept { _fNumFrames = 1000.f / SDL_framerateDelay(&_fpsManager); }
 
 
 #endif

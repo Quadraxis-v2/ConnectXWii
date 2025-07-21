@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string>
 #include <cstdint>
+
 #include <SDL.h>
 #include <SDL_video.h>
 
@@ -41,12 +42,21 @@ public:
 
 
     /**
+     * @brief Construct a new void Surface
+     * 
+     * @param iWidth the width of the surface
+     * @param iHeight the height of the surface
+     * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
+     */
+    Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel);
+
+
+    /**
      * @brief Constructor from an image in the filesystem
      *
      * @param CsFilePath the path to the bitmap image
      */
-    explicit Surface(const std::string& CsFilePath, uint8_t uyAlpha = SDL_ALPHA_OPAQUE, 
-        int16_t rColourKeyRed = -1, int16_t rColourKeyGreen = -1, int16_t rColourKeyBlue = -1);
+    explicit Surface(const std::string& CsFilePath);
 
     /**
      * @brief Conversion constructor from raw SDL Surface
@@ -93,15 +103,17 @@ public:
 
 
     /**
-     * @brief Sets the pixel at (urX, urY) to the given value
+     * @brief Sets the pixel at (X, Y) to the given value
      *
      * @param urX the X coordinate of the pixel
      * @param urY the Y coordinate of the pixel
      * @param uyRed the red RGB component of the pixel
      * @param uyGreen the green RGB component of the pixel
      * @param uyBlue the blue RGB component of the pixel
+     * @param uyAlpha the alpha component of the pixel
      */
-    void DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
+    void DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue,
+        uint8_t uyAlpha);
 
 
     /**
@@ -114,6 +126,14 @@ public:
      */
     void SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue);
 
+    
+    /**
+     * @brief Sets the alpha value on the surface
+     * 
+     * @param uyAlpha the alpha per-surface value
+     */
+    void SetAlpha(uint8_t uyAlpha);
+
 
     /**
      * @brief Upscales a surface
@@ -122,6 +142,14 @@ public:
      * @param urScaleY the scale factor for the Y axis
      */
     void Scale(uint16_t urScaleX, uint16_t urScaleY);
+
+
+    /**
+     * @brief Rotates a surface
+     * 
+     * @param dAngle the angle of rotation
+     */
+    void Rotate(double dAngle);
 
 
     /**

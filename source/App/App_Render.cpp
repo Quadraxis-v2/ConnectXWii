@@ -22,10 +22,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <typeinfo>
 
 #include <SDL_video.h>
+#include <SDL_rotozoom.h>
 
 #include "../../include/App.hpp"
 #include "../../include/video/Surface.hpp"
 #include "../../include/video/Vector3.hpp"
+#include "../../include/players/WiiController.hpp"
 #include "../../include/players/AI.hpp"
 #include "../../include/video/Time.hpp"
 
@@ -42,6 +44,8 @@ void App::OnRender()
     int32_t iMouseX{}, iMouseY{};
     SDL_GetMouseState(&iMouseX, &iMouseY);
     Vector3 vectorMouse{static_cast<float>(iMouseX), static_cast<float>(iMouseY)};
+
+    WiiController* pWiiController{static_cast<WiiController*>(_htJoysticks.at(0))};
 
     switch (_eStateCurrent)
     {
@@ -83,8 +87,10 @@ void App::OnRender()
         _htSurfaces.at("TextSettings")->OnDraw(*pSurfaceDisplay, 290, 330);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
-        _htSurfaces.at("CursorHand")->OnDraw(*pSurfaceDisplay, iMouseX - 48, iMouseY - 48);
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
+            vectorMouse + Vector3(1, 2));
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
+            vectorMouse);
         break;
     }
     case EState::STATE_SETTINGS:
@@ -163,8 +169,11 @@ void App::OnRender()
             CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
-        _htSurfaces.at("CursorHand")->OnDraw(*pSurfaceDisplay, iMouseX - 48, iMouseY - 48);
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
+            vectorMouse + Vector3(1, 2));
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
+            vectorMouse);
+
         break;
     }
     case EState::STATE_INGAME: // Inside the game we draw the grid and as many markers as necessary
@@ -180,8 +189,13 @@ void App::OnRender()
             _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 25, 
                 88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7, 88, 72);
             pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
+            pSurfaceCursor->SetAlpha(128);
         }
-        else if (_uyCurrentPlayer == 0) pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
+        else if (_uyCurrentPlayer == 0) 
+        {
+            pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
+            pSurfaceCursor->SetAlpha(SDL_ALPHA_OPAQUE);
+        }
         else if (_uyCurrentPlayer == 1) pSurfaceCursor = _htSurfaces.at("CursorPlayer2");
 
         if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
@@ -190,8 +204,9 @@ void App::OnRender()
             CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        pSurfaceCursor->OnDraw(*pSurfaceDisplay, iMouseX - (pSurfaceCursor->GetWidth() >> 1), 
-            iMouseY - (pSurfaceCursor->GetHeight() >> 1));
+        RenderCursor(*pSurfaceDisplay, *pSurfaceCursor, pWiiController->GetRoll(), 
+            vectorMouse + Vector3(1, 2));
+            
         break;
     }
     case EState::STATE_PROMPT:
@@ -234,8 +249,11 @@ void App::OnRender()
         }
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
-        _htSurfaces.at("CursorHand")->OnDraw(*pSurfaceDisplay, iMouseX - 48, iMouseY - 48);
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
+            vectorMouse + Vector3(1, 2));
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
+            vectorMouse);
+
         break;
     }
     case EState::STATE_END:    // In the win state we show a surface depending on who won
@@ -265,8 +283,10 @@ void App::OnRender()
             CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        _htSurfaces.at("CursorShadow")->OnDraw(*pSurfaceDisplay, iMouseX - 47, iMouseY - 46);
-        _htSurfaces.at("CursorHand")->OnDraw(*pSurfaceDisplay, iMouseX - 48, iMouseY - 48);
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
+            vectorMouse + Vector3(1, 2));
+        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
+            vectorMouse);
 
         break;
     }
@@ -276,20 +296,37 @@ void App::OnRender()
     {
         std::printf("\x1b[2;0H");
         std::printf("Cursor: %i, %i\n", iMouseX, iMouseY);
-        std::printf("FPS: %u", Time::GetInstance().GetFPS());
+
+        uint32_t uiCurrentTime{Time::GetInstance().GetTime()};
+        if (_uiOldTime + 100 < uiCurrentTime)
+        {
+            _uiOldTime = uiCurrentTime;
+            _fFPS = Time::GetInstance().GetFPS();
+        }
+        std::printf("FPS: %.2f\n", _fFPS);
     }
 
     SDL_Flip(*pSurfaceDisplay);  // Refreshes the screen
 }
 
 
-void App::RenderGrid(Surface& pSurfaceDisplay) const
+void App::RenderCursor(Surface& surfaceDisplay, const Surface& CsurfaceCursor, double dAngle, 
+    const Vector3& CvectorPosition) const
+{
+    Surface surfaceTemp{CsurfaceCursor};
+    surfaceTemp.Rotate(dAngle);
+    surfaceTemp.OnDraw(surfaceDisplay, CvectorPosition.fX - (surfaceTemp.GetWidth() >> 1), 
+        CvectorPosition.fY - (surfaceTemp.GetHeight() >> 1));
+}
+
+
+void App::RenderGrid(Surface& surfaceDisplay) const
 {
     Surface* pSurfaceEmptyFill{_htSurfaces.at("EmptyCell")};
     Surface* pSurfaceMarker1{_htSurfaces.at("PlayerMarker1")};
     Surface* pSurfaceMarker2{_htSurfaces.at("PlayerMarker2")};
 
-    _htSurfaces.at("Background")->OnDraw(pSurfaceDisplay);
+    _htSurfaces.at("Background")->OnDraw(surfaceDisplay);
 
     for(int32_t i = 0; i < _grid.GetHeight(); ++i)  // Search for markers and draw them
     {
@@ -304,10 +341,10 @@ void App::RenderGrid(Surface& pSurfaceDisplay) const
             if (_eStateCurrent != EState::STATE_END)
             {
                 if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                    pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                    pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                    pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
-                else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+                    pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
+                else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
             }
             else
             {
@@ -326,17 +363,17 @@ void App::RenderGrid(Surface& pSurfaceDisplay) const
                     if (_htAnimations.at("Win")->GetCurrentFrame() != 0)
                     {
                         if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                            pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                            pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
                         else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                            pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
+                            pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
                     }
-                    else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+                    else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
                 }
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                    pSurfaceMarker1->OnDraw(pSurfaceDisplay, iX, iY);
+                    pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                    pSurfaceMarker2->OnDraw(pSurfaceDisplay, iX, iY);
-                else pSurfaceEmptyFill->OnDraw(pSurfaceDisplay, iX, iY);
+                    pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
+                else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
             }
         }
     }

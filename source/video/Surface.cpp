@@ -27,10 +27,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL_endian.h>
 #include <SDL_video.h>
 #include <SDL_error.h>
-#include <SDL_image.h>
 #include <SDL_timer.h>
+#include <SDL_image.h>
+#include <SDL_gfxPrimitives.h>
+#include <SDL_rotozoom.h>
 
 #include "../../include/video/Surface.hpp"
+
+
+/**
+ * @brief Construct a new void Surface
+ * 
+ * @param iWidth the width of the surface
+ * @param iHeight the height of the surface
+ * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
+ */
+Surface::Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel) : _pSdlSurface{nullptr}
+{
+    SDL_Surface* pSdlSurfaceTemp{nullptr};
+    uint32_t uiRmask{}, uiGmask{}, uiBmask{}, uiAmask{};
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        uiRmask = 0xff000000;
+        uiGmask = 0x00ff0000;
+        uiBmask = 0x0000ff00;
+        uiAmask = 0x000000ff;
+    #else
+        uiRmask = 0x000000ff;
+        uiGmask = 0x0000ff00;
+        uiBmask = 0x00ff0000;
+        uiAmask = 0xff000000;
+    #endif
+
+    if ((pSdlSurfaceTemp = SDL_CreateRGBSurface(SDL_HWSURFACE, iWidth, iHeight, uyBitsPerPixel, uiRmask,
+        uiGmask, uiBmask, uiAmask)) == nullptr)
+        throw std::runtime_error(SDL_GetError());
+
+    _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp);
+    SDL_FreeSurface(pSdlSurfaceTemp);
+
+    if (_pSdlSurface == nullptr) throw std::ios_base::failure(SDL_GetError());
+}
 
 
 /**
@@ -38,37 +75,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @param CsFilePath the path to the bitmap image
  */
-Surface::Surface(const std::string& CsFilePath, uint8_t uyAlpha, int16_t rColourKeyRed, 
-    int16_t rColourKeyGreen, int16_t rColourKeyBlue) : _sPath{CsFilePath}, _pSdlSurface{nullptr}
+Surface::Surface(const std::string& CsFilePath) : _sPath{CsFilePath}, _pSdlSurface{nullptr}
 {
     SDL_Surface* pSdlSurfaceTemp{nullptr};
 
     if((pSdlSurfaceTemp = IMG_Load(CsFilePath.c_str())) == nullptr)
         throw std::ios_base::failure(IMG_GetError());
 
-    if (SDL_SetAlpha(pSdlSurfaceTemp, SDL_SRCALPHA | SDL_RLEACCEL, uyAlpha) == -1)
-    {
-        SDL_FreeSurface(pSdlSurfaceTemp);
-        throw std::runtime_error(SDL_GetError());
-    }
-
     /* Convert the loaded surface to the same format as the display */
     if (pSdlSurfaceTemp->format->Amask) _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp); // Surface has an alpha channel
-    else
-    {
-        if (rColourKeyRed >= 0 && rColourKeyGreen >= 0 && rColourKeyBlue >= 0)
-        {
-            if (SDL_SetColorKey(pSdlSurfaceTemp, SDL_SRCCOLORKEY | SDL_RLEACCEL, 
-                SDL_MapRGB(pSdlSurfaceTemp->format, rColourKeyRed, rColourKeyBlue, rColourKeyGreen)) == -1)
-            {
-                SDL_FreeSurface(pSdlSurfaceTemp);
-                throw std::runtime_error(SDL_GetError());
-            }
-        }
-        _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
-    }
-    SDL_FreeSurface(pSdlSurfaceTemp);
+    else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
 
+    SDL_FreeSurface(pSdlSurfaceTemp);
     if (_pSdlSurface == nullptr) throw std::ios_base::failure(SDL_GetError());
 }
 
@@ -198,8 +216,8 @@ void Surface::Unlock() noexcept
  * @param puyBlue the blue RGB component of the pixel
  * @param puyAlpha the alpha component of the pixel
  */
-void Surface::ReadPixel(uint16_t urX, uint16_t urY, uint8_t* puyRed, uint8_t* puyGreen, 
-    uint8_t* puyBlue, uint8_t* puyAlpha)
+void Surface::ReadPixel(uint16_t urX, uint16_t urY, uint8_t* puyRed, uint8_t* puyGreen, uint8_t* puyBlue, 
+    uint8_t* puyAlpha)
 {
     if (!puyRed || !puyGreen || !puyBlue || !puyAlpha) throw std::invalid_argument("Pointer is null");
 
@@ -232,49 +250,21 @@ void Surface::ReadPixel(uint16_t urX, uint16_t urY, uint8_t* puyRed, uint8_t* pu
 
 
 /**
- * @brief Sets the pixel at (urX, urY) to the given value
+ * @brief Sets the pixel at (X, Y) to the given value
  *
  * @param urX the X coordinate of the pixel
+ * @param urY the Y coordinate of the pixel
  * @param urY the Y coordinate of the pixel
  * @param uyRed the red RGB component of the pixel
  * @param uyGreen the green RGB component of the pixel
  * @param uyBlue the blue RGB component of the pixel
+ * @param uyAlpha the alpha component of the pixel
  */
-void Surface::DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue)
+void Surface::DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue,
+    uint8_t uyAlpha)
 {
-    Lock();
-
-    /* Get the address to the pixel we want to set */
-    uint8_t* puyPixel = static_cast<uint8_t*>(_pSdlSurface->pixels) + urY * _pSdlSurface->pitch +
-        urX * _pSdlSurface->format->BytesPerPixel;
-
-    uint32_t uiPixelValue{SDL_MapRGB(_pSdlSurface->format, uyRed, uyGreen, uyBlue)};
-
-    switch(_pSdlSurface->format->BytesPerPixel)
-    {
-    case 1: *puyPixel = uiPixelValue; break;
-    case 2: *(reinterpret_cast<uint16_t*>(puyPixel)) = uiPixelValue; break;
-    case 3:
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
-        {
-            puyPixel[0] = (uiPixelValue >> 16) & 0xFF;
-            puyPixel[1] = (uiPixelValue >> 8) & 0xFF;
-            puyPixel[2] = uiPixelValue & 0xFF;
-        }
-        else
-        {
-            puyPixel[0] = uiPixelValue & 0xFF;
-            puyPixel[1] = (uiPixelValue >> 8) & 0xFF;
-            puyPixel[2] = (uiPixelValue >> 16) & 0xFF;
-        }
-        break;
-    case 4: *(reinterpret_cast<uint32_t*>(puyPixel)) = uiPixelValue; break;
-    default:
-        Unlock();
-        throw std::runtime_error("Unknown bytes per pixel");
-    }
-
-    Unlock();
+    if (pixelRGBA(_pSdlSurface, urX, urY, uyRed, uyGreen, uyBlue, uyAlpha) == -1)
+        throw std::runtime_error("Error drawing pixel");
 }
 
 
@@ -291,6 +281,38 @@ void Surface::SetTransparentPixel(uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue
     if ((SDL_SetColorKey(_pSdlSurface, SDL_SRCCOLORKEY | SDL_RLEACCEL,
         SDL_MapRGB(_pSdlSurface->format, uyRed, uyGreen, uyBlue))) == -1)
         throw std::runtime_error(SDL_GetError());
+
+    SDL_Surface* pSdlSurfaceTemp{nullptr};
+
+    if (_pSdlSurface->format->Amask) pSdlSurfaceTemp = SDL_DisplayFormatAlpha(_pSdlSurface); // Surface has an alpha channel
+    else pSdlSurfaceTemp = SDL_DisplayFormat(_pSdlSurface);
+
+    if (pSdlSurfaceTemp == nullptr) throw std::runtime_error(SDL_GetError());
+
+    SDL_FreeSurface(_pSdlSurface);
+    _pSdlSurface = pSdlSurfaceTemp;
+}
+
+
+/**
+ * @brief Sets the per-surface alpha value
+ * 
+ * @param uyAlpha the per-surface alpha value
+ */
+void Surface::SetAlpha(uint8_t uyAlpha)
+{
+    if (SDL_SetAlpha(_pSdlSurface, SDL_SRCALPHA | SDL_RLEACCEL, uyAlpha) == -1)
+        throw std::runtime_error(SDL_GetError());
+
+    SDL_Surface* pSdlSurfaceTemp{nullptr};
+
+    if (_pSdlSurface->format->Amask) pSdlSurfaceTemp = SDL_DisplayFormatAlpha(_pSdlSurface); // Surface has an alpha channel
+    else pSdlSurfaceTemp = SDL_DisplayFormat(_pSdlSurface);
+
+    if (pSdlSurfaceTemp == nullptr) throw std::runtime_error(SDL_GetError());
+
+    SDL_FreeSurface(_pSdlSurface);
+    _pSdlSurface = pSdlSurfaceTemp;
 }
 
 
@@ -313,6 +335,7 @@ void Surface::Scale(uint16_t urScaleX, uint16_t urScaleY)
         throw std::runtime_error(SDL_GetError());
 
     uint8_t uyRed{0}, uyGreen{0}, uyBlue{0}, uyAlpha{0};
+    uint32_t uiPixelValue{0};
 
     for (int32_t i = 0; i < _pSdlSurface->h; i++)        // Run across all Y pixels.
     {
@@ -321,28 +344,65 @@ void Surface::Scale(uint16_t urScaleX, uint16_t urScaleY)
         {
             sdlRectScale.x = j * urScaleX;
             ReadPixel(j, i, &uyRed, &uyGreen, &uyBlue, &uyAlpha);
-            uint32_t uiPixelValue{SDL_MapRGBA(_pSdlSurface->format, uyRed, uyGreen, uyBlue, uyAlpha)};
+            
+            if (_pSdlSurface->format->Amask)
+                uiPixelValue = SDL_MapRGBA(_pSdlSurface->format, uyRed, uyGreen, uyBlue, uyAlpha);
+            else uiPixelValue = SDL_MapRGB(_pSdlSurface->format, uyRed, uyGreen, uyBlue);
 
             if (SDL_FillRect(pSdlSurfaceTemp, &sdlRectScale, uiPixelValue) == -1) 
                 throw std::runtime_error(SDL_GetError());
         }
     }
 
-    if (_pSdlSurface->format->Amask)
-    {
-        SDL_FreeSurface(_pSdlSurface);
-        _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp); // Surface has an alpha channel
-    }
-    else
-    {
-        SDL_SetColorKey(pSdlSurfaceTemp, SDL_SRCCOLORKEY | SDL_RLEACCEL, _pSdlSurface->format->colorkey);   // Keep the color key
-        SDL_FreeSurface(_pSdlSurface);
-        _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
-    }
+    pSdlSurfaceTemp->format->colorkey = _pSdlSurface->format->colorkey;
+    pSdlSurfaceTemp->format->alpha = _pSdlSurface->format->alpha;
+
+    SDL_FreeSurface(_pSdlSurface);
+
+    if (pSdlSurfaceTemp->format->Amask) _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp); // Surface has an alpha channel
+    else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
 
     SDL_FreeSurface(pSdlSurfaceTemp);
 
     if (_pSdlSurface == nullptr) throw std::runtime_error(SDL_GetError());
+}
+
+/**
+ * @brief Rotates a surface
+ * 
+ * @param dAngle the angle of rotation
+ */
+void Surface::Rotate(double dAngle)
+{
+    bool bHasColorKey{false}, bHasAlpha{false};
+    uint8_t uyRed{0}, uyGreen{0}, uyBlue{0};
+    if (_pSdlSurface->flags & SDL_SRCCOLORKEY)
+    {
+        bHasColorKey = true;
+        SDL_GetRGB(_pSdlSurface->format->colorkey, _pSdlSurface->format, &uyRed, &uyGreen, &uyBlue);
+    }
+
+    uint8_t uyAlpha{0};
+    if (_pSdlSurface->flags & SDL_SRCALPHA) 
+    {
+        bHasAlpha = true;
+        uyAlpha = _pSdlSurface->format->alpha;
+    }
+
+    bool bHasAlphaChannel{(_pSdlSurface->format->Amask ? true : false)};
+
+    SDL_Surface* pSdlSurfaceTemp{rotozoomSurface(_pSdlSurface, dAngle, 1, SMOOTHING_ON)};
+    SDL_FreeSurface(_pSdlSurface);
+
+    if (bHasAlphaChannel) _pSdlSurface = SDL_DisplayFormatAlpha(pSdlSurfaceTemp); // Surface has an alpha channel
+    else _pSdlSurface = SDL_DisplayFormat(pSdlSurfaceTemp);
+
+    SDL_FreeSurface(pSdlSurfaceTemp);
+
+    if (_pSdlSurface == nullptr) throw std::runtime_error(SDL_GetError());
+
+    if (bHasColorKey) SetTransparentPixel(uyRed, uyGreen, uyBlue);
+    if (bHasAlpha) SetAlpha(uyAlpha);
 }
 
 

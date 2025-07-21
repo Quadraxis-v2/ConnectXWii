@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include <cstdint>
+
 #include "Joystick.hpp"
 
 
@@ -52,23 +53,15 @@ public:
 };
 
 
+inline int16_t SDL_Wii_Joystick::GetLeftStickHorizontal() const noexcept { return GetAxis(0); }
+inline int16_t SDL_Wii_Joystick::GetLeftStickVertical() const noexcept { return GetAxis(1); }
+inline int16_t SDL_Wii_Joystick::GetRightStickHorizontal() const noexcept { return GetAxis(2); }
+inline int16_t SDL_Wii_Joystick::GetRightStickVertical() const noexcept { return GetAxis(3); }
+inline uint8_t SDL_Wii_Joystick::GetDPadState() const noexcept { return GetHat(0); }
+inline bool SDL_Wii_Joystick::GetButtonA() const noexcept { return GetButton(0); }
+inline bool SDL_Wii_Joystick::GetButtonB() const noexcept { return GetButton(1); }
+
 inline SDL_Wii_Joystick::SDL_Wii_Joystick(int32_t yIndex) : Joystick(yIndex) {}
-
-
-inline int16_t SDL_Wii_Joystick::GetLeftStickHorizontal() const noexcept 
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 0); }
-inline int16_t SDL_Wii_Joystick::GetLeftStickVertical() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 1); }
-inline int16_t SDL_Wii_Joystick::GetRightStickHorizontal() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 2); }
-inline int16_t SDL_Wii_Joystick::GetRightStickVertical() const noexcept
-{ return SDL_JoystickGetAxis(__pSdlJoystick, 3); }
-inline uint8_t SDL_Wii_Joystick::GetDPadState() const noexcept 
-{ return SDL_JoystickGetHat(__pSdlJoystick, 0); }
-inline bool SDL_Wii_Joystick::GetButtonA() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 0); }
-inline bool SDL_Wii_Joystick::GetButtonB() const noexcept 
-{ return SDL_JoystickGetButton(__pSdlJoystick, 1); }
 
 
 #endif

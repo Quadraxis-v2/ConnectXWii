@@ -81,9 +81,11 @@ private:
     SDL_Thread* _pSdlThreadAI;  /**< Background AI thread */
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
+    uint32_t _uiOldTime;
+    float _fFPS;
 
-    std::random_device _randomDeviceGenerator;
-    std::uniform_int_distribution<int32_t> _uniformDistribution;
+    std::random_device _randomDeviceGenerator;                      /**< Generates random numbers */
+    std::uniform_int_distribution<int32_t> _uniformDistribution;    /**< Uniform statistical distribution for the generator */
 
     Grid _grid;                             /**< Main playing grid */
     std::unordered_map<uint8_t, Joystick*>  _htJoysticks;   /**< The joysticks in use */
@@ -92,13 +94,13 @@ private:
     bool _bSingleController;                /** The main controller can be used for all players */
     int8_t _yPlayColumn;                    /**< The value of the column currently selected by the user */
 
-    int16_t _rInitialX, _rInitialY;
+    int16_t _rInitialX, _rInitialY; /**< Values for adjusting the placement of the grid  */
 
-    std::unordered_map<std::string, Surface*> _htSurfaces;
-    std::unordered_map<std::string, Animation*> _htAnimations;
-    std::unordered_map<std::string, Button*> _htButtons;
-    std::unordered_map<std::string, Sample*> _htSamples;
-    SamplePlayer _samplePlayerGlobal;
+    std::unordered_map<std::string, Surface*> _htSurfaces;      /**< The surfaces loaded in memory */
+    std::unordered_map<std::string, Animation*> _htAnimations;  /**< The animations loaded in memory */
+    std::unordered_map<std::string, Button*> _htButtons;        /**< The buttons loaded in memory */
+    std::unordered_map<std::string, Sample*> _htSamples;        /**< The sound samples loaded in memory */
+    SamplePlayer _samplePlayerGlobal;   /**< Plays any sample loaded in memory */
 
     TTF_Font* _ttfFontContinuum;
     
@@ -319,7 +321,10 @@ private:
     Surface* LoadTexture(const std::string& CsPath) const;
     Surface* GenerateText(const std::string& CsMessage, TTF_Font* ttfFontText, 
         const SDL_Color& CsdlColorText) const;
-    void RenderGrid(Surface& pSurfaceDisplay) const;
+
+    void RenderCursor(Surface& surfaceDisplay, const Surface& CsurfaceCursor, double dAngle, 
+        const Vector3& CvectorPosition) const;
+    void RenderGrid(Surface& surfaceDisplay) const;
 
 };
 

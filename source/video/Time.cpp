@@ -18,6 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <cstdint>
+#include <stdexcept>
+
+#include <SDL_framerate.h>
+
+#ifdef __wii__
+    #include <ogc/video.h>
+    #include <ogc/video_types.h>
+#endif
 
 #include "../../include/video/Time.hpp"
 
@@ -32,26 +40,27 @@ Time& Time::GetInstance()
 /**
  * @brief Handles all the time processing between frames
  */
-void Time::OnLoop() 
+void Time::OnLoop() noexcept
 {
     uint32_t uiTime{GetTime()};
 
-    if (_uiOldTime + 1000 < uiTime)     // A full second has elapsed
-    {
-        _uiOldTime = uiTime;
-        _urNumFrames = _urFrameCount;   // Get the number of frames in the past second
-        _urFrameCount = 0;
-    }
-
     _fDeltaTime = ((uiTime - _uiLastTime) / 1000.0f);
     _uiLastTime = uiTime;
-
-    _urFrameCount++;    // An additional frame has passed
 }
 
 
 /**
  * @brief Default constructor
  */
-Time::Time() noexcept : _uiOldTime{}, _uiLastTime{}, _fDeltaTime{}, _urNumFrames{}, _urFrameCount{}
-{}
+Time::Time() : _fNumFrames{}, _fDeltaTime{}, _uiLastTime{}, _fpsManager{}
+{
+    SDL_initFramerate(&_fpsManager);
+
+    if (SDL_setFramerate(&_fpsManager, 60) == -1) throw std::runtime_error("Error setting framerate");
+
+    #ifdef __wii__
+        uint32_t uiTvMode{VIDEO_GetCurrentTvMode()};
+        if ((uiTvMode == VI_PAL || uiTvMode == VI_DEBUG_PAL) && SDL_setFramerate(&_fpsManager, 50) == -1)
+            throw std::runtime_error("Error setting framerate");
+    #endif
+}

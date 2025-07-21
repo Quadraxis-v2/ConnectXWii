@@ -31,7 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class GameCubeController : public SDL_Wii_Joystick
 {
 public:
-    static const uint8_t SCuyMaxGameCubeControllers = 4;    /**< Maximum number of GameCube controllers supported by SDL-wii */
+    static const uint8_t SCuyMaxGameCubeControllers{4};    /**< Maximum number of GameCube controllers supported by SDL-wii */
 
     bool GetButtonX() const noexcept;
     bool GetButtonY() const noexcept;
@@ -55,17 +55,11 @@ public:
 };
 
 
-inline bool GameCubeController::GetButtonX() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 2); }
-inline bool GameCubeController::GetButtonY() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 3); }
-inline bool GameCubeController::GetButtonZ() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 4); }
-inline bool GameCubeController::GetButtonR() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 5); }
-inline bool GameCubeController::GetButtonL() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 6); }
-inline bool GameCubeController::GetButtonStart() const noexcept
-{ return SDL_JoystickGetButton(__pSdlJoystick, 7); }
+inline bool GameCubeController::GetButtonX() const noexcept { return GetButton(2); }
+inline bool GameCubeController::GetButtonY() const noexcept { return GetButton(3); }
+inline bool GameCubeController::GetButtonZ() const noexcept { return GetButton(4); }
+inline bool GameCubeController::GetButtonR() const noexcept { return GetButton(5); }
+inline bool GameCubeController::GetButtonL() const noexcept { return GetButton(6); }
+inline bool GameCubeController::GetButtonStart() const noexcept { return GetButton(7); }
 
 #endif

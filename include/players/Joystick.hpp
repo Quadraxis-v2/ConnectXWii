@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _JOYSTICK_HPP_
 
 #include <cstdint>
+
 #include <SDL_joystick.h>
 
 
@@ -31,6 +32,9 @@ class Joystick
 {
 public:
     int32_t GetIndex() const noexcept;
+    bool GetButton(uint32_t uiButton) const noexcept;
+    uint8_t GetHat(uint32_t uiHat) const noexcept;
+    int16_t GetAxis(uint32_t uiAxis) const noexcept;
     
 
     /**
@@ -64,9 +68,13 @@ protected:
 };
 
 
-inline int32_t Joystick::GetIndex() const noexcept
-{ return SDL_JoystickIndex(__pSdlJoystick); }
-
+inline int32_t Joystick::GetIndex() const noexcept { return SDL_JoystickIndex(__pSdlJoystick); }
+inline bool Joystick::GetButton(uint32_t uiButton) const noexcept
+{ return SDL_JoystickGetButton(__pSdlJoystick, uiButton); }
+inline uint8_t Joystick::GetHat(uint32_t uiHat) const noexcept
+{ return SDL_JoystickGetHat(__pSdlJoystick, uiHat); }
+inline int16_t Joystick::GetAxis(uint32_t uiAxis) const noexcept
+{ return SDL_JoystickGetAxis(__pSdlJoystick, uiAxis); }
 
 inline Joystick::operator SDL_Joystick*() const noexcept { return __pSdlJoystick; }
 
