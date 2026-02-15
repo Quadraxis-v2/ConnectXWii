@@ -21,8 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <typeinfo>
 
-#include <SDL_video.h>
-#include <SDL_rotozoom.h>
+#include <SDL_render.h>
+#include <SDL_mouse.h>
+#include <SDL_rect.h>
+#include <SDL_pixels.h>
 
 #include "../../include/App.hpp"
 #include "../../include/video/Surface.hpp"
@@ -37,256 +39,305 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 void App::OnRender()
 {
     // Clear framebuffer
-    Surface* pSurfaceDisplay{_htSurfaces.at("Display")};
-    SDL_FillRect(*pSurfaceDisplay, nullptr, SDL_MapRGB(pSurfaceDisplay->GetPixelFormat(), 0, 0, 0));
+    SDL_RenderClear(_pSdlRendererMain);
 
     // Get the position of the main Wiimote's IR
     int32_t iMouseX{}, iMouseY{};
     SDL_GetMouseState(&iMouseX, &iMouseY);
     Vector3 vectorMouse{static_cast<float>(iMouseX), static_cast<float>(iMouseY)};
+    double dAngle{0};
 
-    WiiController* pWiiController{static_cast<WiiController*>(_htJoysticks.at(0))};
+    #ifdef __wii__
+        WiiController* pWiiController{static_cast<WiiController*>(_htJoysticks.at(0))};
+        dAngle = pWiiController->GetRoll();
+    #endif
 
     switch (_eStateCurrent)
     {
     case EState::STATE_START:  // In the starting state we just draw the starting surface
     {
-        _htSurfaces.at("Start")->OnDraw(*pSurfaceDisplay);
+        _htTextures.at("Start")->OnDraw(_pSdlRendererMain);
 
         // Draw buttons
-        Surface* pSurfaceDefaultButton{_htSurfaces.at("DefaultButton")};
-        Surface* pSurfaceHoverButton{_htSurfaces.at("HoverButton")};
-        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
+        Texture* pTextureDefaultButton{_htTextures.at("DefaultButton")};
+        Texture* pTextureHoverButton{_htTextures.at("HoverButton")};
+        Texture* pTextureExit{_htTextures.at("DefaultHome")};
         const Button* CpButtonSingle{_htButtons.at("SinglePlayer")};
         const Button* CpButtonMulti{_htButtons.at("MultiPlayer")};
         const Button* CpButtonSettings{_htButtons.at("Settings")};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
-        if (CpButtonSingle->IsInside(vectorMouse)) pSurfaceHoverButton->OnDraw(*pSurfaceDisplay, 
+        if (CpButtonSingle->IsInside(vectorMouse)) pTextureHoverButton->OnDraw(_pSdlRendererMain,
+            pTextureHoverButton->GetWidth(), pTextureHoverButton->GetHeight(),
             CpButtonSingle->GetTopLeft().fX, CpButtonSingle->GetTopLeft().fY);
-        else pSurfaceDefaultButton->OnDraw(*pSurfaceDisplay, CpButtonSingle->GetTopLeft().fX, 
-            CpButtonSingle->GetTopLeft().fY);
+        else pTextureDefaultButton->OnDraw(_pSdlRendererMain,
+            pTextureDefaultButton->GetWidth(), pTextureDefaultButton->GetHeight(),
+            CpButtonSingle->GetTopLeft().fX, CpButtonSingle->GetTopLeft().fY);
 
-        if (CpButtonMulti->IsInside(vectorMouse)) pSurfaceHoverButton->OnDraw(*pSurfaceDisplay, 
+        if (CpButtonMulti->IsInside(vectorMouse)) pTextureHoverButton->OnDraw(_pSdlRendererMain,
+            pTextureHoverButton->GetWidth(), pTextureHoverButton->GetHeight(),
             CpButtonMulti->GetTopLeft().fX, CpButtonMulti->GetTopLeft().fY);
-        else pSurfaceDefaultButton->OnDraw(*pSurfaceDisplay, CpButtonMulti->GetTopLeft().fX, 
-            CpButtonMulti->GetTopLeft().fY);
+        else pTextureDefaultButton->OnDraw(_pSdlRendererMain,
+            pTextureDefaultButton->GetWidth(), pTextureDefaultButton->GetHeight(),
+            CpButtonMulti->GetTopLeft().fX, CpButtonMulti->GetTopLeft().fY);
 
-        if (CpButtonSettings->IsInside(vectorMouse)) pSurfaceHoverButton->OnDraw(*pSurfaceDisplay, 
+        if (CpButtonSettings->IsInside(vectorMouse)) pTextureHoverButton->OnDraw(_pSdlRendererMain,
+            pTextureHoverButton->GetWidth(), pTextureHoverButton->GetHeight(),
             CpButtonSettings->GetTopLeft().fX, CpButtonSettings->GetTopLeft().fY);
-        else pSurfaceDefaultButton->OnDraw(*pSurfaceDisplay, CpButtonSettings->GetTopLeft().fX, 
-            CpButtonSettings->GetTopLeft().fY);
+        else pTextureDefaultButton->OnDraw(_pSdlRendererMain,
+            pTextureDefaultButton->GetWidth(), pTextureDefaultButton->GetHeight(),
+            CpButtonSettings->GetTopLeft().fX, CpButtonSettings->GetTopLeft().fY);
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
-        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+        if (CpButtonExit->IsInside(vectorMouse)) pTextureExit->OnDraw(_pSdlRendererMain,
+            72, 73, CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 72, 73, 29, 327);
+        else pTextureExit->OnDraw(_pSdlRendererMain, 72, 73, CpButtonExit->GetTopLeft().fX,
+            CpButtonExit->GetTopLeft().fY, 72, 73, 276, 327);
 
-        _htSurfaces.at("TextSingle")->OnDraw(*pSurfaceDisplay, 250, 170);
-        _htSurfaces.at("TextMulti")->OnDraw(*pSurfaceDisplay, 280, 250);
-        _htSurfaces.at("TextSettings")->OnDraw(*pSurfaceDisplay, 290, 330);
+        Texture* pTextureTemp{_htTextures.at("TextSingle")};
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            250, 170);
+
+        pTextureTemp = _htTextures.at("TextMulti");
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            280, 250);
+
+        pTextureTemp = _htTextures.at("TextSettings");
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            290, 330);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
-            vectorMouse + Vector3(1, 2));
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
-            vectorMouse);
+        RenderCursor(_htTextures.at("CursorShadow"), dAngle, vectorMouse + Vector3(1, 2));
+        RenderCursor(_htTextures.at("CursorHand"), dAngle, vectorMouse);
         break;
     }
     case EState::STATE_SETTINGS:
     {
         // Draw buttons
-        Surface* pSurfaceButtons{_htSurfaces.at("DefaultHome")};
-        const Button* CpButtonExit{_htButtons.at("Exit")};
+        Texture* pTextureButtons{_htTextures.at("DefaultHome")};
 
-        _htSurfaces.at("Settings")->OnDraw(*pSurfaceDisplay);
-        _htSurfaces.at("TextSettings")->OnDraw(*pSurfaceDisplay, 300, 40);
+        _htTextures.at("Settings")->OnDraw(_pSdlRendererMain);
 
-        _htSurfaces.at("TextWidth")->OnDraw(*pSurfaceDisplay, 170, 100);
-        if (_settingsGlobal.GetBoardWidth() > Globals::SCuyBoardWidthMin) 
+        Texture* pSdlTextureTemp{_htTextures.at("TextSettings")};
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 300, 40);
+
+        pSdlTextureTemp = _htTextures.at("TextWidth");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 170, 100);
+
+        if (_settingsGlobal.GetBoardWidth() > Globals::SCuyBoardWidthMin)
         {
             const Button* CpButtonMinusWidth{_htButtons.at("MinusWidth")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusWidth->GetTopLeft().fX, 
-                CpButtonMinusWidth->GetTopLeft().fY, 157, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonMinusWidth->GetTopLeft().fX,
+                CpButtonMinusWidth->GetTopLeft().fY, 77, 77, 157, 129);
         }
-        _htSurfaces.at("TextWidthValue")->OnDraw(*pSurfaceDisplay, 410, 100);
+
+        pSdlTextureTemp = _htTextures.at("TextWidthValue");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 410, 100);
+
         if (_settingsGlobal.GetBoardWidth() < Globals::SCuyBoardWidthMax)
         {
             const Button* CpButtonPlusWidth{_htButtons.at("PlusWidth")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusWidth->GetTopLeft().fX, 
-                CpButtonPlusWidth->GetTopLeft().fY, 30, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonPlusWidth->GetTopLeft().fX,
+                CpButtonPlusWidth->GetTopLeft().fY, 77, 77, 30, 129);
         }
 
-        _htSurfaces.at("TextHeight")->OnDraw(*pSurfaceDisplay, 170, 190);
-        if (_settingsGlobal.GetBoardHeight() > Globals::SCuyBoardHeightMin) 
+        pSdlTextureTemp = _htTextures.at("TextHeight");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 170, 190);
+
+        if (_settingsGlobal.GetBoardHeight() > Globals::SCuyBoardHeightMin)
         {
             const Button* CpButtonMinusHeight{_htButtons.at("MinusHeight")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusHeight->GetTopLeft().fX, 
-                CpButtonMinusHeight->GetTopLeft().fY, 157, 129, 77, 77);
-        }
-        _htSurfaces.at("TextHeightValue")->OnDraw(*pSurfaceDisplay, 410, 190);
-        if (_settingsGlobal.GetBoardHeight() < Globals::SCuyBoardHeightMax) 
-        {
-            const Button* CpButtonPlusHeight{_htButtons.at("PlusHeight")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusHeight->GetTopLeft().fX, 
-                CpButtonPlusHeight->GetTopLeft().fY, 30, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonMinusHeight->GetTopLeft().fX,
+                CpButtonMinusHeight->GetTopLeft().fY, 77, 77, 157, 129);
         }
 
-        _htSurfaces.at("TextStreak")->OnDraw(*pSurfaceDisplay, 170, 275);
-        if (_settingsGlobal.GetCellsToWin() > Globals::SCuyCellsToWinMin) 
+        pSdlTextureTemp = _htTextures.at("TextHeightValue");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 410, 190);
+
+        if (_settingsGlobal.GetBoardHeight() < Globals::SCuyBoardHeightMax)
+        {
+            const Button* CpButtonPlusHeight{_htButtons.at("PlusHeight")};
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonPlusHeight->GetTopLeft().fX,
+                CpButtonPlusHeight->GetTopLeft().fY, 77, 77, 30, 129);
+        }
+
+        pSdlTextureTemp = _htTextures.at("TextStreak");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 170, 275);
+
+        if (_settingsGlobal.GetCellsToWin() > Globals::SCuyCellsToWinMin)
         {
             const Button* CpButtonMinusStreak{_htButtons.at("MinusStreak")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonMinusStreak->GetTopLeft().fX, CpButtonMinusStreak->GetTopLeft().fY, 157, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonMinusStreak->GetTopLeft().fX,
+                CpButtonMinusStreak->GetTopLeft().fY, 77, 77, 157, 129);
         }
-        _htSurfaces.at("TextStreakValue")->OnDraw(*pSurfaceDisplay, 410, 275);
-        if (_settingsGlobal.GetCellsToWin() < std::max(_settingsGlobal.GetBoardWidth(), 
+
+        pSdlTextureTemp = _htTextures.at("TextStreakValue");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 410, 275);
+
+        if (_settingsGlobal.GetCellsToWin() < std::max(_settingsGlobal.GetBoardWidth(),
             _settingsGlobal.GetBoardHeight()))
         {
             const Button* CpButtonPlusStreak{_htButtons.at("PlusStreak")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusStreak->GetTopLeft().fX, 
-                CpButtonPlusStreak->GetTopLeft().fY, 30, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonPlusStreak->GetTopLeft().fX,
+                CpButtonPlusStreak->GetTopLeft().fY, 77, 77, 30, 129);
         }
 
-        _htSurfaces.at("TextDifficulty")->OnDraw(*pSurfaceDisplay, 170, 375);
-        if (_settingsGlobal.GetAIDifficulty() > Globals::SCuyAIDifficultyMin) 
+        pSdlTextureTemp = _htTextures.at("TextDifficulty");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 170, 375);
+
+        if (_settingsGlobal.GetAIDifficulty() > Globals::SCuyAIDifficultyMin)
         {
             const Button* CpButtonMinusDifficulty{_htButtons.at("MinusDifficulty")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonMinusDifficulty->GetTopLeft().fX, 
-                CpButtonMinusDifficulty->GetTopLeft().fY, 157, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonMinusDifficulty->GetTopLeft().fX,
+                CpButtonMinusDifficulty->GetTopLeft().fY, 77, 77, 157, 129);
         }
-        _htSurfaces.at("TextDifficultyValue")->OnDraw(*pSurfaceDisplay, 410, 375);
-        if (_settingsGlobal.GetAIDifficulty() < Globals::SCuyAIDifficultyMax) 
+
+        pSdlTextureTemp = _htTextures.at("TextDifficultyValue");
+        pSdlTextureTemp->OnDraw(_pSdlRendererMain, pSdlTextureTemp->GetWidth(),
+            pSdlTextureTemp->GetHeight(), 410, 375);
+
+        if (_settingsGlobal.GetAIDifficulty() < Globals::SCuyAIDifficultyMax)
         {
             const Button* CpButtonPlusDifficulty{_htButtons.at("PlusDifficulty")};
-            pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonPlusDifficulty->GetTopLeft().fX, 
-                CpButtonPlusDifficulty->GetTopLeft().fY, 30, 129, 77, 77);
+            pTextureButtons->OnDraw(_pSdlRendererMain, 77, 77, CpButtonPlusDifficulty->GetTopLeft().fX,
+                CpButtonPlusDifficulty->GetTopLeft().fY, 77, 77, 30, 129);
         }
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceButtons->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
-        else pSurfaceButtons->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+        const Button* CpButtonExit{_htButtons.at("Exit")};
+        if (CpButtonExit->IsInside(vectorMouse)) pTextureButtons->OnDraw(_pSdlRendererMain, 72, 73,
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 72, 73, 29, 327);
+        else pTextureButtons->OnDraw(_pSdlRendererMain, 72, 73, CpButtonExit->GetTopLeft().fX,
+            CpButtonExit->GetTopLeft().fY, 72, 73, 276, 327);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
-            vectorMouse + Vector3(1, 2));
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
-            vectorMouse);
+        RenderCursor(_htTextures.at("CursorShadow"), dAngle, vectorMouse + Vector3(1, 2));
+        RenderCursor(_htTextures.at("CursorHand"), dAngle, vectorMouse);
 
         break;
     }
     case EState::STATE_INGAME: // Inside the game we draw the grid and as many markers as necessary
     {
-        RenderGrid(*pSurfaceDisplay);
+        RenderGrid();
 
-        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
-        Surface* pSurfaceCursor{nullptr};
+        Texture* pTextureExit{_htTextures.at("DefaultHome")};
+        Texture* pTextureCursor{nullptr};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
         if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
         {
-            _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 25, 
-                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7, 88, 72);
-            pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
-            pSurfaceCursor->SetAlpha(128);
-        }
-        else if (_uyCurrentPlayer == 0) 
-        {
-            pSurfaceCursor = _htSurfaces.at("CursorPlayer1");
-            pSurfaceCursor->SetAlpha(SDL_ALPHA_OPAQUE);
-        }
-        else if (_uyCurrentPlayer == 1) pSurfaceCursor = _htSurfaces.at("CursorPlayer2");
+            Texture* pTextureHourglass{_htTextures.at("Hourglass")};
+            pTextureHourglass->OnDraw(_pSdlRendererMain, 88, 72, 552, 25, 88, 72,
+                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7);
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
-        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+            pTextureCursor = _htTextures.at("CursorPlayer1");
+            pTextureCursor->SetAlpha(128);
+        }
+        else if (_uyCurrentPlayer == 0)
+        {
+            pTextureCursor = _htTextures.at("CursorPlayer1");
+            pTextureCursor->SetAlpha(SDL_ALPHA_OPAQUE);
+        }
+        else if (_uyCurrentPlayer == 1) pTextureCursor = _htTextures.at("CursorPlayer2");
+
+        if (CpButtonExit->IsInside(vectorMouse)) pTextureExit->OnDraw(_pSdlRendererMain, 72, 73,
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 72, 73, 29, 327);
+        else pTextureExit->OnDraw(_pSdlRendererMain, 72, 73, CpButtonExit->GetTopLeft().fX,
+            CpButtonExit->GetTopLeft().fY, 72, 73, 276, 327);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        RenderCursor(*pSurfaceDisplay, *pSurfaceCursor, pWiiController->GetRoll(), 
-            vectorMouse + Vector3(1, 2));
-            
+        RenderCursor(pTextureCursor, dAngle, vectorMouse + Vector3(1, 2));
+
         break;
     }
     case EState::STATE_PROMPT:
     {
-        RenderGrid(*pSurfaceDisplay);
+        RenderGrid();
 
-        Surface* pSurfaceDefaultYes{_htSurfaces.at("DefaultYes")};
-        Surface* pSurfaceHoverYes{_htSurfaces.at("HoverYes")};
-        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
+        Texture* pTextureDefaultYes{_htTextures.at("DefaultYes")};
+        Texture* pTextureHoverYes{_htTextures.at("HoverYes")};
+        Texture* pTextureExit{_htTextures.at("DefaultHome")};
         const Button* CpButtonYes{_htButtons.at("Yes")};
         const Button* CpButtonNo{_htButtons.at("No")};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
-        _htSurfaces.at("Prompt")->OnDraw(*pSurfaceDisplay, 170, 140);
+        Texture* pTextureTemp{_htTextures.at("TextPrompt")};
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            170, 140);
 
         // Draw buttons
-        if (CpButtonYes->IsInside(vectorMouse)) pSurfaceHoverYes->OnDraw(*pSurfaceDisplay, 
+        if (CpButtonYes->IsInside(vectorMouse)) pTextureHoverYes->OnDraw(_pSdlRendererMain, 72, 73,
             CpButtonYes->GetTopLeft().fX, CpButtonYes->GetTopLeft().fY);
-        else pSurfaceDefaultYes->OnDraw(*pSurfaceDisplay, CpButtonYes->GetTopLeft().fX, 
+        else pTextureDefaultYes->OnDraw(_pSdlRendererMain, 72, 73, CpButtonYes->GetTopLeft().fX,
             CpButtonYes->GetTopLeft().fY);
 
-        if (CpButtonNo->IsInside(vectorMouse)) pSurfaceHoverYes->OnDraw(*pSurfaceDisplay, 
+        if (CpButtonNo->IsInside(vectorMouse)) pTextureHoverYes->OnDraw(_pSdlRendererMain, 72, 73,
             CpButtonNo->GetTopLeft().fX, CpButtonNo->GetTopLeft().fY);
-        else pSurfaceDefaultYes->OnDraw(*pSurfaceDisplay, CpButtonNo->GetTopLeft().fX, 
+        else pTextureDefaultYes->OnDraw(_pSdlRendererMain, 72, 73, CpButtonNo->GetTopLeft().fX,
             CpButtonNo->GetTopLeft().fY);
 
-        _htSurfaces.at("TextPrompt")->OnDraw(*pSurfaceDisplay, 210, 150);
-        _htSurfaces.at("TextYes")->OnDraw(*pSurfaceDisplay, 260, 250);
-        _htSurfaces.at("TextNo")->OnDraw(*pSurfaceDisplay, 360, 250);
+        // Draw text
+        pTextureTemp = _htTextures.at("TextPrompt");
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            210, 150);
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
-        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+        pTextureTemp = _htTextures.at("TextYes");
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            260, 250);
+
+        pTextureTemp = _htTextures.at("TextNo");
+        pTextureTemp->OnDraw(_pSdlRendererMain, pTextureTemp->GetWidth(), pTextureTemp->GetHeight(),
+            360, 250);
+
+
+        pTextureExit->OnDraw(_pSdlRendererMain, 72, 73, CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY,
+            72, 73, 276, 327);
 
         if (typeid(*(_vectorpPlayers[_uyCurrentPlayer])) == typeid(AI))
-        {
-            _htSurfaces.at("Hourglass")->OnDraw(*pSurfaceDisplay, 552, 25, 
-                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7, 88, 72);
-        }
+            _htTextures.at("Hourglass")->OnDraw(_pSdlRendererMain, 88, 72, 552, 25, 88, 72,
+                88 * _htAnimations.at("Loading")->GetCurrentFrame(), 7);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
-            vectorMouse + Vector3(1, 2));
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
-            vectorMouse);
+        RenderCursor(_htTextures.at("CursorShadow"), dAngle, vectorMouse + Vector3(1, 2));
+        RenderCursor(_htTextures.at("CursorHand"), dAngle, vectorMouse);
 
         break;
     }
     case EState::STATE_END:    // In the win state we show a surface depending on who won
     {
-        RenderGrid(*pSurfaceDisplay);
+        RenderGrid();
 
-        Surface* pSurfaceWinPlayer1{_htSurfaces.at("WinPlayer1")};
-        Surface* pSurfaceExit{_htSurfaces.at("DefaultHome")};
+        Texture* pTextureExit{_htTextures.at("DefaultHome")};
+        Texture* pTextureWin{nullptr};
         const Button* CpButtonExit{_htButtons.at("Exit")};
 
-        int32_t iInitialX{(pSurfaceDisplay->GetWidth() >> 1) - (pSurfaceWinPlayer1->GetWidth() >> 1)};
-        //int32_t iInitialY{(pSurfaceDisplay->GetHeight() >> 1) - (pSurfaceWinPlayer1->GetHeight() >> 1)};
+        int iDisplayWidth{}, iDisplayHeight{};
+        SDL_GetWindowSize(_pSdlWindowMain, &iDisplayWidth, &iDisplayHeight);
 
         switch (_grid.CheckWinner())
         {
-        case Grid::EPlayerMark::PLAYER1: 
-            pSurfaceWinPlayer1->OnDraw(*pSurfaceDisplay, iInitialX, 50);            break;
-        case Grid::EPlayerMark::PLAYER2: 
-            _htSurfaces.at("WinPlayer2")->OnDraw(*pSurfaceDisplay, iInitialX, 50);  break;
-        case Grid::EPlayerMark::EMPTY:   
-            _htSurfaces.at("Draw")->OnDraw(*pSurfaceDisplay, iInitialX, 50);        break;
+        case Grid::EPlayerMark::PLAYER1: pTextureWin = _htTextures.at("WinPlayer1");  break;
+        case Grid::EPlayerMark::PLAYER2: pTextureWin = _htTextures.at("WinPlayer2");  break;
+        default: pTextureWin = _htTextures.at("Draw");                                break;
         }
 
-        if (CpButtonExit->IsInside(vectorMouse)) pSurfaceExit->OnDraw(*pSurfaceDisplay, 
-            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 29, 327, 72, 73);
-        else pSurfaceExit->OnDraw(*pSurfaceDisplay, CpButtonExit->GetTopLeft().fX, 
-            CpButtonExit->GetTopLeft().fY, 276, 327, 72, 73);
+        pTextureWin->OnDraw(_pSdlRendererMain, pTextureWin->GetWidth(), pTextureWin->GetHeight(),
+            (iDisplayWidth >> 1) - (pTextureWin->GetWidth() >> 1), 50);
+
+        if (CpButtonExit->IsInside(vectorMouse)) pTextureExit->OnDraw(_pSdlRendererMain, 72, 73,
+            CpButtonExit->GetTopLeft().fX, CpButtonExit->GetTopLeft().fY, 72, 73, 29, 327);
+        else pTextureExit->OnDraw(_pSdlRendererMain, 72, 73, CpButtonExit->GetTopLeft().fX,
+            CpButtonExit->GetTopLeft().fY, 72, 73, 276, 327);
 
         // We need to draw the cursor because SDL-wii draws directly to video memory
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorShadow")), pWiiController->GetRoll(), 
-            vectorMouse + Vector3(1, 2));
-        RenderCursor(*pSurfaceDisplay, *(_htSurfaces.at("CursorHand")), pWiiController->GetRoll(), 
-            vectorMouse);
+        RenderCursor(_htTextures.at("CursorShadow"), dAngle, vectorMouse + Vector3(1, 2));
+        RenderCursor(_htTextures.at("CursorHand"), dAngle, vectorMouse);
 
         break;
     }
@@ -297,54 +348,55 @@ void App::OnRender()
         std::printf("\x1b[2;0H");
         std::printf("Cursor: %i, %i\n", iMouseX, iMouseY);
 
-        uint32_t uiCurrentTime{Time::GetInstance().GetTime()};
-        if (_uiOldTime + 100 < uiCurrentTime)
+        uint64_t ulCurrentTime{Time::GetInstance().GetTime()};
+        if (_ulOldTime + 100 < ulCurrentTime)
         {
-            _uiOldTime = uiCurrentTime;
+            _ulOldTime = ulCurrentTime;
             _fFPS = Time::GetInstance().GetFPS();
         }
         std::printf("FPS: %.2f\n", _fFPS);
     }
 
-    SDL_Flip(*pSurfaceDisplay);  // Refreshes the screen
+    SDL_RenderPresent(_pSdlRendererMain);  // Refreshes the screen
 }
 
 
-void App::RenderCursor(Surface& surfaceDisplay, const Surface& CsurfaceCursor, double dAngle, 
+void App::RenderCursor(Texture* pTextureCursor, double dAngle,
     const Vector3& CvectorPosition) const
 {
-    Surface surfaceTemp{CsurfaceCursor};
-    surfaceTemp.Rotate(dAngle);
-    surfaceTemp.OnDraw(surfaceDisplay, CvectorPosition.fX - (surfaceTemp.GetWidth() >> 1), 
-        CvectorPosition.fY - (surfaceTemp.GetHeight() >> 1));
+    pTextureCursor->OnDraw(_pSdlRendererMain, pTextureCursor->GetWidth(), pTextureCursor->GetHeight(),
+        CvectorPosition.fX - (pTextureCursor->GetWidth() >> 1), CvectorPosition.fY -
+        (pTextureCursor->GetHeight() >> 1), pTextureCursor->GetWidth(), pTextureCursor->GetHeight(),
+        0, 0, dAngle);
 }
 
 
-void App::RenderGrid(Surface& surfaceDisplay) const
+void App::RenderGrid() const
 {
-    Surface* pSurfaceEmptyFill{_htSurfaces.at("EmptyCell")};
-    Surface* pSurfaceMarker1{_htSurfaces.at("PlayerMarker1")};
-    Surface* pSurfaceMarker2{_htSurfaces.at("PlayerMarker2")};
+    Texture* pTextureEmptyFill{_htTextures.at("EmptyCell")};
+    Texture* pTextureMarker1{_htTextures.at("PlayerMarker1")};
+    Texture* pTextureMarker2{_htTextures.at("PlayerMarker2")};
 
-    _htSurfaces.at("Background")->OnDraw(surfaceDisplay);
+    _htTextures.at("Background")->OnDraw(_pSdlRendererMain);  // Draw the background of the grid
 
     for(int32_t i = 0; i < _grid.GetHeight(); ++i)  // Search for markers and draw them
     {
         // Surface coordinate of the i'th row of the grid
-        int32_t iY{_rInitialY + i * pSurfaceMarker1->GetHeight()};
+        int32_t iMarkerWidth{pTextureMarker1->GetWidth()}, iMarkerHeight{pTextureMarker1->GetHeight()};
+        int32_t iY{_rInitialY + i * iMarkerHeight};
 
         for (int32_t j = 0; j < _grid.GetWidth(); ++j)
         {
             // Surface coordinate of the j'th column of the grid
-            int32_t iX{_rInitialX + j * pSurfaceMarker1->GetWidth()};
+            int32_t iX{_rInitialX + j * iMarkerWidth};
 
             if (_eStateCurrent != EState::STATE_END)
             {
                 if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                    pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
+                    pTextureMarker1->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                    pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
-                else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
+                    pTextureMarker2->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
+                else pTextureEmptyFill->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
             }
             else
             {
@@ -363,17 +415,17 @@ void App::RenderGrid(Surface& surfaceDisplay) const
                     if (_htAnimations.at("Win")->GetCurrentFrame() != 0)
                     {
                         if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                            pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
+                            pTextureMarker1->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
                         else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                            pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
+                            pTextureMarker2->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
                     }
-                    else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
+                    else pTextureEmptyFill->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
                 }
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER1)
-                    pSurfaceMarker1->OnDraw(surfaceDisplay, iX, iY);
+                    pTextureMarker1->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
                 else if(_grid[i][j] == Grid::EPlayerMark::PLAYER2)
-                    pSurfaceMarker2->OnDraw(surfaceDisplay, iX, iY);
-                else pSurfaceEmptyFill->OnDraw(surfaceDisplay, iX, iY);
+                    pTextureMarker2->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
+                else pTextureEmptyFill->OnDraw(_pSdlRendererMain, iMarkerWidth, iMarkerHeight, iX, iY);
             }
         }
     }

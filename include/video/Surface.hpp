@@ -20,11 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _SURFACE_HPP_
 #define _SURFACE_HPP_
 
-#include <string>
 #include <cstdint>
+#include <string>
 
-#include <SDL.h>
-#include <SDL_video.h>
+#include <SDL_pixels.h>
+#include <SDL_surface.h>
 
 
 /**
@@ -39,6 +39,7 @@ public:
     int32_t GetHeight() const noexcept;
     uint16_t GetPitch() const noexcept;
     void* GetPixels() const noexcept;
+    const std::string& GetPath() const noexcept;
 
 
     /**
@@ -46,9 +47,9 @@ public:
      * 
      * @param iWidth the width of the surface
      * @param iHeight the height of the surface
-     * @param uyBitsPerPixel the bits per pixel of the pixel format of the surface
+     * @param iBitsPerPixel the bits per pixel of the pixel format of the surface
      */
-    Surface(int32_t iWidth, int32_t iHeight, uint8_t uyBitsPerPixel);
+    Surface(int32_t iWidth, int32_t iHeight, int32_t iBitsPerPixel);
 
 
     /**
@@ -89,34 +90,6 @@ public:
 
 
     /**
-     * @brief Retrieves the value of the pixel at (urX, urY)
-     *
-     * @param urX the X coordinate of the pixel
-     * @param urY the Y coordinate of the pixel
-     * @param puyRed the red RGB component of the pixel
-     * @param puyGreen the green RGB component of the pixel
-     * @param puyBlue the blue RGB component of the pixel
-     * @param puyAlpha the alpha component of the pixel
-     */
-    void ReadPixel(uint16_t urX, uint16_t urY, uint8_t* puyRed, uint8_t* puyGreen, uint8_t* puyBlue, 
-        uint8_t* puyAlpha);
-
-
-    /**
-     * @brief Sets the pixel at (X, Y) to the given value
-     *
-     * @param urX the X coordinate of the pixel
-     * @param urY the Y coordinate of the pixel
-     * @param uyRed the red RGB component of the pixel
-     * @param uyGreen the green RGB component of the pixel
-     * @param uyBlue the blue RGB component of the pixel
-     * @param uyAlpha the alpha component of the pixel
-     */
-    void DrawPixel(uint16_t urX, uint16_t urY, uint8_t uyRed, uint8_t uyGreen, uint8_t uyBlue,
-        uint8_t uyAlpha);
-
-
-    /**
      * @brief Makes a color in this surface be transparent. If the color requested is not found, the most
      * similar color will be selected
      *
@@ -138,10 +111,10 @@ public:
     /**
      * @brief Upscales a surface
      *
-     * @param urScaleX the scale factor for the X axis
-     * @param urScaleY the scale factor for the Y axis
+     * @param dScaleX the scale factor for the X axis
+     * @param dScaleY the scale factor for the Y axis
      */
-    void Scale(uint16_t urScaleX, uint16_t urScaleY);
+    void Scale(double dScaleX, double dScaleY);
 
 
     /**
@@ -156,19 +129,22 @@ public:
      * @brief Blits part of this surface into another surface
      *
      * @param sdlSurfaceDestination the destination surface
-     * @param rDestinationX the X component of the top left coordinate where this surface will be blitted
-     * @param rDestinationY the Y component of the top left coordinate where this surface will be blitted
-     * @param rSourceX the X component of the origin coordinate of the portion of the source surface
-     * @param rSourceY the Y component of the origin coordinate of the portion of the source surface
-     * @param rSourceWidth the width in pixels of the portion of this surface that will be blitted
-     * @param rSourceHeight the height in pixels of the portion of this surface that will be blitted
+     * @param iDestinationX the X component of the top left coordinate where this surface will be blitted
+     * @param iDestinationY the Y component of the top left coordinate where this surface will be blitted
+     * @param iSourceX the X component of the origin coordinate of the portion of the source surface
+     * @param iSourceY the Y component of the origin coordinate of the portion of the source surface
+     * @param iSourceWidth the width in pixels of the portion of this surface that will be blitted
+     * @param iSourceHeight the height in pixels of the portion of this surface that will be blitted
+     * @param iDestinationWidth the width in pixels of the portion of the destination surface where the blit will happen
+     * @param iDestinationHeight the height in pixels of the portion of the destination surface where the blit will happen
      */
-    void OnDraw(Surface& sdlSurfaceDestination, int16_t rDestinationX = 0, int16_t rDestinationY = 0,
-        int16_t rSourceX = 0, int16_t rSourceY = 0, int16_t rSourceWidth = -1, int16_t rSourceHeight = -1);
+    void OnDraw(Surface& sdlSurfaceDestination, int32_t iDestinationX = 0, int32_t iDestinationY = 0,
+        int32_t iSourceX = 0, int32_t iSourceY = 0, int32_t iSourceWidth = -1, int32_t iSourceHeight = -1,
+        int32_t iDestinationWidth = -1, int32_t iDestinationHeight = -1);
 
 private:
-    std::string _sPath;     /**< The path to the image in the filesystem */
     SDL_Surface* _pSdlSurface;  /**< The raw surface */
+    std::string _sPath;     /**< The path to the image in the filesystem */
 
 };
 
@@ -183,6 +159,7 @@ inline uint16_t Surface::GetPitch() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->pitch : 0); }
 inline void* Surface::GetPixels() const noexcept
 { return (_pSdlSurface != nullptr ? _pSdlSurface->pixels : nullptr); }
+inline const std::string& Surface::GetPath() const noexcept { return _sPath; }
 
 
 inline Surface::operator SDL_Surface*() const noexcept { return _pSdlSurface; }

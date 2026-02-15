@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include <string>
+#include <filesystem>
 #include <ctime>
 #include <sstream>
 #include <chrono>
@@ -28,7 +29,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ios>
 #include <ostream>
 
+#include <SDL_log.h>
+
 #include "../include/Logger.hpp"
+
 
 /**
  * @brief Construct a new Logger object and erases the contents of CsPath if it exists
@@ -37,16 +41,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * @param CsPath the path to write the log
  */
 Logger::Logger(const std::string& CsName, const std::string& CsPath) : _sName{CsName},
-	_sLogPath{CsPath} {}
+	_sLogPath{std::filesystem::path(CsPath).lexically_normal().string()} {}
+
 
 
 /**
  * @brief Logs a message with a certain log level
  *
  * @param CsMessage the message to log
- * @param logLevel the log level type of the message
+ * @param ClogLevel the log level type of the message
  */
-void Logger::Log(const std::string& CsMessage, LogLevel logLevel) const
+void Logger::Log(const std::string& CsMessage, const LogLevel ClogLevel) const
 {
 	// Get local system time
 	std::time_t timeNow{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
@@ -54,11 +59,24 @@ void Logger::Log(const std::string& CsMessage, LogLevel logLevel) const
 
 	// Build the log message
 	std::ostringstream ossLog{};
-	ossLog << std::put_time(pTmLocalTime, "[%d-%m-%Y %H:%M:%S] ") << logLevel << " " << _sName << 
+	ossLog << std::put_time(pTmLocalTime, "[%d-%m-%Y %H:%M:%S] ") << ClogLevel << " " << _sName << 
 		" - " << CsMessage;
 
 	// Log to standard error output
-	std::fprintf(stderr, "%s\n", ossLog.str().c_str());
+	SDL_LogPriority sdlLogPriority{};
+	switch (ClogLevel)
+	{
+	case Logger::DEBUG: sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_DEBUG; 		break;
+	case Logger::ERROR: sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_ERROR; 		break;
+	case Logger::INFO: 	sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_INFO; 		break;
+	case Logger::TRACE: sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_VERBOSE; 	break;
+	case Logger::WARN: 	sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_WARN;		break;
+	default: 			sdlLogPriority = SDL_LogPriority::SDL_LOG_PRIORITY_CRITICAL; 	break;
+	}
+
+	SDL_LogMessage(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, sdlLogPriority, "%s", 
+		ossLog.str().c_str());
+	//std::fprintf(stderr, "%s\n", ossLog.str().c_str());
 
 	// Log to a file in external storage
     std::ofstream ofstreamLog{_sLogPath, std::ios_base::out | std::ios_base::app};
@@ -77,23 +95,11 @@ std::ostream& operator <<(std::ostream& ostreamOut, const Logger::LogLevel ClogL
 {
 	switch (ClogLevel)
 	{
-	case Logger::DEBUG:
-		return ostreamOut << "DEBUG";
-		break;
-	case Logger::ERROR:
-		return ostreamOut << "ERROR";
-		break;
-	case Logger::INFO:
-		return ostreamOut << "INFO";
-		break;
-	case Logger::TRACE:
-		return ostreamOut << "TRACE";
-		break;
-	case Logger::WARN:
-		return ostreamOut << "WARN";
-		break;
-	default:
-		return ostreamOut;
-		break;
+	case Logger::DEBUG: return ostreamOut << "DEBUG"; 	break;
+	case Logger::ERROR: return ostreamOut << "ERROR"; 	break;
+	case Logger::INFO: 	return ostreamOut << "INFO";	break;
+	case Logger::TRACE: return ostreamOut << "TRACE"; 	break;
+	case Logger::WARN: 	return ostreamOut << "WARN"; 	break;
+	default: 			return ostreamOut; 				break;
 	}
 }

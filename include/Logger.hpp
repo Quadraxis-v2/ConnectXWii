@@ -89,9 +89,9 @@ private:
      * @brief Logs a message with a certain log level
      *
      * @param CsMessage the message to log
-     * @param logLevel the log level type of the message
+     * @param ClogLevel the log level type of the message
      */
-    void Log(const std::string& CsMessage, LogLevel logLevel) const;
+    void Log(const std::string& CsMessage, const LogLevel ClogLevel) const;
 };
 
 

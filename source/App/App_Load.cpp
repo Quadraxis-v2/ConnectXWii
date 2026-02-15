@@ -22,13 +22,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 #include <utility>
-#include <filesystem>
 #include <ios>
 #include <stdexcept>
 
 #include <SDL_mutex.h>
 #include <SDL_thread.h>
-#include <SDL_video.h>
+#include <SDL_error.h>
+#include <SDL_render.h>
+#include <SDL_pixels.h>
 #include <SDL_ttf.h>
 
 #include "../../include/App.hpp"
@@ -41,6 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../../include/Grid.hpp"
 #include "../../include/video/Button.hpp"
 #include "../../include/video/Surface.hpp"
+#include "../../include/video/Texture.hpp"
 
 
 /**
@@ -90,23 +92,19 @@ void App::Reset()
     _vectorpPlayers.push_back(pPlayerMain);
 
     // Reload surfaces
-    std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
-    while (i != _htSurfaces.end()) 
+    std::unordered_map<std::string, Texture*>::iterator i = _htTextures.begin();
+    while (i != _htTextures.end())
     {
-        if (i->first != "Display") 
-        {
-            delete i->second;
-            i = _htSurfaces.erase(i);
-        }
-        else ++i;
+        delete i->second;
+        i = _htTextures.erase(i);
     }
 
-    _htSurfaces.insert(std::make_pair("Start", LoadTexture("start.png")));
-    _htSurfaces.insert(std::make_pair("DefaultHome", LoadTexture("68370.png")));
-    _htSurfaces.insert(std::make_pair("DefaultButton", LoadTexture("defaultbutton.png")));
-    _htSurfaces.insert(std::make_pair("HoverButton", LoadTexture("hoverbutton.png")));
-    _htSurfaces.insert(std::make_pair("CursorHand", LoadTexture("cursorhand.png")));
-    _htSurfaces.insert(std::make_pair("CursorShadow", LoadTexture("cursorshadow.png")));
+    _htTextures.insert(std::make_pair("Start", LoadTexture("start.png")));
+    _htTextures.insert(std::make_pair("DefaultHome", LoadTexture("68370.png")));
+    _htTextures.insert(std::make_pair("DefaultButton", LoadTexture("DefaultButton.png")));
+    _htTextures.insert(std::make_pair("HoverButton", LoadTexture("HoverButton.png")));
+    _htTextures.insert(std::make_pair("CursorHand", LoadTexture("cursorhand.png")));
+    _htTextures.insert(std::make_pair("CursorShadow", LoadTexture("cursorshadow.png")));
 
     // Reload texts
     SDL_Color sdlColorText{};
@@ -114,20 +112,20 @@ void App::Reset()
     sdlColorText.g = 3;
     sdlColorText.b = 3;
 
-    _htSurfaces.insert(std::make_pair("TextSingle", GenerateText("Single Player (vs AI)", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextMulti", GenerateText("2 Players", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextSettings", GenerateText("Settings", 
-        _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextSingle", GenerateTextureFromText(
+        "Single Player (vs AI)", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextMulti", GenerateTextureFromText(
+        "2 Players", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextSettings", GenerateTextureFromText(
+        "Settings",  _ttfFontContinuum, sdlColorText)));
 
     // Reload animations
-    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin(); 
+    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin();
         j != _htAnimations.end(); ++j) delete j->second;
     _htAnimations.clear();
 
     // Reload buttons
-    for (std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin(); 
+    for (std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin();
         j != _htButtons.end(); ++j) delete j->second;
     _htButtons.clear();
 
@@ -138,10 +136,10 @@ void App::Reset()
 
     // Reload music
     std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
-    while (k != _htSamples.end()) 
+    while (k != _htSamples.end())
     {
         if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
-            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+            && !k->first.starts_with("open") && !k->first.starts_with("select"))
         {
             _samplePlayerGlobal.SetSample(k->second);
             _samplePlayerGlobal.Stop();
@@ -159,90 +157,127 @@ void App::Reset()
 void App::LoadGame()
 {
     // Reload surfaces
-    std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
-    while (i != _htSurfaces.end()) 
+    std::unordered_map<std::string, Texture*>::iterator i = _htTextures.begin();
+    while (i != _htTextures.end())
     {
-        if (i->first != "Display" && i->first != "DefaultHome" && i->first != "CursorHand" &&
-            i->first != "CursorShadow" && i->first != "TextSettings") 
+        if (i->first != "DefaultHome" && i->first != "CursorHand" && i->first != "CursorShadow" &&
+            i->first != "TextSettings")
         {
             delete i->second;
-            i = _htSurfaces.erase(i);
+            i = _htTextures.erase(i);
         }
         else ++i;
     }
 
-    const Surface* CpSurfaceDisplay{_htSurfaces.at("Display")};
+    _htTextures.insert(std::make_pair("Background", LoadTexture("background.png")));
+    _htTextures.insert(std::make_pair("Hourglass", LoadTexture("hourglass.png")));
+    _htTextures.insert(std::make_pair("Prompt", LoadTexture("prompt.png")));
+    _htTextures.insert(std::make_pair("DefaultYes", LoadTexture("defaultyes.png")));
+    _htTextures.insert(std::make_pair("HoverYes", LoadTexture("hoveryes.png")));
+    _htTextures.insert(std::make_pair("WinPlayer1", LoadTexture("winplayer1.png")));
+    _htTextures.insert(std::make_pair("WinPlayer2", LoadTexture("winplayer2.png")));
+    _htTextures.insert(std::make_pair("Draw", LoadTexture("draw.png")));
 
-    _htSurfaces.insert(std::make_pair("Background", LoadTexture("background.png")));
-    _htSurfaces.insert(std::make_pair("Hourglass", LoadTexture("hourglass.png")));
-    _htSurfaces.insert(std::make_pair("Prompt", LoadTexture("prompt.png")));
-    _htSurfaces.insert(std::make_pair("DefaultYes", LoadTexture("defaultyes.png")));
-    _htSurfaces.insert(std::make_pair("HoverYes", LoadTexture("hoveryes.png")));
-    _htSurfaces.insert(std::make_pair("WinPlayer1", LoadTexture("winplayer1.png")));
-    _htSurfaces.insert(std::make_pair("WinPlayer2", LoadTexture("winplayer2.png")));
-    _htSurfaces.insert(std::make_pair("Draw", LoadTexture("draw.png")));
-
-    Surface* pSurfaceTemp{LoadTexture("cursorplayer1.png")};
+    Surface* pSurfaceTemp{LoadSurface("cursorplayer1.png")};
     pSurfaceTemp->SetTransparentPixel(255, 0, 255);
-    _htSurfaces.insert(std::make_pair("CursorPlayer1", pSurfaceTemp));
-    pSurfaceTemp = LoadTexture("cursorplayer2.png");
-    pSurfaceTemp->SetTransparentPixel(255, 0, 255);
-    _htSurfaces.insert(std::make_pair("CursorPlayer2", pSurfaceTemp));
+    Texture* pTextureTemp{nullptr};
+    try { pTextureTemp = new Texture(*pSurfaceTemp); }
+    catch(...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+    delete pSurfaceTemp;
+    _htTextures.insert(std::make_pair("CursorPlayer1", pTextureTemp));
 
-    pSurfaceTemp = LoadTexture("emptycell.png");
+    pSurfaceTemp = LoadSurface("cursorplayer2.png");
+    pSurfaceTemp->SetTransparentPixel(255, 0, 255);
+    try { pTextureTemp = new Texture(*pSurfaceTemp); }
+    catch(...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+    delete pSurfaceTemp;
+    _htTextures.insert(std::make_pair("CursorPlayer2", pTextureTemp));
+
+    pSurfaceTemp = LoadSurface("emptycell.png");
 
     // Adjust the grid cells and markers
-    uint16_t urScale{static_cast<uint16_t>(std::min(
-        CpSurfaceDisplay->GetWidth() / pSurfaceTemp->GetWidth() / _settingsGlobal.GetBoardWidth(),
-        CpSurfaceDisplay->GetHeight() / pSurfaceTemp->GetHeight() / 
+    int32_t iDisplayWidth{}, iDisplayHeight{};
+    SDL_GetWindowSize(_pSdlWindowMain, &iDisplayWidth, &iDisplayHeight);
+    uint16_t urScale{static_cast<uint16_t>(std::min(iDisplayWidth / pSurfaceTemp->GetWidth() /
+        _settingsGlobal.GetBoardWidth(), iDisplayHeight / pSurfaceTemp->GetHeight() /
         _settingsGlobal.GetBoardHeight()))};
-        
-    pSurfaceTemp->Scale(urScale, urScale);
-    _htSurfaces.insert(std::make_pair("EmptyCell", pSurfaceTemp));
 
-    pSurfaceTemp = LoadTexture("playermarker1.png");
     pSurfaceTemp->Scale(urScale, urScale);
-    _htSurfaces.insert(std::make_pair("PlayerMarker1", pSurfaceTemp));
+    try { pTextureTemp = new Texture(*pSurfaceTemp); }
+    catch(...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+    delete pSurfaceTemp;
+    _htTextures.insert(std::make_pair("EmptyCell", pTextureTemp));
 
-    pSurfaceTemp = LoadTexture("playermarker2.png");
+    pSurfaceTemp = LoadSurface("playermarker1.png");
     pSurfaceTemp->Scale(urScale, urScale);
-    _htSurfaces.insert(std::make_pair("PlayerMarker2", pSurfaceTemp));
+    try { pTextureTemp = new Texture(*pSurfaceTemp); }
+    catch(...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+    delete pSurfaceTemp;
+    _htTextures.insert(std::make_pair("PlayerMarker1", pTextureTemp));
+
+    pSurfaceTemp = LoadSurface("playermarker2.png");
+    pSurfaceTemp->Scale(urScale, urScale);
 
     uint8_t uyBoardWidth{_settingsGlobal.GetBoardWidth()};
-    _rInitialX = (CpSurfaceDisplay->GetWidth() >> 1) - 
-        ((uyBoardWidth >> 1) * pSurfaceTemp->GetWidth());
-    if (uyBoardWidth % 2 != 0) _rInitialX -= pSurfaceTemp->GetWidth() >> 1;
+    _rInitialX = (iDisplayWidth >> 1) - ((uyBoardWidth >> 1) * pSurfaceTemp->GetWidth());
+    if (uyBoardWidth & 1) _rInitialX -= pSurfaceTemp->GetWidth() >> 1;
 
     uint8_t uyBoardHeight{_settingsGlobal.GetBoardHeight()};
-    _rInitialY = (CpSurfaceDisplay->GetHeight() >> 1) - 
-        ((uyBoardHeight >> 1) * pSurfaceTemp->GetHeight());
-    if (uyBoardHeight % 2 != 0) _rInitialY -= pSurfaceTemp->GetHeight() >> 1;
+    _rInitialY = (iDisplayHeight >> 1) - ((uyBoardHeight >> 1) * pSurfaceTemp->GetHeight());
+    if (uyBoardHeight & 1) _rInitialY -= pSurfaceTemp->GetHeight() >> 1;
 
-    // Reload texts
+    try { pTextureTemp = new Texture(*pSurfaceTemp); }
+    catch(...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+    delete pSurfaceTemp;
+    _htTextures.insert(std::make_pair("PlayerMarker2", pTextureTemp));
+
+    /* Reload texts */
 
     SDL_Color sdlColorText{};
     sdlColorText.r = 252;
     sdlColorText.g = 3;
     sdlColorText.b = 3;
 
-    _htSurfaces.insert(std::make_pair("TextPrompt", GenerateText("Are you sure you want to quit?", 
-            _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextYes", GenerateText("Yes", _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextNo", GenerateText("No", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextPrompt", GenerateTextureFromText(
+        "Are you sure you want to quit?", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextYes", GenerateTextureFromText(
+        "Yes", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextNo", GenerateTextureFromText(
+        "No", _ttfFontContinuum, sdlColorText)));
 
     // Reload animations
-    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin(); 
+    for (std::unordered_map<std::string, Animation*>::iterator j = _htAnimations.begin();
         j != _htAnimations.end(); ++j) delete j->second;
     _htAnimations.clear();
-    
+
     _htAnimations.insert(std::make_pair("Loading", new Animation(16, 100)));
     _htAnimations.insert(std::make_pair("Win", new Animation(2, 500)));
 
     // Reload buttons
     std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin();
-    while (j != _htButtons.end()) 
+    while (j != _htButtons.end())
     {
-        if (j->first != "Exit") 
+        if (j->first != "Exit")
         {
             delete j->second;
             j = _htButtons.erase(j);
@@ -255,10 +290,10 @@ void App::LoadGame()
 
     // Reload music
     std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
-    while (k != _htSamples.end()) 
+    while (k != _htSamples.end())
     {
         if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
-            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+            && !k->first.starts_with("open") && !k->first.starts_with("select"))
         {
             delete k->second;
             k = _htSamples.erase(k);
@@ -280,49 +315,49 @@ void App::LoadGame()
 void App::LoadSettings()
 {
     // Reload surfaces
-    std::unordered_map<std::string, Surface*>::iterator i = _htSurfaces.begin();
-    while (i != _htSurfaces.end()) 
+    std::unordered_map<std::string, Texture*>::iterator i = _htTextures.begin();
+    while (i != _htTextures.end())
     {
-        if (i->first != "Display" && i->first != "DefaultHome" && i->first != "CursorHand" &&
-            i->first != "CursorShadow" && i->first != "TextSettings") 
+        if (i->first != "DefaultHome" && i->first != "CursorHand" && i->first != "CursorShadow" &&
+            i->first != "TextSettings")
         {
             delete i->second;
-            i = _htSurfaces.erase(i);
+            i = _htTextures.erase(i);
         }
         else ++i;
     }
 
-    _htSurfaces.insert(std::make_pair("Settings", LoadTexture("settings.png")));
+    _htTextures.insert(std::make_pair("Settings", LoadTexture("settings.png")));
 
     SDL_Color sdlColorText{};
     sdlColorText.r = 252;
     sdlColorText.g = 3;
     sdlColorText.b = 3;
 
-    _htSurfaces.insert(std::make_pair("TextWidth", GenerateText("Board width", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextWidthValue", GenerateText(
+    _htTextures.insert(std::make_pair("TextWidth", GenerateTextureFromText(
+        "Board width", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextWidthValue", GenerateTextureFromText(
         std::to_string(_settingsGlobal.GetBoardWidth()), _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextHeight", GenerateText("Board height", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextHeightValue", GenerateText(
+    _htTextures.insert(std::make_pair("TextHeight", GenerateTextureFromText(
+        "Board height", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextHeightValue", GenerateTextureFromText(
         std::to_string(_settingsGlobal.GetBoardHeight()), _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextStreak", GenerateText("Win length", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextStreakValue", GenerateText(
+    _htTextures.insert(std::make_pair("TextStreak", GenerateTextureFromText(
+        "Win length", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextStreakValue", GenerateTextureFromText(
         std::to_string(_settingsGlobal.GetCellsToWin()), _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextDifficulty", GenerateText("AI Difficulty", 
-        _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextDifficultyValue", GenerateText(
+    _htTextures.insert(std::make_pair("TextDifficulty", GenerateTextureFromText(
+        "AI Difficulty", _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextDifficultyValue", GenerateTextureFromText(
         std::to_string(_settingsGlobal.GetAIDifficulty()), _ttfFontContinuum, sdlColorText)));
-    _htSurfaces.insert(std::make_pair("TextDevTools", GenerateText("Enable dev tools", 
-        _ttfFontContinuum, sdlColorText)));
+    _htTextures.insert(std::make_pair("TextDevTools", GenerateTextureFromText(
+        "Enable dev tools", _ttfFontContinuum, sdlColorText)));
 
     // Reload buttons
     std::unordered_map<std::string, Button*>::iterator j = _htButtons.begin();
-    while (j != _htButtons.end()) 
+    while (j != _htButtons.end())
     {
-        if (j->first != "Exit") 
+        if (j->first != "Exit")
         {
             delete j->second;
             j = _htButtons.erase(j);
@@ -341,10 +376,10 @@ void App::LoadSettings()
 
     // Reload music
     std::unordered_map<std::string, Sample*>::iterator k = _htSamples.begin();
-    while (k != _htSamples.end()) 
+    while (k != _htSamples.end())
     {
         if (k->first != "Music" && !k->first.starts_with("cancel") && !k->first.starts_with("error")
-            && !k->first.starts_with("open") && !k->first.starts_with("select")) 
+            && !k->first.starts_with("open") && !k->first.starts_with("select"))
         {
             delete k->second;
             k = _htSamples.erase(k);
@@ -356,20 +391,13 @@ void App::LoadSettings()
 }
 
 
-Surface* App::LoadTexture(const std::string& CsPath) const
+Surface* App::LoadSurface(const std::string& CsPath) const
 {
     Surface* pSurfaceNew{nullptr};
 
-    try
-    { 
-        pSurfaceNew = new Surface(std::filesystem::path(_settingsGlobal.GetCustomPath() + CsPath)
-            .lexically_normal().string()); 
-    }
+    try { pSurfaceNew = new Surface(_settingsGlobal.GetCustomPath() + CsPath); }
     catch (const std::ios_base::failure& CiosBaseFailure)
-    { 
-        pSurfaceNew = new Surface(std::filesystem::path(Globals::SCsGraphicsDefaultPath + CsPath)
-            .lexically_normal().string());
-    }
+    { pSurfaceNew = new Surface(Globals::SCsGraphicsDefaultPath + CsPath); }
 
     pSurfaceNew->SetAlpha(SDL_ALPHA_OPAQUE);
 
@@ -377,11 +405,41 @@ Surface* App::LoadTexture(const std::string& CsPath) const
 }
 
 
-Surface* App::GenerateText(const std::string& CsMessage, TTF_Font* ttfFontText, 
+Texture* App::LoadTexture(const std::string& CsPath) const
+{
+    Texture* pTextureNew{nullptr};
+    try { pTextureNew = new Texture(_settingsGlobal.GetCustomPath() + CsPath); }
+    catch (...) { pTextureNew = new Texture(Globals::SCsGraphicsDefaultPath + CsPath); }
+
+    return pTextureNew;
+}
+
+
+Surface* App::GenerateSurfaceFromText(const std::string& CsMessage, TTF_Font* ttfFontText,
     const SDL_Color& CsdlColorText) const
 {
     SDL_Surface* pSdlSurfaceTemp{TTF_RenderUTF8_Blended(ttfFontText, CsMessage.c_str(), CsdlColorText)};
     if (!pSdlSurfaceTemp) throw std::runtime_error(TTF_GetError());
-    
+
     return new Surface(pSdlSurfaceTemp);
+}
+
+
+Texture* App::GenerateTextureFromText(const std::string& CsMessage, TTF_Font* ttfFontText,
+    const SDL_Color& CsdlColorText) const
+{
+    Surface* pSurfaceTemp{GenerateSurfaceFromText(CsMessage, ttfFontText, CsdlColorText)};
+    Texture* pTextureNew{nullptr};
+
+    try
+    { pTextureNew = new Texture(SDL_CreateTextureFromSurface(_pSdlRendererMain, *pSurfaceTemp)); }
+    catch (...)
+    {
+        delete pSurfaceTemp;
+        throw;
+    }
+
+    delete pSurfaceTemp;
+
+    return pTextureNew;
 }

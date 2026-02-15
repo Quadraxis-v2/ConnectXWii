@@ -36,12 +36,12 @@ public:
     static const std::string SCsLogDefaultPath;         /**< Default path for storing the application's log */
     static const std::string SCsSettingsDefaultPath;    /**< Default path for storing the application's settings */
     static const std::string SCsGraphicsDefaultPath;    /**< Default path for storing the application's graphics */
-    static const std::string SCsAudioDefaultPath;
-    static const std::string SCsFontsDefaultPath;
+    static const std::string SCsAudioDefaultPath;       /**< Default path for storing the application's audio */
+    static const std::string SCsFontsDefaultPath;       /**< Default path for storing the application's fonts */
 
     /* Settings */
     static const uint8_t SCuyBoardWidthDefault{7};         /**< Default board width */
-    static const uint8_t SCuyBoardWidthMin{2};
+    static const uint8_t SCuyBoardWidthMin{2};             
     static const uint8_t SCuyBoardWidthMax{9};
     static const uint8_t SCuyBoardHeightDefault{6};        /**< Default board height */
     static const uint8_t SCuyBoardHeightMin{2};
@@ -49,7 +49,7 @@ public:
     static const uint8_t SCuyCellsToWinDefault{4};         /**< Default number of game pieces to win */
     static const uint8_t SCuyCellsToWinMin{2};
     static const uint8_t SCuyAIDifficultyDefault{4};       /**< Default AI exploration depth */
-    static const uint8_t SCuyAIDifficultyMin{1};
+    static const uint8_t SCuyAIDifficultyMin{1};           
     static const uint8_t SCuyAIDifficultyMax{7};
 
     static const std::string SCsGraphicsCustomPath; /**< Default custom path for storing the application's graphics */

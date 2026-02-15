@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <string>
+#include <filesystem>
 #include <ios>
 #include <algorithm>
 #include <cstdint>
@@ -36,7 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Sample::Sample(const std::string& CsFilePath) : _pMixChunk{nullptr}
 {
-    if ((_pMixChunk = Mix_LoadWAV(CsFilePath.c_str())) == nullptr)
+    if (((_pMixChunk = Mix_LoadWAV(std::filesystem::path(CsFilePath).lexically_normal()
+        .string().c_str())) == nullptr))
         throw std::ios_base::failure(Mix_GetError());
 }
 

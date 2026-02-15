@@ -93,21 +93,15 @@ void SamplePlayer::Play(int32_t iDuration, int32_t iFadeInTime, int32_t iLoops)
     if (_pSample == nullptr) throw std::runtime_error("Sample is null");
 
     if (_iChannel >= 0 && *_pSample == Mix_GetChunk(_iChannel) && Mix_Playing(_iChannel))
-    { if (Mix_Paused(_iChannel)) Mix_Resume(_iChannel); }   // Resume playback if it is paused
+        Mix_Resume(_iChannel);   // Resume playback if it is paused
     else    // Sample was stopped or it's the first time playing this
     {
-        if ((_iChannel = Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, iDuration)) == -1)
+        while ((_iChannel = Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, iDuration)) == -1)
         {
             if (!std::strcmp(Mix_GetError(), "No free channels available")) // Try to allocate new sample channel
-            {
                 Mix_AllocateChannels(Mix_AllocateChannels(-1) + 1);
-                if ((_iChannel = Mix_FadeInChannelTimed(-1, *_pSample, iLoops, iFadeInTime, 
-                    iDuration)) == -1) throw std::runtime_error(Mix_GetError());
-            }
             else throw std::runtime_error(Mix_GetError());
         }
-        
-        SetVolume(_iVolume);
     }
 }
 
@@ -153,10 +147,6 @@ void SamplePlayer::Stop(int32_t iFadeOutTime)
         
         // Set defaults on the sample channel
         SetVolume(MIX_MAX_VOLUME);
-        SetPanning(255, 255);
-        SetDistance(0);
-        SetPosition(0, 0);
-        SetReverseStereo(false);
         
         _iChannel = std::numeric_limits<int32_t>::min();    // Set the channel to an "unassigned" state
 

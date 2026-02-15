@@ -22,7 +22,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <list>
 
 #include <SDL_events.h>
-#include <SDL_active.h>
 #include <SDL_mouse.h>
 
 #include "../include/EventManager.hpp"
@@ -73,51 +72,74 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
 {
     switch(pSdlEvent->type) // Find the event type and send it to all listeners
     {
-    case SDL_ACTIVEEVENT:
+    case SDL_EventType::SDL_WINDOWEVENT:
     {
-        if (pSdlEvent->active.state & SDL_APPMOUSEFOCUS)
+        switch (pSdlEvent->window.type)
         {
-            if (pSdlEvent->active.gain) 
-                for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-                    i != _eventListeners.cend(); ++i) (*i)->OnMouseFocus();
-            else for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+        case SDL_WindowEventID::SDL_WINDOWEVENT_ENTER:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) (*i)->OnMouseFocus();
+            break;
+        }
+        case SDL_WindowEventID::SDL_WINDOWEVENT_LEAVE:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
                 i != _eventListeners.cend(); ++i) (*i)->OnMouseBlur();
+            break;
         }
-        if (pSdlEvent->active.state & SDL_APPINPUTFOCUS)
+        case SDL_WindowEventID::SDL_WINDOWEVENT_FOCUS_GAINED:
         {
-            if (pSdlEvent->active.gain)
-                for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-                    i != _eventListeners.cend(); ++i) (*i)->OnInputFocus();
-            else for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) (*i)->OnInputFocus();
+            break;
+        }
+        case SDL_WindowEventID::SDL_WINDOWEVENT_FOCUS_LOST:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
                 i != _eventListeners.cend(); ++i) (*i)->OnInputBlur();
+            break;
         }
-        if (pSdlEvent->active.state & SDL_APPACTIVE)
+        case SDL_WindowEventID::SDL_WINDOWEVENT_RESTORED:
         {
-            if (pSdlEvent->active.gain)
-                for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-                    i != _eventListeners.cend(); ++i) (*i)->OnRestore();
-            else for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-                i != _eventListeners.cend(); ++i) (*i)->OnMinimize();
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) (*i)->OnRestore();
+            break;
         }
-        break;
+        case SDL_WindowEventID::SDL_WINDOWEVENT_MINIMIZED:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) (*i)->OnMinimize();
+            break;
+        }
+        case SDL_WindowEventID::SDL_WINDOWEVENT_RESIZED:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) 
+                (*i)->OnResize(pSdlEvent->window.data1, pSdlEvent->window.data2);
+            break;
+        }
+        case SDL_WindowEventID::SDL_WINDOWEVENT_EXPOSED:
+        {
+            for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
+                i != _eventListeners.cend(); ++i) (*i)->OnExpose();
+            break;
+        }
+        }
     }
-    case SDL_KEYDOWN: 
+    case SDL_EventType::SDL_KEYDOWN: 
     {
-        for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-            i != _eventListeners.cend(); ++i) 
-            (*i)->OnKeyDown(pSdlEvent->key.keysym.sym, pSdlEvent->key.keysym.mod, 
-                pSdlEvent->key.keysym.unicode);
+        for (EventListeners::const_iterator i = _eventListeners.cbegin(); i != _eventListeners.cend(); 
+            ++i) (*i)->OnKeyDown(pSdlEvent->key.keysym);
         break;
     }
-    case SDL_KEYUP: 
+    case SDL_EventType::SDL_KEYUP: 
     {
-        for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-            i != _eventListeners.cend(); ++i) 
-            (*i)->OnKeyUp(pSdlEvent->key.keysym.sym, pSdlEvent->key.keysym.mod, 
-                pSdlEvent->key.keysym.unicode);
+        for (EventListeners::const_iterator i = _eventListeners.cbegin(); i != _eventListeners.cend(); 
+            ++i) (*i)->OnKeyUp(pSdlEvent->key.keysym);
         break;
     }
-    case SDL_MOUSEMOTION:   // Wiimote IR moved
+    case SDL_EventType::SDL_MOUSEMOTION:   // Wiimote IR moved
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
@@ -127,7 +149,7 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
                 (pSdlEvent->motion.state & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0);
         break;
     }
-    case SDL_MOUSEBUTTONDOWN: 
+    case SDL_EventType::SDL_MOUSEBUTTONDOWN: 
     {
         switch(pSdlEvent->button.button) 
         {
@@ -155,7 +177,7 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
         }
         break;
     }
-    case SDL_MOUSEBUTTONUP:    
+    case SDL_EventType::SDL_MOUSEBUTTONUP:    
     {
         switch(pSdlEvent->button.button) 
         {
@@ -183,14 +205,14 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
         }
         break;
     }
-    case SDL_JOYAXISMOTION: // Controller stick or Wiimote gyroscope motion
+    case SDL_EventType::SDL_JOYAXISMOTION: // Controller stick or Wiimote gyroscope motion
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
             (*i)->OnJoyAxis(pSdlEvent->jaxis.which, pSdlEvent->jaxis.axis, pSdlEvent->jaxis.value);
         break;
     }
-    case SDL_JOYBALLMOTION: 
+    case SDL_EventType::SDL_JOYBALLMOTION: 
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
@@ -198,48 +220,36 @@ void EventManager::OnEvent(SDL_Event* pSdlEvent) const noexcept
                 pSdlEvent->jball.yrel);
         break;
     }
-    case SDL_JOYBUTTONDOWN: // Controller button pressed
+    case SDL_EventType::SDL_JOYBUTTONDOWN: // Controller button pressed
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
             (*i)->OnJoyButtonDown(pSdlEvent->jbutton.which, pSdlEvent->jbutton.button);
         break;
     }
-    case SDL_JOYBUTTONUP:   // Controller button released
+    case SDL_EventType::SDL_JOYBUTTONUP:   // Controller button released
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
             (*i)->OnJoyButtonUp(pSdlEvent->jbutton.which, pSdlEvent->jbutton.button);
         break;
     }
-    case SDL_JOYHATMOTION:  // Controller D-Pad position changed
+    case SDL_EventType::SDL_JOYHATMOTION:  // Controller D-Pad position changed
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) 
             (*i)->OnJoyHat(pSdlEvent->jhat.which, pSdlEvent->jhat.hat, pSdlEvent->jhat.value);
         break;
     }
-    case SDL_QUIT:  // User-requested quit
+    case SDL_EventType::SDL_QUIT:  // User-requested quit
     {
         for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
             i != _eventListeners.cend(); ++i) (*i)->OnExit();
         break;
     }
-    case SDL_SYSWMEVENT: 
+    case SDL_EventType::SDL_SYSWMEVENT: 
     {
         //Ignore
-        break;
-    }
-    case SDL_VIDEORESIZE: 
-    {
-        for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-            i != _eventListeners.cend(); ++i) (*i)->OnResize(pSdlEvent->resize.w, pSdlEvent->resize.h);
-        break;
-    }
-    case SDL_VIDEOEXPOSE: 
-    {
-        for (EventListeners::const_iterator i = _eventListeners.cbegin(); 
-            i != _eventListeners.cend(); ++i) (*i)->OnExpose();
         break;
     }
     default:    // User-defined events

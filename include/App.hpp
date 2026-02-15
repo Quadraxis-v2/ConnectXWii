@@ -27,11 +27,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string>
 
 #include <SDL.h>
-#include <SDL_video.h>
-#include <SDL_events.h>
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
 #include <SDL_ttf.h>
+#include <SDL_render.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
 #include "EventListener.hpp"
 #include "Settings.hpp"
@@ -44,6 +45,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "video/Animation.hpp"
 #include "audio/Sample.hpp"
 #include "audio/SamplePlayer.hpp"
+#include "video/Texture.hpp"
+
 
 /**
  * @brief Main application class
@@ -81,7 +84,7 @@ private:
     SDL_Thread* _pSdlThreadAI;  /**< Background AI thread */
     SDL_sem* _pSdlSemaphoreAI;  /**< Semaphore for the AI thread */
     bool _bStopThreads;         /**< Signal threads to stop */
-    uint32_t _uiOldTime;
+    uint64_t _ulOldTime;
     float _fFPS;
 
     std::random_device _randomDeviceGenerator;                      /**< Generates random numbers */
@@ -96,7 +99,9 @@ private:
 
     int16_t _rInitialX, _rInitialY; /**< Values for adjusting the placement of the grid  */
 
-    std::unordered_map<std::string, Surface*> _htSurfaces;      /**< The surfaces loaded in memory */
+    SDL_Window* _pSdlWindowMain;          /**< The main application window */
+    SDL_Renderer* _pSdlRendererMain;      /**< The main application renderer */
+    std::unordered_map<std::string, Texture*> _htTextures;      /**< The surfaces loaded in memory */
     std::unordered_map<std::string, Animation*> _htAnimations;  /**< The animations loaded in memory */
     std::unordered_map<std::string, Button*> _htButtons;        /**< The buttons loaded in memory */
     std::unordered_map<std::string, Sample*> _htSamples;        /**< The sound samples loaded in memory */
@@ -157,21 +162,17 @@ private:
 
     /**
      * @brief Handles keyboard press events
-     *
-     * @param sdlKeySymbol the key that was pressed
-     * @param sdlMod the current state of keyboard modifiers
-     * @param urUnicode the Unicode value of the pressed key
+     * 
+     * @param sdlKeysym the key that was pressed
      */
-    virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) override;
+    virtual void OnKeyDown(SDL_Keysym sdlKeysym) override;
 
     /**
      * @brief Handles keyboard release events
-     *
-     * @param sdlKeySymbol the key that was released
-     * @param sdlMod the current state of keyboard modifiers
-     * @param urUnicode the Unicode value of the released key
+     * 
+     * @param sdlKeysym the key that was released
      */
-    virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) override;
+    virtual void OnKeyUp(SDL_Keysym sdlKeysym) override;
 
     /**
      * @brief Handles mouse/IR movement events
@@ -318,13 +319,15 @@ private:
 
     void LoadGame();
     void LoadSettings();
-    Surface* LoadTexture(const std::string& CsPath) const;
-    Surface* GenerateText(const std::string& CsMessage, TTF_Font* ttfFontText, 
+    Surface* LoadSurface(const std::string& CsPath) const;
+    Texture* LoadTexture(const std::string& CsPath) const;
+    Surface* GenerateSurfaceFromText(const std::string& CsMessage, TTF_Font* ttfFontText, 
+        const SDL_Color& CsdlColorText) const;
+    Texture* GenerateTextureFromText(const std::string& CsMessage, TTF_Font* ttfFontText, 
         const SDL_Color& CsdlColorText) const;
 
-    void RenderCursor(Surface& surfaceDisplay, const Surface& CsurfaceCursor, double dAngle, 
-        const Vector3& CvectorPosition) const;
-    void RenderGrid(Surface& surfaceDisplay) const;
+    void RenderCursor(Texture* pTextureCursor, double dAngle, const Vector3& CvectorPosition) const;
+    void RenderGrid() const;
 
 };
 

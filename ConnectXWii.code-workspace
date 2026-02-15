@@ -116,6 +116,7 @@
 			"typeindex": "cpp",
 			"valarray": "cpp",
 			"ios": "cpp"
-		}
+		},
+		"terminal.integrated.defaultProfile.windows": "bash (MSYS2)"
 	}
 }

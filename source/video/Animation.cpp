@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Animation::Animation(uint8_t uyMaxFrames, uint16_t urInterval, bool bOscillate, 
     int8_t yFrameIncrement) noexcept : _uyMaxFrames{uyMaxFrames}, _urInterval{urInterval}, 
-    _bOscillate{bOscillate}, _yCurrentFrame{0}, _yFrameIncrement{yFrameIncrement}, _uiOldTime{0}
+    _bOscillate{bOscillate}, _yCurrentFrame{}, _yFrameIncrement{yFrameIncrement}, _ulOldTime{}
 {}
 
 
@@ -46,14 +46,20 @@ Animation::Animation(uint8_t uyMaxFrames, uint16_t urInterval, bool bOscillate,
  */
 void Animation::OnAnimate() noexcept
 {
-    if(_uiOldTime + _urInterval > Time::GetInstance().GetTime()) return;
+    _yCurrentFrame += (Time::GetInstance().GetTime() - _ulOldTime) / _urInterval * _yFrameIncrement;
 
-    if(_bOscillate && ((_yFrameIncrement > 0 && _yCurrentFrame + _yFrameIncrement >= _uyMaxFrames) || 
-        (_yFrameIncrement < 0 && _yCurrentFrame + _yFrameIncrement < 0))) 
-        _yFrameIncrement = -_yFrameIncrement;
+    if (_bOscillate)
+    {
+        while (_yCurrentFrame < 0 || _yCurrentFrame >= _uyMaxFrames)
+        {
+            if (_yCurrentFrame < 0) _yCurrentFrame = -_yCurrentFrame;
+            else _yCurrentFrame = (_uyMaxFrames - 1) - (_yCurrentFrame - (_uyMaxFrames - 1));
+            _yFrameIncrement = -_yFrameIncrement;
+        }
+    }
+    else _yCurrentFrame %= _uyMaxFrames;
 
-    _yCurrentFrame = (_yCurrentFrame + _yFrameIncrement) % _uyMaxFrames;
-    _uiOldTime = Time::GetInstance().GetTime();
+    _ulOldTime = Time::GetInstance().GetTime();
 }
  
 

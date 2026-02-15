@@ -18,29 +18,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <string>
-#include <filesystem>
 
 #include "../include/Globals.hpp"
 
 
 /** Default path for storing the application's settings */
-const std::string Globals::SCsSettingsDefaultPath{std::filesystem::path("/apps/ConnectXWii/settings.json")
-    .lexically_normal().string()};
+const std::string Globals::SCsSettingsDefaultPath{"/apps/ConnectXWii/settings.json"};
 
 /** Default path for storing the application's log */
-const std::string Globals::SCsLogDefaultPath{std::filesystem::path("/apps/ConnectXWii/log.txt")
-    .lexically_normal().string()};
+const std::string Globals::SCsLogDefaultPath{"/apps/ConnectXWii/log.txt"};
 
 /**< Default path for storing the application's graphics */
-const std::string Globals::SCsGraphicsDefaultPath{std::filesystem::path("/apps/ConnectXWii/gfx/")
-    .lexically_normal().string()};
+const std::string Globals::SCsGraphicsDefaultPath{"/apps/ConnectXWii/data/textures/"};
 
-const std::string Globals::SCsAudioDefaultPath{std::filesystem::path("/apps/ConnectXWii/audio/")
-    .lexically_normal().string()};
+/**< Default path for storing the application's audio */
+const std::string Globals::SCsAudioDefaultPath{"/apps/ConnectXWii/data/audio/"};
 
-const std::string Globals::SCsFontsDefaultPath{std::filesystem::path("/apps/ConnectXWii/fonts/")
-    .lexically_normal().string()};
+/**< Default path for storing the application's fonts */
+const std::string Globals::SCsFontsDefaultPath{"/apps/ConnectXWii/data/fonts/"};
 
 /**< Default custom path for storing the application's graphics */
-const std::string Globals::SCsGraphicsCustomPath{std::filesystem::path("/apps/ConnectXWii/gfx/custom/")
-    .lexically_normal().string()};
+const std::string Globals::SCsGraphicsCustomPath{"/apps/ConnectXWii/data/textures/custom/"};

@@ -67,7 +67,7 @@ private:
     bool _bOscillate;           /**< Signals if the animation goes back and forth */
     int8_t _yCurrentFrame;      /**< The current frame that the animation is in */
     int8_t _yFrameIncrement;    /**< The distance between frames in the animation */
-    uint32_t _uiOldTime;        /**< The last time the animation changed frames */
+    uint64_t _ulOldTime;        /**< The last time the animation changed frames */
 
 };
 

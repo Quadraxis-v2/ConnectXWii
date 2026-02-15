@@ -19,23 +19,23 @@ TARGET		:=	boot
 BUILD		:=	build
 SOURCES		:=	source source/App source/audio source/players source/video
 DATA		:=	data
-INCLUDES	:=	include include/audio include/players include/video
+INCLUDES	:=	
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
 
-CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `libpng-config --cflags` `sdl-config --cflags` \
-			`$(PREFIX)pkg-config libturbojpeg zlib jansson freetype2 SDL_image SDL_mixer SDL_ttf SDL_gfx --cflags`
-CXXFLAGS	=	$(CFLAGS) -std=c++20
+CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) `sdl2-config --cflags` \
+			`$(PREFIX)pkg-config jansson SDL2_image SDL2_mixer SDL2_ttf SDL2_gfx --cflags`
+CXXFLAGS	=	$(CFLAGS) -std=c++26
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	`$(PREFIX)pkg-config SDL_gfx SDL_ttf SDL_mixer SDL_image freetype2 jansson zlib libturbojpeg --libs` \
-			`sdl-config --libs` `libpng-config --libs` -logg -lwiiuse -lbte -lfat -logc -lm
+LIBS	:=	`$(PREFIX)pkg-config SDL2_gfx SDL2_ttf SDL2_mixer SDL2_image jansson --libs` \
+				`sdl2-config --libs` -logg -lwiiuse -lbte -lfat -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -122,9 +122,7 @@ package:
 	@cp -u $(TARGET).dol apps/$(notdir $(CURDIR))/
 	@cp -u hbc/icon.png apps/$(notdir $(CURDIR))/
 	@cp -u hbc/meta.xml apps/$(notdir $(CURDIR))/
-	@cp -u -r data/gfx/ apps/$(notdir $(CURDIR))/
-	@cp -u -r data/audio/ apps/$(notdir $(CURDIR))/
-	@cp -u -r data/fonts/ apps/$(notdir $(CURDIR))/
+	@cp -u -r data/ apps/$(notdir $(CURDIR))/
 	@zip -q -r $(notdir $(CURDIR)).zip apps/
 	@rm -fr apps
 

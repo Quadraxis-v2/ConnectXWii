@@ -50,16 +50,6 @@ Joystick::Joystick(SDL_Joystick* pSdlJoystick) noexcept : __pSdlJoystick{pSdlJoy
 
 
 /**
- * @brief Copy constructor
- */
-Joystick::Joystick(const Joystick& CjoystickOther) : __pSdlJoystick{nullptr}
-{
-    if ((__pSdlJoystick = SDL_JoystickOpen(CjoystickOther.GetIndex())) == nullptr) 
-        throw std::runtime_error(SDL_GetError());
-}
-
-
-/**
  * @brief Move constructor
  */
 Joystick::Joystick(Joystick&& joystickOther) noexcept : __pSdlJoystick{joystickOther.__pSdlJoystick}
@@ -70,21 +60,6 @@ Joystick::Joystick(Joystick&& joystickOther) noexcept : __pSdlJoystick{joystickO
  * @brief Destructor
  */
 Joystick::~Joystick() noexcept { SDL_JoystickClose(__pSdlJoystick); }
-
-
-/**
- * @brief Copy assignment operator
- */
-Joystick& Joystick::operator =(const Joystick& CjoystickOther)
-{
-    if (this != &CjoystickOther)
-    {
-        SDL_JoystickClose(__pSdlJoystick);
-        if ((__pSdlJoystick = SDL_JoystickOpen(CjoystickOther.GetIndex())) == nullptr) 
-            throw std::runtime_error(SDL_GetError());
-    }
-    return *this;
-}
 
 
 /**

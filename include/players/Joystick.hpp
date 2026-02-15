@@ -51,16 +51,16 @@ public:
      */
     explicit Joystick(SDL_Joystick* pSdlJoystick) noexcept;
 
-    Joystick(const Joystick& CjoystickOther);       /**< Copy constructor */
+    Joystick(const Joystick& CjoystickOther) = delete;       /**< Copy constructor */
     Joystick(Joystick&& joystickOther) noexcept;    /**< Move constructor */
 
     virtual ~Joystick() noexcept;
 
 
-    Joystick& operator =(const Joystick& CjoystickOther);       /**< Copy assignment operator */
-    Joystick& operator =(Joystick&& joystickOther) noexcept;    /**< Move assignment operator */
-    Joystick& operator =(SDL_Joystick* pSdlJoystick) noexcept;  /**< Conversion and assignment from raw joystick */
-    operator SDL_Joystick*() const noexcept;                    /**< Conversion operator to raw joystick */
+    Joystick& operator =(const Joystick& CjoystickOther) = delete;  /**< Copy assignment operator */
+    Joystick& operator =(Joystick&& joystickOther) noexcept;        /**< Move assignment operator */
+    Joystick& operator =(SDL_Joystick* pSdlJoystick) noexcept;      /**< Conversion and assignment from raw joystick */
+    operator SDL_Joystick*() const noexcept;                        /**< Conversion operator to raw joystick */
 
 protected:
     SDL_Joystick* __pSdlJoystick;   /**< The raw joystick */
@@ -68,7 +68,7 @@ protected:
 };
 
 
-inline int32_t Joystick::GetIndex() const noexcept { return SDL_JoystickIndex(__pSdlJoystick); }
+inline int32_t Joystick::GetIndex() const noexcept { return SDL_JoystickInstanceID(__pSdlJoystick); }
 inline bool Joystick::GetButton(uint32_t uiButton) const noexcept
 { return SDL_JoystickGetButton(__pSdlJoystick, uiButton); }
 inline uint8_t Joystick::GetHat(uint32_t uiHat) const noexcept

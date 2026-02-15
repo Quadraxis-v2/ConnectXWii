@@ -22,8 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include <cstdint>
-#include <SDL_events.h>
-#include <SDL_keysym.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 
 
 /**
@@ -68,20 +68,16 @@ public:
     /**
      * @brief Handles keyboard press events
      * 
-     * @param sdlKeySymbol the key that was pressed
-     * @param sdlMod the current state of keyboard modifiers
-     * @param urUnicode the Unicode value of the pressed key
+     * @param sdlKeysym the key that was pressed
      */
-    virtual void OnKeyDown(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) = 0;
+    virtual void OnKeyDown(SDL_Keysym sdlKeysym) = 0;
 
     /**
      * @brief Handles keyboard release events
      * 
-     * @param sdlKeySymbol the key that was released
-     * @param sdlMod the current state of keyboard modifiers
-     * @param urUnicode the Unicode value of the released key
+     * @param sdlKeysym the key that was released
      */
-    virtual void OnKeyUp(SDLKey sdlKeySymbol, SDLMod sdlMod, uint16_t urUnicode) = 0;
+    virtual void OnKeyUp(SDL_Keysym sdlKeysym) = 0;
 
     /**
      * @brief Handles mouse/IR movement events

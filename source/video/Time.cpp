@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdint>
 #include <stdexcept>
 
-#include <SDL_framerate.h>
+#include <SDL2_framerate.h>
 
 #ifdef __wii__
     #include <ogc/video.h>
@@ -42,17 +42,17 @@ Time& Time::GetInstance()
  */
 void Time::OnLoop() noexcept
 {
-    uint32_t uiTime{GetTime()};
+    uint64_t ulTime{GetTime()};
 
-    _fDeltaTime = ((uiTime - _uiLastTime) / 1000.0f);
-    _uiLastTime = uiTime;
+    _fDeltaTime = ((ulTime - _ulLastTime) / 1000.0);
+    _ulLastTime = ulTime;
 }
 
 
 /**
  * @brief Default constructor
  */
-Time::Time() : _fNumFrames{}, _fDeltaTime{}, _uiLastTime{}, _fpsManager{}
+Time::Time() : _fNumFrames{}, _fDeltaTime{}, _ulLastTime{}, _fpsManager{}
 {
     SDL_initFramerate(&_fpsManager);
 

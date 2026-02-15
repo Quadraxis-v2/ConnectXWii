@@ -22,8 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdint>
 
+#include <SDL2_framerate.h>
 #include <SDL_timer.h>
-#include <SDL_framerate.h>
 
 
 /**
@@ -37,9 +37,9 @@ class Time
         /**
          * @brief Gets the current time
          * 
-         * @return uint32_t the time in milliseconds since the application started
+         * @return uint64_t the time in milliseconds since the application started
          */
-        uint32_t GetTime() const noexcept;
+        uint64_t GetTime() const noexcept;
 
         /**
          * @brief Gets the latest delta time
@@ -76,7 +76,7 @@ class Time
         float _fNumFrames;          /**< The current frames per second */
         float _fDeltaTime;          /**< The time in seconds since the last frame */
 
-        uint32_t _uiLastTime;       /**< The absolute time in milliseconds since the start of the application */
+        uint64_t _ulLastTime;       /**< The absolute time in milliseconds since the start of the application */
         FPSmanager _fpsManager;     /**< Controls the framerate */
 
 
@@ -85,7 +85,7 @@ class Time
 };
 
 
-inline uint32_t Time::GetTime() const noexcept { return SDL_GetTicks(); }
+inline uint64_t Time::GetTime() const noexcept { return SDL_GetTicks64(); }
 inline float Time::GetDeltaTime() const noexcept { return _fDeltaTime; }
 inline float Time::GetFPS() const noexcept { return _fNumFrames; }
 

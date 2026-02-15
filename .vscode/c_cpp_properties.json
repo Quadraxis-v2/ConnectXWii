@@ -7,7 +7,7 @@
                 "${DEVKITPPC}/lib/gcc/powerpc-eabi/**",
                 "${DEVKITPPC}/powerpc-eabi/include/**",
                 "${DEVKITPRO}/portlibs/ppc/include",
-                "${DEVKITPRO}/portlibs/wii/include/SDL",
+                "${DEVKITPRO}/portlibs/wii/include/SDL2",
                 "${DEVKITPRO}/libogc/include/ogc/**",
                 "${workspaceFolder}/include/**"
             ],
@@ -32,7 +32,7 @@
                 "${DEVKITPRO_HOME}/devkitPPC/lib/gcc/powerpc-eabi/**",
                 "${DEVKITPRO_HOME}/devkitPPC/powerpc-eabi/include/**",
                 "${DEVKITPRO_HOME}/portlibs/ppc/include",
-                "${DEVKITPRO_HOME}/portlibs/wii/include/SDL",
+                "${DEVKITPRO_HOME}/portlibs/wii/include/SDL2",
                 "${DEVKITPRO_HOME}/libogc/include/ogc/**",
                 "${workspaceFolder}/include/**"
             ],

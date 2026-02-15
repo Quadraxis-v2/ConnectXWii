@@ -85,8 +85,8 @@ int32_t main(int32_t argc, char** argv)
         void* pXfb{MEM_K0_TO_K1(SYS_AllocateFramebuffer(CpGXRMode))};
 
         // Initialise the console, required for printf
-        CON_Init(pXfb, 20, 20, CpGXRMode->fbWidth - 20, CpGXRMode->xfbHeight - 20,
-            CpGXRMode->fbWidth * VI_DISPLAY_PIX_SZ);
+        CON_Init(pXfb, 20, 20, CpGXRMode->fbWidth, CpGXRMode->xfbHeight, CpGXRMode->fbWidth * 
+			VI_DISPLAY_PIX_SZ);
 
         // Set up the video registers with the chosen mode
         VIDEO_Configure(CpGXRMode);

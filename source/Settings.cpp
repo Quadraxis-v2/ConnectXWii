@@ -18,7 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+#include <cstdint>
 #include <string>
+#include <filesystem>
 #include <sstream>
 #include <ios>
 #include <algorithm>
@@ -34,7 +36,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsToWin,
 	uint8_t uyAIDifficulty, const std::string& sCustomPath, bool bIsDev) noexcept : 
 	_uyBoardWidth{uyBoardWidth}, _uyBoardHeight{uyBoardHeight}, _uyCellsToWin{uyCellsToWin},
-	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{sCustomPath}, _bIsDev{bIsDev} {}
+	_uyAIDifficulty{uyAIDifficulty}, _sCustomPath{std::filesystem::path(sCustomPath)
+	.lexically_normal().string()}, _bIsDev{bIsDev} {}
+
 
 
 /**
@@ -44,15 +48,16 @@ Settings::Settings(uint8_t uyBoardWidth, uint8_t uyBoardHeight, uint8_t uyCellsT
  */
 Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyBoardWidthDefault}, 
 	_uyBoardHeight{Globals::SCuyBoardHeightDefault}, _uyCellsToWin{Globals::SCuyCellsToWinDefault}, 
-	_uyAIDifficulty{Globals::SCuyAIDifficultyDefault}, _sCustomPath{Globals::SCsGraphicsCustomPath}, 
-	_bIsDev{Globals::SCbIsDev}
+	_uyAIDifficulty{Globals::SCuyAIDifficultyDefault}, _sCustomPath{std::filesystem::path(
+		Globals::SCsGraphicsCustomPath).lexically_normal().string()}, _bIsDev{Globals::SCbIsDev}
 {
     json_t* pJsonRoot{nullptr};			// Root object of the JSON file
     json_error_t jsonError{};			// Error handler
     json_t* pJsonSettings{nullptr};		// "Settings" JSON object
     json_t* pJsonField{nullptr};		// Every JSON field inside the "Settings" object
 
-	if ((pJsonRoot = json_load_file(CsFilePath.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
+	if ((pJsonRoot = json_load_file(std::filesystem::path(CsFilePath).lexically_normal().string()
+		.c_str(), JSON_DISABLE_EOF_CHECK, &jsonError)) == nullptr)
 	{
 		std::ostringstream ossError{jsonError.source, std::ios_base::ate};
 		ossError << ": " << jsonError.text << " - Line: " << jsonError.line << ", Column: " <<
@@ -84,7 +89,8 @@ Settings::Settings(const std::string& CsFilePath) : _uyBoardWidth{Globals::SCuyB
     pJsonField = json_object_get(pJsonSettings, "AI Difficulty");
 	if (json_is_integer(pJsonField)) _uyAIDifficulty = json_integer_value(pJsonField);
 	pJsonField = json_object_get(pJsonSettings, "Custom path for sprites");
-	if (json_is_string(pJsonField)) _sCustomPath = json_string_value(pJsonField);
+	if (json_is_string(pJsonField)) _sCustomPath = std::filesystem::path(json_string_value(pJsonField))
+		.lexically_normal().string();
 	pJsonField = json_object_get(pJsonSettings, "Enable dev tools");
 	if (json_is_boolean(pJsonField)) _bIsDev = json_boolean_value(pJsonField);
 
